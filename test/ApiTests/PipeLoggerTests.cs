@@ -1,0 +1,214 @@
+﻿using Moq;
+using NUnit.Framework;
+using System;
+
+namespace NWrath.Logging.Test.ApiTests
+{
+    [TestFixture]
+    public class PipeLoggerTests
+    {
+        [Test]
+        public void PipeLogger_Log()
+        {
+            #region Arrange
+
+            var msg = new LogMessage
+            {
+                Timestamp = DateTime.Now,
+                Message = "str",
+                Level = LogLevel.Error,
+                Exception = new Exception("Ex")
+            };
+
+            var pipedMsg = default(LogMessage);
+
+            var targetLoggerMock = new Mock<ILogger>();
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
+                          .Callback<LogMessage>(m => pipedMsg = m);
+
+            var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
+
+            #endregion Arrange
+
+            #region Act
+
+            logger.Log(msg);
+
+            #endregion Act
+
+            #region Assert
+
+            Assert.AreSame(msg, pipedMsg);
+
+            #endregion Assert
+        }
+
+        [Test]
+        public void PipeLogger_AddSimplePipe()
+        {
+            #region Arrange
+
+            var msg = new LogMessage
+            {
+                Timestamp = DateTime.Now,
+                Message = "str",
+                Level = LogLevel.Error,
+                Exception = new Exception("Ex")
+            };
+
+            var pipedMsg = default(LogMessage);
+
+            var targetLoggerMock = new Mock<ILogger>();
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
+                          .Callback<LogMessage>(m => pipedMsg = m);
+
+            var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
+
+            logger.Pipes.Add((ctx, next) =>
+            {
+                ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper();
+            });
+
+            #endregion Arrange
+
+            #region Act
+
+            logger.Log(msg);
+
+            #endregion Act
+
+            #region Assert
+
+            Assert.AreEqual(2, logger.Pipes.Count);
+            Assert.AreSame(msg, pipedMsg);
+            Assert.AreEqual(msg.Message.ToUpper(), pipedMsg.Message);
+
+            #endregion Assert
+        }
+
+        [Test]
+        public void PipeLogger_ClearPipeline()
+        {
+            #region Arrange
+
+            var msg = LogMessage.Empty;
+            var pipedMsg = default(LogMessage);
+
+            var targetLoggerMock = new Mock<ILogger>();
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
+                          .Callback<LogMessage>(m => pipedMsg = m);
+
+            var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
+            logger.Pipes.Clear();
+
+            #endregion Arrange
+
+            #region Act
+
+            logger.Log(msg);
+
+            #endregion Act
+
+            #region Assert
+
+            Assert.AreEqual(0, logger.Pipes.Count);
+            Assert.AreSame(default(LogMessage), pipedMsg);
+
+            #endregion Assert
+        }
+
+        [Test]
+        public void PipeLogger_AddPipeline()
+        {
+            #region Arrange
+
+            var msg = new LogMessage
+            {
+                Timestamp = DateTime.Now,
+                Message = "str",
+                Level = LogLevel.Error,
+                Exception = new Exception("Ex")
+            };
+            var pipedMsg = default(LogMessage);
+
+            var pipe1Called = 0;
+            var pipe2Called = 0;
+
+            var targetLoggerMock = new Mock<ILogger>();
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
+                          .Callback<LogMessage>(m => pipedMsg = m);
+
+            var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
+            logger.Pipes.AddRange(
+                (ctx, next) => { pipe1Called++; ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper(); next(ctx); },
+                (ctx, next) => { pipe2Called++; ctx.LogMessage.Level = LogLevel.Debug; next(ctx); }
+                );
+
+            #endregion Arrange
+
+            #region Act
+
+            logger.Log(msg);
+
+            #endregion Act
+
+            #region Assert
+
+            Assert.AreEqual(3, logger.Pipes.Count);
+            Assert.AreEqual(1, pipe1Called);
+            Assert.AreEqual(1, pipe2Called);
+            Assert.AreSame(msg, pipedMsg);
+            Assert.AreEqual(msg.Message.ToUpper(), pipedMsg.Message);
+            Assert.AreEqual(LogLevel.Debug, pipedMsg.Level);
+
+            #endregion Assert
+        }
+
+        [Test]
+        public void PipeLogger_PipelineWithSkipping()
+        {
+            #region Arrange
+
+            var msg = new LogMessage
+            {
+                Timestamp = DateTime.Now,
+                Message = "str",
+                Level = LogLevel.Error,
+                Exception = new Exception("Ex")
+            };
+            var pipedMsg = default(LogMessage);
+
+            var pipe1Called = 0;
+            var pipe2Called = 0;
+
+            var targetLoggerMock = new Mock<ILogger>();
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
+                          .Callback<LogMessage>(m => pipedMsg = m);
+
+            var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
+            logger.Pipes.AddRange(
+                (ctx, next) => { pipe1Called++; ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper(); },
+                (ctx, next) => { pipe2Called++; ctx.LogMessage.Level = LogLevel.Debug; next(ctx); }
+                );
+
+            #endregion Arrange
+
+            #region Act
+
+            logger.Log(msg);
+
+            #endregion Act
+
+            #region Assert
+
+            Assert.AreEqual(3, logger.Pipes.Count);
+            Assert.AreEqual(1, pipe1Called);
+            Assert.AreEqual(0, pipe2Called);
+            Assert.AreSame(msg, pipedMsg);
+            Assert.AreEqual(msg.Message.ToUpper(), pipedMsg.Message);
+            Assert.AreEqual(LogLevel.Error, pipedMsg.Level);
+
+            #endregion Assert
+        }
+    }
+}
