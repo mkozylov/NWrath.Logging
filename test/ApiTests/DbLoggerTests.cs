@@ -17,7 +17,8 @@ namespace NWrath.Logging.Test.ApiTests
             var connectionStr = "connectionStr";
             var log1 = new LogMessage("log1");
             var log2 = new LogMessage("log2");
-            var loggerMock = new Mock<DbLogger>(connectionStr, It.IsAny<LogTableSchema>()) { CallBase = true };
+            var loggerMock = new Mock<DbLogger>(connectionStr) { CallBase = true };
+
             var loggerMockProtected = loggerMock.Protected();
             var connectionStub = new DbConnectionStub { ConnectionString = connectionStr };
 

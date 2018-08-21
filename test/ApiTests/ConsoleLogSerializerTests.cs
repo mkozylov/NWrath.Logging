@@ -53,7 +53,7 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
             var serializer = new ConsoleLogSerializer();
-            var logger = new ConsoleLogger(serializer);
+            var logger = new ConsoleLogger { Serializer = serializer };
             var consoleColors = new Dictionary<string, ConsoleColor>();
 
             foreach (var item in serializer.Formats.ToList())

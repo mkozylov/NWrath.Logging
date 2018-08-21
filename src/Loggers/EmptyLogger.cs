@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq.Expressions;
-using System.Text;
-
-namespace NWrath.Logging
+﻿namespace NWrath.Logging
 {
     public class EmptyLogger
          : LoggerBase

@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq.Expressions;
-using System.Text;
-using System.Linq;
 using NWrath.Synergy.Common.Extensions.Collections;
 
 namespace NWrath.Logging
@@ -12,9 +6,9 @@ namespace NWrath.Logging
     public class CompositeLogger
          : LoggerBase
     {
-        public virtual ILogger[] Loggers
+        public ILogger[] Loggers
         {
-            get => loggers;
+            get => _loggers;
 
             set
             {
@@ -23,11 +17,11 @@ namespace NWrath.Logging
                     throw new Exception(Errors.NO_LOGGERS);
                 }
 
-                loggers = value;
+                _loggers = value;
             }
         }
 
-        protected ILogger[] loggers;
+        private ILogger[] _loggers;
 
         public CompositeLogger(ILogger[] loggers)
         {
@@ -36,7 +30,7 @@ namespace NWrath.Logging
 
         protected override void WriteLog(LogMessage log)
         {
-            var collection = loggers;
+            var collection = _loggers;
 
             foreach (var l in collection)
             {

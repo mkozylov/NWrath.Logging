@@ -1,8 +1,4 @@
 ﻿using NWrath.Synergy.Pipeline;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NWrath.Logging
 {
@@ -33,7 +29,7 @@ namespace NWrath.Logging
             PerformNext(context);
         }
 
-        public virtual bool Predicate(RollingFileContext ctx)
+        public bool Predicate(RollingFileContext ctx)
         {
             var str = ctx.Logger.Serializer.Serialize(ctx.LogMessage);
 

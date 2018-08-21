@@ -1,16 +1,10 @@
-﻿using NWrath.Synergy.Common.Structs;
-using NWrath.Synergy.Common.Extensions;
+﻿using NWrath.Synergy.Common.Extensions;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Common;
-using System.Text.RegularExpressions;
 using NWrath.Synergy.Pipeline;
-using System.Threading.Tasks;
 
 namespace NWrath.Logging
 {
@@ -56,38 +50,25 @@ namespace NWrath.Logging
         #region Ctor
 
         public RollingFileLogger(
-            string folderPath,
-            IStringLogSerializer serializer = null,
-            Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            string folderPath
             )
             : this(
-                new RollingFileProvider(folderPath),
-                serializer,
-                encoding,
-                pipes
+                new RollingFileProvider(folderPath)
             )
         {
         }
 
         public RollingFileLogger(
-            IRollingFileProvider fileNameProvider,
-            IStringLogSerializer serializer = null,
-            Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            IRollingFileProvider fileNameProvider
             )
         {
             FileProvider = fileNameProvider;
-            Serializer = serializer ?? new StringLogSerializer();
-            Encoding = encoding ?? Encoding.UTF8;
-            Pipes = pipes ?? ProduceDefaultPipes();
+            Serializer = new StringLogSerializer();
+            Encoding = Encoding.UTF8;
+
+            SetDefaultPipes();
 
             _writer = new Lazy<IFileLogger>(CreateDefaultFileWriter);
-
-            if (!Directory.Exists(FileProvider.FolderPath))
-            {
-                Directory.CreateDirectory(FileProvider.FolderPath);
-            }
         }
 
         ~RollingFileLogger()
@@ -118,6 +99,11 @@ namespace NWrath.Logging
 
         private IFileLogger CreateDefaultFileWriter()
         {
+            if (!Directory.Exists(FileProvider.FolderPath))
+            {
+                Directory.CreateDirectory(FileProvider.FolderPath);
+            }
+
             var fileName = FileProvider.TryResolveLastFile();
 
             if (fileName.IsEmpty()
@@ -126,17 +112,15 @@ namespace NWrath.Logging
                 fileName = FileProvider.ProduceNewFile();
             }
 
-            return new FileLogger(fileName, append: true);
+            return new FileLogger(fileName) { FileMode = FileMode.Append };
         }
 
-        private PipeCollection<RollingFileContext> ProduceDefaultPipes()
+        private void SetDefaultPipes()
         {
             Pipes = new PipeCollection<RollingFileContext>();
 
-            this.UseDefaultWriterPipe()
-                .UseDailyRollerPipe();
-
-            return Pipes;
+            this.AddDefaultWriterPipe()
+                .AddDailyRollerPipe();
         }
 
         private RollingFileContext ProduceContext(LogMessage log)

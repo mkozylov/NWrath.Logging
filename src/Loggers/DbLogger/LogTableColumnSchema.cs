@@ -1,42 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NWrath.Logging
 {
     public class LogTableColumnSchema
     {
-        public virtual string Name { get; set; }
+        public string Name { get; }
 
-        public virtual string RawDbType { get; set; }
+        public string TypeDefinition { get; }
 
-        public virtual string RawDefaultValue { get; set; }
+        public bool IsInternal { get; }
 
-        public virtual bool AllowNull { get; set; }
+        public ILogSerializer Serializer { get; set; }
 
-        public virtual bool IsKey { get; set; }
-
-        public virtual bool IsInternal { get; set; }
-
-        public virtual ILogSerializer Serializer { get; set; }
-
-        public virtual string SerializerExpr
+        public LogTableColumnSchema(
+            string name,
+            string typeDefinition,
+            bool isInternal,
+            ILogSerializer serializer = null
+            )
         {
-            get { return _serializerExpr; }
-
-            set
-            {
-                _serializerExpr = value;
-
-                Serializer = (LambdaLogSerializer)_serializerExpr;
-            }
+            Name = name;
+            TypeDefinition = typeDefinition;
+            IsInternal = isInternal;
+            Serializer = serializer;
         }
 
-        private string _serializerExpr;
-
-        public LogTableColumnSchema Clone()
+        public LogTableColumnSchema(
+            string name,
+            string typeDefinition,
+            bool isInternal,
+            Func<LogMessage, object> serializerLambda
+            )
+            : this(name, typeDefinition, isInternal, new LambdaLogSerializer(serializerLambda))
         {
-            return (LogTableColumnSchema)MemberwiseClone();
+        }
+
+        public LogTableColumnSchema(
+            string name,
+            string typeDefinition,
+            bool isInternal,
+            string serializerExpr
+            )
+          : this(name, typeDefinition, isInternal, (LambdaLogSerializer)serializerExpr)
+        {
         }
     }
 }

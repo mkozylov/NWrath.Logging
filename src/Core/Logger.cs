@@ -1,7 +1,5 @@
 ﻿using NWrath.Synergy.Common.Extensions;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NWrath.Logging
 {
@@ -21,7 +19,7 @@ namespace NWrath.Logging
             }
         }
 
-        public static Func<ILogger, ILogger> Decorator { get; set; } = l => new ThreadSaveLogger(l);
+        public static Func<ILogger, ILogger> Decorator { get; set; } = l => new ThreadSafeLogger(l);
 
         private static Lazy<ILogger> _instance = new Lazy<ILogger>(() => throw new Exception(Errors.NO_LOGGERS));
 

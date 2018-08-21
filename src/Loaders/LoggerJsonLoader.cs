@@ -2,11 +2,8 @@
 using Newtonsoft.Json.Linq;
 using NWrath.Synergy.Common.Extensions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using NWrath.Synergy.Common.Structs;
 using NWrath.Synergy.Reflection.Extensions;
 
@@ -17,15 +14,18 @@ namespace NWrath.Logging
         public IServiceProvider Injector { get; set; }
 
         private FactoryUnitList<JToken, Type, object> _factories = new FactoryUnitList<JToken, Type, object>();
+        private bool _checkMemberExistence;
 
-        public LoggerJsonLoader()
+        public LoggerJsonLoader(bool checkMemberExistence = true)
         {
+            _checkMemberExistence = checkMemberExistence;
+
             _factories.Add(x => x.Type == JTokenType.Object, (x, t) => GetJObjectValue(x, t));
             _factories.Add(x => x.Type == JTokenType.Array, (x, t) => GetJArrayValue(x, t));
             _factories.Add(x => true, (x, t) => GetJValueValue(x, t));
         }
 
-        public virtual ILogger Load(JToken loggingSection)
+        public ILogger Load(JToken loggingSection)
         {
             var loggerCollectionSection = loggingSection.Children()
                                                         .ToList();
@@ -49,7 +49,7 @@ namespace NWrath.Logging
             }
         }
 
-        public virtual ILogger Load(string filePath, string sectionPath)
+        public ILogger Load(string filePath, string sectionPath)
         {
             using (var sr = new StreamReader(filePath))
             using (var jr = new JsonTextReader(sr))
@@ -142,8 +142,8 @@ namespace NWrath.Logging
             var expectedCtorArgsCount = ctorProp.Count();
 
             var ctorArgTypes = ctorProp.Select(t => t.CastAs<JValue>()?.Value?.GetType()
-                                                     ?? Type.GetType(t.First.CastAs<JProperty>()?.Name ?? "-")
-                                                     ?? Type.GetType(t.First.CastAs<JProperty>()?.Value.CastAs<JValue>()?.Value?.ToString() ?? "-"))
+                                                     ?? Type.GetType(t.FirstOrDefault().CastAs<JProperty>()?.Name ?? "-")
+                                                     ?? Type.GetType(t.FirstOrDefault().CastAs<JProperty>()?.Value.CastAs<JValue>()?.Value?.ToString() ?? "-"))
                                            .ToList();
 
             var ctorParams = type.GetConstructors()
@@ -184,7 +184,14 @@ namespace NWrath.Logging
 
                     if (member == null)
                     {
-                        throw new ArgumentNullException(nameof(member), $"'{type}' does not contain member '{propInfo.Name}'");
+                        if (_checkMemberExistence)
+                        {
+                            throw new ArgumentNullException(nameof(member), $"'{type}' does not contain member '{propInfo.Name}'");
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
                     var memberType = member.GetMemberType();

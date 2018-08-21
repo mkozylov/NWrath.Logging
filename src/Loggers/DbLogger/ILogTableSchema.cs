@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NWrath.Logging
+﻿namespace NWrath.Logging
 {
     public interface ILogTableSchema
     {
@@ -10,6 +8,6 @@ namespace NWrath.Logging
 
         string TableName { get; }
 
-        LogTableColumnSchema[] GetColumns();
+        LogTableColumnSchema[] Columns { get; }
     }
 }

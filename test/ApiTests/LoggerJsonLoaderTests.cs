@@ -16,27 +16,24 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var loader = new LoggerJsonLoader();
-            var filePathArg = "path";
-            var appendArg = true;
-            var serializerOutputTemplateArg = "{Message} {Level}";
-            var json = GetFileLoggerJsonWithComplexCtor(filePathArg, appendArg, serializerOutputTemplateArg);
+            var loggerTypeArg = typeof(EmptyLogger);
+            var isEnabledArg = false;
+            var json = GetThreadSafeLoggerJsonWithComplexCtor(loggerTypeArg, isEnabledArg);
             var section = JObject.Parse(json);
-            var serializer = default(StringLogSerializer);
 
             #endregion Arrange
 
             #region Act
 
-            var logger = loader.Load(section) as FileLogger;
-            serializer = (StringLogSerializer)logger.Serializer;
+            var logger = loader.Load(section) as ThreadSafeLogger;
 
             #endregion Act
 
             #region Assert
 
             Assert.IsNotNull(logger);
-            Assert.AreEqual(filePathArg, logger.FilePath);
-            Assert.AreEqual(serializerOutputTemplateArg, serializer.OutputTemplate);
+            Assert.AreEqual(isEnabledArg, logger.SafeLogger.IsEnabled);
+            Assert.AreEqual(loggerTypeArg, logger.SafeLogger.GetType());
 
             #endregion Assert
         }
@@ -48,8 +45,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             var loader = new LoggerJsonLoader();
             var filePathArg = "path";
-            var appendArg = true;
-            var json = GetFileLoggerJsonWithSimpleCtor(filePathArg, appendArg);
+            var json = GetFileLoggerJsonWithSimpleCtor(filePathArg);
             var section = JObject.Parse(json);
 
             #endregion Arrange
@@ -162,11 +158,10 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var filePath = "path";
-            var serializer = new StringLogSerializer();
 
             var injectorMock = new Mock<IServiceProvider>();
             injectorMock.Setup(x => x.GetService(It.IsAny<Type>()))
-                        .Returns<Type>(t => t == typeof(string) ? filePath : (object)serializer);
+                        .Returns<Type>(t => filePath);
 
             var loader = new LoggerJsonLoader { Injector = injectorMock.Object };
             var json = GetFileLoggerJsonWithCtorInjection();
@@ -184,7 +179,6 @@ namespace NWrath.Logging.Test.ApiTests
 
             Assert.IsNotNull(logger);
             Assert.AreEqual(filePath, logger.FilePath);
-            Assert.AreSame(serializer, logger.Serializer);
 
             #endregion Assert
         }
@@ -277,32 +271,29 @@ namespace NWrath.Logging.Test.ApiTests
                 .ToString();
         }
 
-        private string GetFileLoggerJsonWithSimpleCtor(string filePath, bool append)
+        private string GetFileLoggerJsonWithSimpleCtor(string filePath)
         {
             return new StringBuilder()
                 .Append("{")
                     .Append("\"NWrath.Logging.FileLogger\": {")
                         .Append("\"Level\": \"Debug\", ")
                         .Append("\"$ctor\": [")
-                            .Append($"\"{filePath}\", ")
-                            .Append(append.ToString().ToLower())
+                            .Append($"\"{filePath}\"")
                         .Append("]")
                     .Append("}")
                 .Append("}")
                 .ToString();
         }
 
-        private string GetFileLoggerJsonWithComplexCtor(string filePath, bool append, string serializerOutputTemplate)
+        private string GetThreadSafeLoggerJsonWithComplexCtor(Type loggerType, bool isEnabled)
         {
             return new StringBuilder()
                 .Append("{")
-                    .Append("\"NWrath.Logging.FileLogger\": {")
+                    .Append("\"NWrath.Logging.ThreadSafeLogger\": {")
                         .Append("\"$ctor\": [")
-                            .Append($"\"{filePath}\", ")
-                            .Append("{ \"NWrath.Logging.StringLogSerializer\": {")
-                            .Append($"\"OutputTemplate\": \"{serializerOutputTemplate}\"")
-                            .Append("}}, ")
-                            .Append(append.ToString().ToLower())
+                            .Append($"{{ \"{loggerType.FullName}\": {{")
+                            .Append($"\"IsEnabled\": {isEnabled.ToString().ToLower()}")
+                            .Append("}}")
                         .Append("]")
                     .Append("}")
                 .Append("}")
@@ -316,9 +307,7 @@ namespace NWrath.Logging.Test.ApiTests
                     .Append("\"NWrath.Logging.FileLogger\": {")
                         .Append("\"Level\": \"Debug\", ")
                         .Append("\"$ctor\": [")
-                            .Append("{ \"$\": \"System.String\" }, ")
-                            .Append("{ \"$\": \"NWrath.Logging.StringLogSerializer\" }, ")
-                            .Append("true")
+                            .Append("{ \"$\": \"System.String\" }")
                         .Append("]")
                     .Append("}")
                 .Append("}")
@@ -332,8 +321,7 @@ namespace NWrath.Logging.Test.ApiTests
                     .Append("\"NWrath.Logging.FileLogger\": {")
                         .Append("\"Serializer\": { \"$\": \"NWrath.Logging.StringLogSerializer\" }, ")
                         .Append("\"$ctor\": [")
-                            .Append("\"path\", ")
-                            .Append("true")
+                            .Append("\"path\"")
                         .Append("]")
                     .Append("}")
                 .Append("}")
@@ -349,8 +337,7 @@ namespace NWrath.Logging.Test.ApiTests
                         .Append($"\"IsEnabled\": {isEnabled.ToString().ToLower()}, ")
                         .Append("\"Level\": \"Debug\", ")
                         .Append("\"$ctor\": [")
-                            .Append($"\"path\", ")
-                            .Append("true")
+                            .Append($"\"path\"")
                         .Append("]")
                     .Append("}")
                 .Append("}")
@@ -363,8 +350,7 @@ namespace NWrath.Logging.Test.ApiTests
                 .Append("{")
                     .Append("\"NWrath.Logging.FileLogger\": {")
                         .Append("\"$ctor\": [")
-                            .Append($"\"path\", ")
-                            .Append("true")
+                            .Append($"\"path\"")
                         .Append("], ")
                         .Append("\"Serializer\": { \"NWrath.Logging.StringLogSerializer\": {")
                                             .Append($"\"OutputTemplate\": \"{serializerOutputTemplate}\"")

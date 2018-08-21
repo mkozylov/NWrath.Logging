@@ -1,7 +1,5 @@
 ﻿using NWrath.Synergy.Pipeline;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NWrath.Logging
 {
@@ -19,6 +17,7 @@ namespace NWrath.Logging
             IPipe<RollingFileContext>[] collection
             )
         {
+            source.Pipes.Clear();
             source.Pipes.AddRange(collection);
 
             return source;
@@ -29,26 +28,27 @@ namespace NWrath.Logging
             params Action<RollingFileContext, Action<RollingFileContext>>[] collection
             )
         {
+            source.Pipes.Clear();
             source.Pipes.AddRange(collection);
 
             return source;
         }
 
-        public static RollingFileLogger UseDefaultWriterPipe(this RollingFileLogger source)
+        public static RollingFileLogger AddDefaultWriterPipe(this RollingFileLogger source)
         {
             source.Pipes.Add(RollingFileLogger.LogWriterPipe);
 
             return source;
         }
 
-        public static RollingFileLogger UseDailyRollerPipe(
+        public static RollingFileLogger AddDailyRollerPipe(
             this RollingFileLogger source,
             IRollingFileAction[] actions = null,
             bool instantNext = true
             )
         {
             actions = actions ?? new IRollingFileAction[] {
-                 new RollingFileCreateFileAction(append: true, tryUseTodayLastFile: true),
+                 new RollingFileCreateFileAction(fileMode: System.IO.FileMode.Append, tryUseTodayLastFile: true),
                  new RollingFileCleanerAction(expirationTimeSpan: TimeSpan.FromDays(30))
             };
 
@@ -59,7 +59,7 @@ namespace NWrath.Logging
             return source;
         }
 
-        public static RollingFileLogger UseBytesLimitRollerPipe(
+        public static RollingFileLogger AddBytesLimitRollerPipe(
            this RollingFileLogger source,
            IRollingFileAction action = null,
            long bytesLimit = 1024 * 1024 * 1024

@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Linq.Expressions;
-using Newtonsoft.Json;
-using System.IO;
+﻿using Newtonsoft.Json;
 
 namespace NWrath.Logging
 {
     public class JsonLogSerializer
         : IStringLogSerializer, ILogSerializer
     {
-        public virtual JsonSerializerSettings Settings { get; private set; }
+        public JsonSerializerSettings Settings { get; private set; }
 
         public JsonLogSerializer()
         {
@@ -24,7 +17,7 @@ namespace NWrath.Logging
             Settings = settings;
         }
 
-        public virtual string Serialize(LogMessage log)
+        public string Serialize(LogMessage log)
         {
             return JsonConvert.SerializeObject(log, Settings);
         }

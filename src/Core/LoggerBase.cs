@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace NWrath.Logging
 {
     public abstract class LoggerBase
         : ILogger
     {
-        public virtual ILogLevelVerifier LevelVerifier { get; set; } = new MinimumLogLevelVerifier(LogLevel.Debug);
+        public virtual ILogLevelVerifier LevelVerifier { get => _levelVerifier; set { _levelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug); } }
 
         public virtual bool IsEnabled { get; set; } = true;
+
+        private ILogLevelVerifier _levelVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
 
         public virtual void Log(LogMessage log)
         {

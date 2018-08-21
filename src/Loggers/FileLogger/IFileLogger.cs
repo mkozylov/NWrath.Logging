@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace NWrath.Logging
 {
@@ -8,5 +9,7 @@ namespace NWrath.Logging
         string FilePath { get; set; }
 
         long FileSize { get; }
+
+        FileMode FileMode { get; set; }
     }
 }

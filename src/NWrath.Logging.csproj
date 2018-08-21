@@ -7,6 +7,9 @@
     <Company>-</Company>
     <Copyright>Kozylov Mikhail</Copyright>
     <Description>Simple logging infrastructure</Description>
+    <PackageLicenseUrl>https://github.com/mkozylov/NWrath.Logging/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/mkozylov/NWrath.Logging/wiki</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mkozylov/NWrath.Logging/</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

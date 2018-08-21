@@ -1,27 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NWrath.Logging
+﻿namespace NWrath.Logging
 {
     public class DebugLogger
          : LoggerBase
     {
         public IStringLogSerializer Serializer { get; set; }
 
-        public DebugLogger(IStringLogSerializer serializer)
+        public DebugLogger()
         {
-            this.Serializer = serializer;
+            Serializer = new StringLogSerializer();
 
             System.Diagnostics.Debug.AutoFlush = true;
-        }
-
-        public DebugLogger()
-            : this(new StringLogSerializer())
-        {
         }
 
         protected override void WriteLog(LogMessage log)

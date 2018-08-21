@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json;
-using NWrath.Synergy.Common.Extensions.Collections;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using System.Text;
 
@@ -12,66 +9,66 @@ namespace NWrath.Logging
     {
         #region DefaultColumns
 
-        public static LogTableColumnSchema IdColumn = new LogTableColumnSchema
-        {
-            Name = "Id",
-            RawDbType = "BIGINT",
-            IsKey = true,
-            AllowNull = false,
-            IsInternal = true
-        };
+        public static LogTableColumnSchema IdColumn => new LogTableColumnSchema
+        (
+            name: "Id",
+            typeDefinition: "BIGINT NOT NULL PRIMARY KEY IDENTITY",
+            isInternal: true
+        );
 
-        public static LogTableColumnSchema TimestampColumn = new LogTableColumnSchema
-        {
-            Name = "Timestamp",
-            RawDbType = "DATETIME",
-            AllowNull = false,
-            Serializer = new LambdaLogSerializer(m => $"{m.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}")
-        };
+        public static LogTableColumnSchema TimestampColumn => new LogTableColumnSchema
+        (
+            name: "Timestamp",
+            typeDefinition: "DATETIME NOT NULL",
+            isInternal: false,
+            serializer: new LambdaLogSerializer(m => $"{m.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}")
+        );
 
-        public static LogTableColumnSchema MessageColumn = new LogTableColumnSchema
-        {
-            Name = "Message",
-            RawDbType = "VARCHAR(MAX)",
-            AllowNull = false,
-            Serializer = new LambdaLogSerializer(m => $"{m.Message}")
-        };
+        public static LogTableColumnSchema MessageColumn => new LogTableColumnSchema
+        (
+            name: "Message",
+            typeDefinition: "VARCHAR(MAX) NOT NULL",
+            isInternal: false,
+            serializer: new LambdaLogSerializer(m => $"{m.Message}")
+        );
 
-        public static LogTableColumnSchema ExceptionColumn = new LogTableColumnSchema
-        {
-            Name = "Exception",
-            RawDbType = "VARCHAR(MAX)",
-            AllowNull = true,
-            Serializer = new LambdaLogSerializer(m => $"{m.Exception}")
-        };
+        public static LogTableColumnSchema ExceptionColumn => new LogTableColumnSchema
+        (
+            name: "Exception",
+            typeDefinition: "VARCHAR(MAX) NULL",
+            isInternal: false,
+            serializer: new LambdaLogSerializer(m => $"{m.Exception}")
+        );
 
-        public static LogTableColumnSchema LevelColumn = new LogTableColumnSchema
-        {
-            Name = "Level",
-            RawDbType = "INT",
-            AllowNull = false,
-            Serializer = new LambdaLogSerializer(m => m.Level)
-        };
+        public static LogTableColumnSchema LevelColumn => new LogTableColumnSchema
+        (
+            name: "Level",
+            typeDefinition: "INT NOT NULL",
+            isInternal: false,
+            serializer: new LambdaLogSerializer(m => m.Level)
+        );
 
-        public static LogTableColumnSchema ExtraColumn = new LogTableColumnSchema
-        {
-            Name = "Extra",
-            RawDbType = "VARCHAR(MAX)",
-            AllowNull = true,
-            Serializer = new LambdaLogSerializer(m => (m.Extra.Count == 0 ? null : m.Extra.AsJson()))
-        };
+        public static LogTableColumnSchema ExtraColumn => new LogTableColumnSchema
+        (
+            name: "Extra",
+            typeDefinition: "VARCHAR(MAX) NULL",
+            isInternal: false,
+            serializer: new LambdaLogSerializer(m => (m.Extra.Count == 0 ? null : m.Extra.AsJson()))
+        );
 
         #endregion DefaultColumns
 
         public const string DefaultTableName = "ServerLog";
 
-        public virtual string TableName { get; set; }
+        public static LogTableColumnSchema[] DefaultColumns => GetDefaultColumns();
 
-        public virtual string InserLogScript { get; set; }
+        public string TableName { get; private set; }
 
-        public virtual string InitScript { get; set; }
+        public string InserLogScript { get; private set; }
 
-        protected List<LogTableColumnSchema> columns = new List<LogTableColumnSchema>();
+        public string InitScript { get; private set; }
+
+        public LogTableColumnSchema[] Columns { get; private set; }
 
         public LogTableSchema(
             string tableName = DefaultTableName,
@@ -80,80 +77,21 @@ namespace NWrath.Logging
             LogTableColumnSchema[] columns = null
             )
         {
-            TableName = tableName;
-            InitScript = initScript;
-            InserLogScript = inserLogScript;
-
-            if (columns?.Length > 0)
-            {
-                this.columns.Clear();
-                this.columns.AddRange(columns);
-            }
+            Columns = columns?.Length > 0 ? columns
+                                          : DefaultColumns;
+            TableName = tableName ?? DefaultTableName;
+            InitScript = initScript ?? BuildDefaultInitScript();
+            InserLogScript = inserLogScript ?? BuildDefaultInserLogScript();
         }
 
-        public virtual void Build()
+        public LogTableSchema(LogTableSchemaConfig config)
+            : this(config.TableName, config.InitScript, config.InserLogScript, config.Columns)
         {
-            TableName = TableName ?? DefaultTableName;
-
-            columns = (columns.IsEmpty()
-                        ? GetDefaultColumns().ToList()
-                        : columns);
-
-            InserLogScript = InserLogScript ?? BuildDefaultInserLogScript();
-
-            InitScript = InitScript ?? BuildDefaultInitScript();
-        }
-
-        public virtual LogTableSchema ApplyColumn(string columnName, Action<LogTableColumnSchema> apply)
-        {
-            var column = GetColumn(columnName);
-
-            if (column != null)
-            {
-                apply(column);
-            }
-
-            return this;
-        }
-
-        public virtual LogTableSchema ClearColumns()
-        {
-            columns.Clear();
-
-            return this;
-        }
-
-        public virtual LogTableSchema AddColumn(params LogTableColumnSchema[] columns)
-        {
-            this.columns.AddRange(columns);
-
-            return this;
-        }
-
-        public virtual LogTableSchema AddColumn(Action<LogTableColumnSchema> columnApply)
-        {
-            var column = new LogTableColumnSchema();
-
-            columnApply(column);
-
-            columns.Add(column);
-
-            return this;
-        }
-
-        public virtual LogTableColumnSchema[] GetColumns()
-        {
-            return columns.ToArray();
-        }
-
-        public virtual LogTableColumnSchema GetColumn(string columnName)
-        {
-            return columns.FirstOrDefault(x => x.Name == columnName);
         }
 
         private string BuildDefaultInserLogScript()
         {
-            var columnNames = columns.Where(x => !x.IsInternal)
+            var columnNames = Columns.Where(x => !x.IsInternal)
                                      .Select(x => x.Name)
                                      .ToList();
 
@@ -165,22 +103,18 @@ namespace NWrath.Logging
 
         private string BuildDefaultInitScript()
         {
-            var cols = columns.OrderByDescending(c => c.IsKey)
-                              .ToList();
+            var cols = Columns;
 
             var tableBuilder = new StringBuilder()
                                 .Append($"IF OBJECT_ID(N'{TableName}', N'U') IS NULL ")
                                 .Append("BEGIN ")
                                 .Append($"CREATE TABLE {TableName}(");
 
-            for (int i = 0; i < cols.Count; i++)
+            for (int i = 0; i < cols.Length; i++)
             {
                 var col = cols[i];
 
-                tableBuilder = tableBuilder.Append($"{col.Name} {col.RawDbType}")
-                                           .Append($"{ThenValElseEmpty(!col.AllowNull, " NOT")} NULL")
-                                           .Append($"{ThenValElseEmpty(col.IsKey, " PRIMARY KEY IDENTITY")}")
-                                           .Append($"{ThenValElseEmpty(i < cols.Count - 1, ",")}");
+                tableBuilder.Append($"{col.Name} {col.TypeDefinition}{(i < cols.Length - 1 ? "," : "")}");
             }
 
             tableBuilder = tableBuilder.Append(")")
@@ -189,9 +123,9 @@ namespace NWrath.Logging
             return tableBuilder.ToString();
         }
 
-        private LogTableColumnSchema[] GetDefaultColumns()
+        private static LogTableColumnSchema[] GetDefaultColumns()
         {
-            var newMessageColumn = MessageColumn.Clone();
+            var newMessageColumn = MessageColumn;
             newMessageColumn.Serializer = new LambdaLogSerializer(m => $"{m.Message}{(m.Exception == null ? "" : Environment.NewLine)}{m.Exception}");
 
             return new LogTableColumnSchema[]
@@ -201,11 +135,6 @@ namespace NWrath.Logging
                 newMessageColumn,
                 LevelColumn,
             };
-        }
-
-        private static string ThenValElseEmpty(bool predicate, string thenVal)
-        {
-            return predicate ? thenVal : "";
         }
     }
 }

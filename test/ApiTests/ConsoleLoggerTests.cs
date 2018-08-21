@@ -13,7 +13,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var serializer = new ConsoleLogSerializer();
-            var logger = new ConsoleLogger(serializer);
+            var logger = new ConsoleLogger { Serializer = serializer };
             var msg = new LogMessage
             {
                 Timestamp = DateTime.Now,

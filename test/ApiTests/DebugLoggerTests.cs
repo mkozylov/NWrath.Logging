@@ -14,7 +14,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             var msg = new LogMessage();
             var serializer = new StringLogSerializer();
-            var logger = new DebugLogger(serializer);
+            var logger = new DebugLogger { Serializer = serializer };
             var writer = new StringWriter();
             var trace = new TextWriterTraceListener(writer);
             Debug.Listeners.Add(trace);

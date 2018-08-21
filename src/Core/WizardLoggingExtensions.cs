@@ -1,13 +1,9 @@
-﻿using NWrath.Synergy.Reflection.Extensions;
-using NWrath.Synergy.Common.Extensions.Collections;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
+﻿using System;
 using System.Text;
-using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Pipeline;
 using System.Linq;
 using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace NWrath.Logging
 {
@@ -18,12 +14,107 @@ namespace NWrath.Logging
         public static FileLogger FileLogger(
            this ILoggingWizardCharms charms,
            string filePath,
+           ILogLevelVerifier levelVerifier,
            IStringLogSerializer serializer = null,
            Encoding encoding = null,
-           bool append = false
+           FileMode fileMode = FileMode.Append
            )
         {
-            return new FileLogger(filePath, serializer, encoding, append);
+            return new FileLogger(filePath)
+            {
+                Serializer = serializer,
+                Encoding = encoding,
+                LevelVerifier = levelVerifier,
+                FileMode = fileMode
+            };
+        }
+
+        public static FileLogger FileLogger(
+            this ILoggingWizardCharms charms,
+            string filePath,
+            LogLevel minLevel,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            FileMode fileMode = FileMode.Append
+            )
+        {
+            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(minLevel), serializer, encoding, fileMode);
+        }
+
+        public static FileLogger FileLogger(
+            this ILoggingWizardCharms charms,
+            string filePath,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            FileMode fileMode = FileMode.Append
+            )
+        {
+            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, fileMode);
+        }
+
+        public static FileLogger FileLogger(
+          this ILoggingWizardCharms charms,
+          string filePath,
+          ILogLevelVerifier levelVerifier,
+          Action<StringLogSerializer> serializerApply,
+          Encoding encoding = null,
+          FileMode fileMode = FileMode.Append
+          )
+        {
+            var serializer = new StringLogSerializer();
+
+            serializerApply?.Invoke(serializer);
+
+            return new FileLogger(filePath)
+            {
+                Serializer = serializer,
+                Encoding = encoding,
+                LevelVerifier = levelVerifier,
+                FileMode = fileMode
+            };
+        }
+
+        public static FileLogger FileLogger(
+            this ILoggingWizardCharms charms,
+            string filePath,
+            LogLevel minLevel,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            FileMode fileMode = FileMode.Append
+            )
+        {
+            var serializer = new StringLogSerializer();
+
+            serializerApply?.Invoke(serializer);
+
+            return new FileLogger(filePath)
+            {
+                Serializer = serializer,
+                Encoding = encoding,
+                LevelVerifier = new MinimumLogLevelVerifier(minLevel),
+                FileMode = fileMode
+            };
+        }
+
+        public static FileLogger FileLogger(
+            this ILoggingWizardCharms charms,
+            string filePath,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            FileMode fileMode = FileMode.Append
+            )
+        {
+            var serializer = new StringLogSerializer();
+
+            serializerApply?.Invoke(serializer);
+
+            return new FileLogger(filePath)
+            {
+                Serializer = serializer,
+                Encoding = encoding,
+                LevelVerifier = new MinimumLogLevelVerifier(LogLevel.Debug),
+                FileMode = fileMode
+            };
         }
 
         #endregion File
@@ -31,23 +122,30 @@ namespace NWrath.Logging
         #region Console
 
         public static ConsoleLogger ConsoleLogger(
-          this ILoggingWizardCharms charms,
-          IStringLogSerializer serializer
-          )
+            this ILoggingWizardCharms charms,
+            ILogLevelVerifier levelVerifier,
+            IStringLogSerializer serializer = null
+            )
         {
-            return new ConsoleLogger(serializer);
-        }
-
-        public static ConsoleLogger ConsoleLogger(
-           this ILoggingWizardCharms charms,
-           IConsoleLogSerializer serializer = null
-           )
-        {
-            return new ConsoleLogger(serializer ?? new ConsoleLogSerializer());
+            return new ConsoleLogger()
+            {
+                Serializer = serializer,
+                LevelVerifier = levelVerifier
+            };
         }
 
         public static ConsoleLogger ConsoleLogger(
             this ILoggingWizardCharms charms,
+            LogLevel minLevel = LogLevel.Debug,
+            IStringLogSerializer serializer = null
+            )
+        {
+            return ConsoleLogger(charms, new MinimumLogLevelVerifier(minLevel), serializer);
+        }
+
+        public static ConsoleLogger ConsoleLogger(
+            this ILoggingWizardCharms charms,
+            ILogLevelVerifier levelVerifier,
             Action<ConsoleLogSerializer> serializerApply
             )
         {
@@ -55,7 +153,36 @@ namespace NWrath.Logging
 
             serializerApply(serializer);
 
-            return new ConsoleLogger(serializer);
+            return new ConsoleLogger
+            {
+                Serializer = serializer,
+                LevelVerifier = levelVerifier
+            };
+        }
+
+        public static ConsoleLogger ConsoleLogger(
+            this ILoggingWizardCharms charms,
+            LogLevel minLevel,
+            Action<ConsoleLogSerializer> serializerApply
+            )
+        {
+            return ConsoleLogger(charms, new MinimumLogLevelVerifier(minLevel), serializerApply);
+        }
+
+        public static ConsoleLogger ConsoleLogger(
+            this ILoggingWizardCharms charms,
+            IStringLogSerializer serializer
+            )
+        {
+            return ConsoleLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializer);
+        }
+
+        public static ConsoleLogger ConsoleLogger(
+            this ILoggingWizardCharms charms,
+            Action<ConsoleLogSerializer> serializerApply
+            )
+        {
+            return ConsoleLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply);
         }
 
         #endregion Console
@@ -64,111 +191,130 @@ namespace NWrath.Logging
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipelineApply = null
+            TLogger logger,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger, new()
+            where TLogger : ILogger
         {
-            return PipeLogger(charms, new TLogger(), pipelineApply);
+            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
+
+            collection.AddRange(pipes);
+
+            return PipeLogger(charms, logger, collection);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             TLogger logger,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipelineApply = null
+            PipeCollection<PipeLoggerContext<TLogger>> pipes
             )
             where TLogger : ILogger
         {
-            var pipes = default(PipeCollection<PipeLoggerContext<TLogger>>);
-
-            if (pipelineApply != null)
-            {
-                pipes = new PipeCollection<PipeLoggerContext<TLogger>>();
-                pipelineApply(pipes);
-            }
-
-            return new PipeLogger<TLogger>(logger, pipes);
+            return new PipeLogger<TLogger>(logger) { Pipes = pipes };
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
            this ILoggingWizardCharms charms,
-           Func<ILoggingWizardCharms, TLogger> loggerFactory,
-           Action<PipeCollection<PipeLoggerContext<TLogger>>> pipelineApply = null
+           TLogger logger,
+           IPipe<PipeLoggerContext<TLogger>>[] pipes
            )
            where TLogger : ILogger
         {
-            var logger = loggerFactory(charms);
+            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
 
-            return PipeLogger(charms, logger, pipelineApply);
-        }
+            collection.AddRange(pipes);
 
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            params IPipe<PipeLoggerContext<TLogger>>[] additionalPipes
-            )
-            where TLogger : ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), additionalPipes);
+            return PipeLogger(charms, logger, collection);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             TLogger logger,
-            params IPipe<PipeLoggerContext<TLogger>>[] additionalPipes
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
             )
             where TLogger : ILogger
         {
-            var l = new PipeLogger<TLogger>(logger);
+            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
 
-            l.Pipes.AddRange(additionalPipes);
+            pipesApply(collection);
 
-            return l;
+            return PipeLogger(charms, logger, collection);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] additionalPipes
+            Func<ILoggingWizardCharms, TLogger> loggerFactory,
+            PipeCollection<PipeLoggerContext<TLogger>> pipes
+            )
+            where TLogger : ILogger
+        {
+            return PipeLogger(charms, loggerFactory(charms), pipes);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+           this ILoggingWizardCharms charms,
+           Func<ILoggingWizardCharms, TLogger> loggerFactory,
+           IPipe<PipeLoggerContext<TLogger>>[] pipes
+           )
+           where TLogger : ILogger
+        {
+            return PipeLogger(charms, loggerFactory(charms), pipes);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            Func<ILoggingWizardCharms, TLogger> loggerFactory,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
+            )
+            where TLogger : ILogger
+        {
+            return PipeLogger(charms, loggerFactory(charms), pipes);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            Func<ILoggingWizardCharms, TLogger> loggerFactory,
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
+            )
+            where TLogger : ILogger
+        {
+            return PipeLogger(charms, loggerFactory(charms), pipesApply);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            PipeCollection<PipeLoggerContext<TLogger>> pipes
             )
             where TLogger : ILogger, new()
         {
-            return PipeLogger(charms, new TLogger(), additionalPipes);
+            return PipeLogger(charms, new TLogger(), pipes);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            TLogger logger,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] additionalPipes
+            IPipe<PipeLoggerContext<TLogger>>[] pipes
             )
-            where TLogger : ILogger
+            where TLogger : ILogger, new()
         {
-            var l = new PipeLogger<TLogger>(logger);
-
-            l.Pipes.AddRange(additionalPipes);
-
-            return l;
+            return PipeLogger(charms, new TLogger(), pipes);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
-           this ILoggingWizardCharms charms,
-           Func<ILoggingWizardCharms, TLogger> loggerFactory,
-           params IPipe<PipeLoggerContext<TLogger>>[] additionalPipes
-           )
-           where TLogger : ILogger
+            this ILoggingWizardCharms charms,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
+            )
+            where TLogger : ILogger, new()
         {
-            var logger = loggerFactory(charms);
-
-            return PipeLogger(charms, logger, additionalPipes);
+            return PipeLogger(charms, new TLogger(), pipes);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
-           this ILoggingWizardCharms charms,
-           Func<ILoggingWizardCharms, TLogger> loggerFactory,
-           params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] additionalPipes
-           )
-           where TLogger : ILogger
+            this ILoggingWizardCharms charms,
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
+            )
+            where TLogger : ILogger, new()
         {
-            var logger = loggerFactory(charms);
-
-            return PipeLogger(charms, logger, additionalPipes);
+            return PipeLogger(charms, new TLogger(), pipesApply);
         }
 
         #endregion PipeLogger
@@ -178,17 +324,48 @@ namespace NWrath.Logging
         public static RollingFileLogger RollingFileLogger(
             this ILoggingWizardCharms charms,
             string folderPath,
+            ILogLevelVerifier levelVerifier,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
             PipeCollection<RollingFileContext> pipes = null
             )
         {
-            return new RollingFileLogger(folderPath, serializer, encoding, pipes);
+            return new RollingFileLogger(folderPath)
+            {
+                LevelVerifier = levelVerifier,
+                Serializer = serializer,
+                Encoding = encoding,
+                Pipes = pipes
+            };
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            string folderPath,
+            LogLevel minLevel,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, folderPath, new MinimumLogLevelVerifier(minLevel), serializer, encoding, pipes);
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            string folderPath,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, folderPath, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, pipes);
         }
 
         public static RollingFileLogger RollingFileLogger(
            this ILoggingWizardCharms charms,
            string folderPath,
+           ILogLevelVerifier levelVerifier,
            Action<StringLogSerializer> serializerApply,
            Encoding encoding = null,
            PipeCollection<RollingFileContext> pipes = null
@@ -198,23 +375,78 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new RollingFileLogger(folderPath, serializer, encoding, pipes);
+            return RollingFileLogger(charms, folderPath, levelVerifier, serializer, encoding, pipes);
         }
 
         public static RollingFileLogger RollingFileLogger(
             this ILoggingWizardCharms charms,
-            IRollingFileProvider fileNameProvider,
+            string folderPath,
+            LogLevel minLevel,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, folderPath, new MinimumLogLevelVerifier(minLevel), serializerApply, encoding, pipes);
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            string folderPath,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, folderPath, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply, encoding, pipes);
+        }
+
+        //---------------------------------------
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            IRollingFileProvider fileProvider,
+            ILogLevelVerifier levelVerifier,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
             PipeCollection<RollingFileContext> pipes = null
             )
         {
-            return new RollingFileLogger(fileNameProvider, serializer, encoding, pipes);
+            return new RollingFileLogger(fileProvider)
+            {
+                LevelVerifier = levelVerifier,
+                Serializer = serializer,
+                Encoding = encoding,
+                Pipes = pipes
+            };
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            IRollingFileProvider fileProvider,
+            LogLevel minLevel,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, fileProvider, new MinimumLogLevelVerifier(minLevel), serializer, encoding, pipes);
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            IRollingFileProvider fileProvider,
+            IStringLogSerializer serializer = null,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, fileProvider, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, pipes);
         }
 
         public static RollingFileLogger RollingFileLogger(
            this ILoggingWizardCharms charms,
-           IRollingFileProvider fileNameProvider,
+           IRollingFileProvider fileProvider,
+           ILogLevelVerifier levelVerifier,
            Action<StringLogSerializer> serializerApply,
            Encoding encoding = null,
            PipeCollection<RollingFileContext> pipes = null
@@ -224,7 +456,30 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new RollingFileLogger(fileNameProvider, serializer, encoding, pipes);
+            return RollingFileLogger(charms, fileProvider, levelVerifier, serializer, encoding, pipes);
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            IRollingFileProvider fileProvider,
+            LogLevel minLevel,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, fileProvider, new MinimumLogLevelVerifier(minLevel), serializerApply, encoding, pipes);
+        }
+
+        public static RollingFileLogger RollingFileLogger(
+            this ILoggingWizardCharms charms,
+            IRollingFileProvider fileProvider,
+            Action<StringLogSerializer> serializerApply,
+            Encoding encoding = null,
+            PipeCollection<RollingFileContext> pipes = null
+            )
+        {
+            return RollingFileLogger(charms, fileProvider, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply, encoding, pipes);
         }
 
         #endregion RollingFile
@@ -233,10 +488,49 @@ namespace NWrath.Logging
 
         public static CompositeLogger CompositeLogger(
             this ILoggingWizardCharms charms,
+            LogLevel minLevel,
             params ILogger[] loggers
             )
         {
-            return new CompositeLogger(loggers);
+            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), loggers);
+        }
+
+        public static CompositeLogger CompositeLogger(
+            this ILoggingWizardCharms charms,
+            LogLevel minLevel,
+            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
+            )
+        {
+            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), loggerFactories);
+        }
+
+        public static CompositeLogger CompositeLogger(
+           this ILoggingWizardCharms charms,
+           ILogLevelVerifier levelVerifier,
+           params ILogger[] loggers
+           )
+        {
+            return new CompositeLogger(loggers) { LevelVerifier = levelVerifier };
+        }
+
+        public static CompositeLogger CompositeLogger(
+            this ILoggingWizardCharms charms,
+            ILogLevelVerifier levelVerifier,
+            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
+            )
+        {
+            var loggers = loggerFactories.Select(f => f(charms))
+                                         .ToArray();
+
+            return CompositeLogger(charms, levelVerifier, loggers);
+        }
+
+        public static CompositeLogger CompositeLogger(
+           this ILoggingWizardCharms charms,
+           params ILogger[] loggers
+           )
+        {
+            return CompositeLogger(charms, LogLevel.Debug, loggers);
         }
 
         public static CompositeLogger CompositeLogger(
@@ -244,10 +538,7 @@ namespace NWrath.Logging
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
-            var loggers = loggerFactories.Select(f => f(charms))
-                                         .ToArray();
-
-            return new CompositeLogger(loggers);
+            return CompositeLogger(charms, LogLevel.Debug, loggerFactories);
         }
 
         #endregion CompositeLogger
@@ -257,23 +548,73 @@ namespace NWrath.Logging
         public static DbLogger DbLogger(
            this ILoggingWizardCharms charms,
            string connectionString,
-           LogTableSchema logTableSchema = null
+           ILogLevelVerifier levelVerifier,
+           ILogTableSchema tableSchema = null
            )
         {
-            return new DbLogger(connectionString, logTableSchema);
+            return new DbLogger(connectionString)
+            {
+                TableSchema = tableSchema,
+                LevelVerifier = levelVerifier
+            };
+        }
+
+        public static DbLogger DbLogger(
+           this ILoggingWizardCharms charms,
+           string connectionString,
+           LogLevel minLevel = LogLevel.Debug,
+           ILogTableSchema tableSchema = null
+           )
+        {
+            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel), tableSchema);
         }
 
         public static DbLogger DbLogger(
             this ILoggingWizardCharms charms,
             string connectionString,
-            Action<LogTableSchema> schemaApply
+            ILogLevelVerifier levelVerifier,
+            Action<LogTableSchemaConfig> schemaApply
             )
         {
-            var schema = new LogTableSchema();
+            var args = new LogTableSchemaConfig();
 
-            schemaApply(schema);
+            schemaApply(args);
 
-            return new DbLogger(connectionString, schema);
+            var schema = new LogTableSchema(args.TableName, args.InitScript, args.InserLogScript, args.Columns);
+
+            return new DbLogger(connectionString)
+            {
+                TableSchema = schema,
+                LevelVerifier = levelVerifier
+            };
+        }
+
+        public static DbLogger DbLogger(
+            this ILoggingWizardCharms charms,
+            string connectionString,
+            LogLevel minLevel,
+            Action<LogTableSchemaConfig> schemaApply
+            )
+        {
+            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel), schemaApply);
+        }
+
+        public static DbLogger DbLogger(
+            this ILoggingWizardCharms charms,
+            string connectionString,
+            Action<LogTableSchemaConfig> schemaApply
+            )
+        {
+            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(LogLevel.Debug), schemaApply);
+        }
+
+        public static DbLogger DbLogger(
+           this ILoggingWizardCharms charms,
+           string connectionString,
+           ILogTableSchema tableSchema
+           )
+        {
+            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(LogLevel.Debug), tableSchema);
         }
 
         #endregion DbLogger
@@ -282,14 +623,29 @@ namespace NWrath.Logging
 
         public static DebugLogger DebugLogger(
             this ILoggingWizardCharms charms,
+            ILogLevelVerifier levelVerifier,
             IStringLogSerializer serializer = null
             )
         {
-            return new DebugLogger(serializer);
+            return new DebugLogger
+            {
+                Serializer = serializer,
+                LevelVerifier = levelVerifier
+            };
+        }
+
+        public static DebugLogger DebugLogger(
+           this ILoggingWizardCharms charms,
+           LogLevel minLevel = LogLevel.Debug,
+           IStringLogSerializer serializer = null
+           )
+        {
+            return DebugLogger(charms, new MinimumLogLevelVerifier(minLevel), serializer);
         }
 
         public static DebugLogger DebugLogger(
             this ILoggingWizardCharms charms,
+            ILogLevelVerifier levelVerifier,
             Action<StringLogSerializer> serializerApply
             )
         {
@@ -297,7 +653,24 @@ namespace NWrath.Logging
 
             serializerApply(serializer);
 
-            return new DebugLogger(serializer);
+            return DebugLogger(charms, levelVerifier, serializer);
+        }
+
+        public static DebugLogger DebugLogger(
+           this ILoggingWizardCharms charms,
+           LogLevel minLevel,
+           Action<StringLogSerializer> serializerApply
+           )
+        {
+            return DebugLogger(charms, new MinimumLogLevelVerifier(minLevel), serializerApply);
+        }
+
+        public static DebugLogger DebugLogger(
+            this ILoggingWizardCharms charms,
+            Action<StringLogSerializer> serializerApply
+            )
+        {
+            return DebugLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply);
         }
 
         #endregion Debug
@@ -316,33 +689,73 @@ namespace NWrath.Logging
         #region Lambda
 
         public static LambdaLogger LambdaLogger(
-           this ILoggingWizardCharms charms,
-           Action<LogMessage> writeAction
-           )
+            this ILoggingWizardCharms charms,
+            Action<LogMessage> writeAction,
+            ILogLevelVerifier levelVerifier
+            )
         {
-            return new LambdaLogger(writeAction);
+            return new LambdaLogger(writeAction) { LevelVerifier = levelVerifier };
+        }
+
+        public static LambdaLogger LambdaLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogMessage> writeAction,
+            LogLevel minLevel
+            )
+        {
+            return LambdaLogger(charms, writeAction, new MinimumLogLevelVerifier(minLevel));
+        }
+
+        public static LambdaLogger LambdaLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogMessage> writeAction
+            )
+        {
+            return LambdaLogger(charms, writeAction, new MinimumLogLevelVerifier(LogLevel.Debug));
         }
 
         #endregion Lambda
 
         #region ThreadSave
 
-        public static ThreadSaveLogger ThreadSaveLogger(
+        public static ThreadSafeLogger ThreadSafeLogger(
             this ILoggingWizardCharms charms,
-            ILogger logger
+            ILogger logger,
+            ILogLevelVerifier levelVerifier
             )
         {
-            return new ThreadSaveLogger(logger);
+            return new ThreadSafeLogger(logger);
         }
 
-        public static ThreadSaveLogger ThreadSaveLogger(
+        public static ThreadSafeLogger ThreadSafeLogger(
             this ILoggingWizardCharms charms,
-            Func<ILoggingWizardCharms, ILogger> loggerFactory
+            Func<ILoggingWizardCharms, ILogger> loggerFactory,
+            ILogLevelVerifier levelVerifier
             )
         {
             var logger = loggerFactory(charms);
 
-            return new ThreadSaveLogger(logger);
+            return ThreadSafeLogger(charms, logger, levelVerifier);
+        }
+
+        public static ThreadSafeLogger ThreadSafeLogger(
+           this ILoggingWizardCharms charms,
+           ILogger logger,
+           LogLevel minLevel = LogLevel.Debug
+           )
+        {
+            return ThreadSafeLogger(charms, logger, new MinimumLogLevelVerifier(minLevel));
+        }
+
+        public static ThreadSafeLogger ThreadSafeLogger(
+            this ILoggingWizardCharms charms,
+            Func<ILoggingWizardCharms, ILogger> loggerFactory,
+            LogLevel minLevel = LogLevel.Debug
+            )
+        {
+            var logger = loggerFactory(charms);
+
+            return ThreadSafeLogger(charms, logger, new MinimumLogLevelVerifier(minLevel));
         }
 
         #endregion ThreadSave

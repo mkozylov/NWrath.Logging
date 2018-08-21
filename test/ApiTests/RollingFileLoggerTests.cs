@@ -114,7 +114,7 @@ namespace NWrath.Logging.Test.ApiTests
                             n(c);
                         });
 
-            var logger = new RollingFileLogger(fileProviderMock.Object, pipes: pipes);
+            var logger = new RollingFileLogger(fileProviderMock.Object) { Pipes = pipes };
 
             #endregion Arrange
 

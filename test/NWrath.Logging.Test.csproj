@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiTests\WizardLoggingExtensionsTests.cs" />
     <Compile Include="ApiTests\LoggerJsonLoaderTests.cs" />
     <Compile Include="ApiTests\LogTableSchemaTests.cs" />
     <Compile Include="ApiTests\PipeLoggerTests.cs" />
@@ -156,7 +157,7 @@
     <Compile Include="ApiTests\ConsoleLogSerializerTests.cs" />
     <Compile Include="ApiTests\LambdaLogSerializerTests.cs" />
     <Compile Include="ApiTests\LambdaLoggerTests.cs" />
-    <Compile Include="ApiTests\ThreadSaveLoggerTests.cs" />
+    <Compile Include="ApiTests\ThreadSafeLoggerTests.cs" />
     <Compile Include="ApiTests\CompositeLoggerTests.cs" />
     <Compile Include="ApiTests\StringLogSerializerTests.cs" />
     <Compile Include="ApiTests\LogLevelVerifierTests.cs" />

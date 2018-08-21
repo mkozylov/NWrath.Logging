@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Linq.Expressions;
 using System.Reflection;
-using NWrath.Synergy.Common.Structs;
-using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Reflection.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
 
@@ -20,19 +16,19 @@ namespace NWrath.Logging
         public string OutputTemplate
         {
             get { return _outputTemplate; }
-            set { _outputTemplate = SetNewOutputTemplate(value); }
+            set { _outputTemplate = SetNewOutputTemplate(value ?? DefaultOutputTemplate); }
         }
 
         public ITokenFormatStore Formats
         {
             get { return _formats; }
-            set { _formats = SetNewFormats(value); }
+            set { _formats = SetNewFormats(value ?? new TokenFormatStore()); }
         }
 
         public ITokenConsoleColorStore Colors
         {
             get { return _colors; }
-            set { _colors = SetNewColors(value); }
+            set { _colors = SetNewColors(value ?? new TokenConsoleColorStore()); }
         }
 
         private string _outputTemplate = DefaultOutputTemplate;
@@ -46,6 +42,12 @@ namespace NWrath.Logging
         {
             SetNewFormats(_formats);
             SetNewColors(_colors);
+        }
+
+        ~ConsoleLogSerializer()
+        {
+            _formats.Updated -= SetSerializerFunc;
+            _colors.Updated -= SetSerializerFunc;
         }
 
         public string Serialize(LogMessage log)
@@ -184,7 +186,7 @@ namespace NWrath.Logging
         {
             _serializeFunc = new Lazy<IStringLogSerializer>(BuildSerializer);
 
-            _formats.Updated -= SetSerializerFunc;
+            _colors.Updated -= SetSerializerFunc;
 
             newColors.Updated -= SetSerializerFunc;
             newColors.Updated += SetSerializerFunc;

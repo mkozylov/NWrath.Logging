@@ -1,14 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq.Expressions;
-using System.Text;
-using Microsoft.CodeAnalysis.Scripting;
-using NWrath.Synergy.Common.Structs;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
-using System.Threading.Tasks;
-using NWrath.Synergy.Common.Extensions;
 using System.Data.Common;
 
 namespace NWrath.Logging
@@ -24,24 +16,19 @@ namespace NWrath.Logging
 
             set
             {
-                _tableSchema = value.Required(() => throw new ArgumentNullException(nameof(value)));
+                _tableSchema = value ?? new LogTableSchema();
 
                 Init();
             }
         }
 
         private Lazy<DbLogger> _self;
-        private List<LogTableColumnSchema> _writeColumns;
-        private ILogTableSchema _tableSchema = CreateDefaultLogTableSchema();
+        private LogTableColumnSchema[] _writeColumns;
+        private ILogTableSchema _tableSchema = new LogTableSchema();
 
-        public DbLogger(string connectionString, ILogTableSchema logTableSchema = null)
+        public DbLogger(string connectionString)
         {
             ConnectionString = connectionString;
-
-            if (logTableSchema != null)
-            {
-                TableSchema = logTableSchema;
-            }
 
             Init();
         }
@@ -99,26 +86,17 @@ namespace NWrath.Logging
                     ExecuteInitScript(ConnectionString);
                 }
 
-                _writeColumns = TableSchema.GetColumns()
+                _writeColumns = TableSchema.Columns
                                            .Where(x => !x.IsInternal)
-                                           .ToList();
+                                           .ToArray();
 
-                if (_writeColumns.Count == 0)
+                if (_writeColumns.Length == 0)
                 {
                     throw new Exception($"There is no columns for write");
                 }
 
                 return this;
             });
-        }
-
-        private static ILogTableSchema CreateDefaultLogTableSchema()
-        {
-            var schema = new LogTableSchema();
-
-            schema.Build();
-
-            return schema;
         }
 
         private System.Data.CommandType GetCommandType(string cmdText)

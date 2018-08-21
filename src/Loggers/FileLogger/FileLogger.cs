@@ -1,10 +1,7 @@
 ﻿using NWrath.Synergy.Common.Extensions;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NWrath.Logging
 {
@@ -21,7 +18,7 @@ namespace NWrath.Logging
 
                 if (_isEnabled)
                 {
-                    SetWriter(_filePath, FileMode.Append);
+                    SetWriter(_filePath, FileMode);
                 }
                 else
                 {
@@ -30,7 +27,7 @@ namespace NWrath.Logging
             }
         }
 
-        public string FilePath { get => _filePath; set => SetWriter(value, FileMode.Append); }
+        public string FilePath { get => _filePath; set => SetWriter(value, FileMode); }
 
         public long FileSize
         {
@@ -39,41 +36,25 @@ namespace NWrath.Logging
                     : new FileInfo(_filePath).If(x => x.Exists, t => t.Length, o => -1);
         }
 
-        public IStringLogSerializer Serializer { get; set; }
+        public FileMode FileMode { get; set; } = FileMode.Append;
 
-        public Encoding Encoding { get; set; }
+        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
+
+        public Encoding Encoding { get => _encoding; set { _encoding = value ?? Encoding.UTF8; } }
 
         private Lazy<FileStream> _writer;
         private bool _isEnabled = true;
         private string _filePath;
+        private Encoding _encoding = Encoding.UTF8;
+        private IStringLogSerializer _serializer = new StringLogSerializer();
 
         public FileLogger(
-            string filePath,
-            IStringLogSerializer serializer,
-            Encoding encoding,
-            bool append = false
+            string filePath
             )
         {
             _filePath = filePath;
-            Serializer = serializer ?? new StringLogSerializer();
-            Encoding = encoding ?? Encoding.UTF8;
 
-            SetWriter(filePath, append ? FileMode.Append : FileMode.OpenOrCreate);
-        }
-
-        public FileLogger(string filePath, IStringLogSerializer serializer, bool append = false)
-           : this(filePath, serializer, Encoding.UTF8, append)
-        {
-        }
-
-        public FileLogger(string filePath, Encoding encoding, bool append = false)
-            : this(filePath, new StringLogSerializer(), encoding, append)
-        {
-        }
-
-        public FileLogger(string filePath, bool append = false)
-            : this(filePath, new StringLogSerializer(), Encoding.UTF8, append)
-        {
+            SetWriter(filePath, FileMode);
         }
 
         ~FileLogger()

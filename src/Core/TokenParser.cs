@@ -1,8 +1,6 @@
 ﻿using NWrath.Synergy.Common.Extensions;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace NWrath.Logging
@@ -26,7 +24,7 @@ namespace NWrath.Logging
             KeyPattern = DefaultKeyPattern;
         }
 
-        public virtual Token[] Parse(string template)
+        public Token[] Parse(string template)
         {
             var matches = _keyRegex.Matches(template)
                                    .Cast<Match>();

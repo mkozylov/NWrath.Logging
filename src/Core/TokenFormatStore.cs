@@ -1,125 +1,197 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Linq.Expressions;
 using System.Collections;
 using NWrath.Synergy.Common.Extensions;
-using NWrath.Synergy.Common.Extensions.Collections;
 
 namespace NWrath.Logging
 {
     public class TokenFormatStore
-        : Dictionary<string, Func<LogMessage, string>>, ITokenFormatStore
+        : ITokenFormatStore
     {
-        public virtual Func<LogMessage, string> Timestamp
+        public Func<LogMessage, string> Timestamp
         {
             get => this[nameof(Timestamp)];
             set => this[nameof(Timestamp)] = value;
         }
 
-        public virtual Func<LogMessage, string> Message
+        public Func<LogMessage, string> Message
         {
             get => this[nameof(Message)];
             set => this[nameof(Message)] = value;
         }
 
-        public virtual Func<LogMessage, string> Level
+        public Func<LogMessage, string> Level
         {
             get => this[nameof(Level)];
             set => this[nameof(Level)] = value;
         }
 
-        public virtual Func<LogMessage, string> Exception
+        public Func<LogMessage, string> Exception
         {
             get => this[nameof(Exception)];
             set => this[nameof(Exception)] = value;
         }
 
-        public virtual Func<LogMessage, string> Extra
+        public Func<LogMessage, string> Extra
         {
             get => this[nameof(Extra)];
             set => this[nameof(Extra)] = value;
         }
 
+        public ICollection<string> Keys => _store.Keys;
+
+        public ICollection<Func<LogMessage, string>> Values => _store.Values;
+
+        public int Count => _store.Count;
+
+        public bool IsReadOnly => false;
+
         public event EventHandler Updated;
 
+        private Dictionary<string, Func<LogMessage, string>> _store = new Dictionary<string, Func<LogMessage, string>>(StringComparer.OrdinalIgnoreCase);
+
         public TokenFormatStore()
-            : base(StringComparer.OrdinalIgnoreCase)
         {
             InitFormats();
         }
 
         ~TokenFormatStore()
         {
-            Updated?.GetInvocationList()
-                   ?.Each(x => Updated -= (EventHandler)x);
+            Updated = null;
         }
 
-        public new virtual ITokenFormatStore Add(string key, Func<LogMessage, string> val)
+        public ITokenFormatStore Add(string key, Func<LogMessage, string> val)
         {
-            base.Add(key, val);
+            _store.Add(key, val);
 
             OnUpdated();
 
             return this;
         }
 
-        public virtual Func<LogMessage, string> this[string key, Func<LogMessage, string> defaultFactory = null]
+        public bool ContainsKey(string key)
         {
-            get => (ContainsKey(key) ? base[key] : (defaultFactory));
-            set { base[key] = value; OnUpdated(); }
+            return _store.ContainsKey(key);
         }
 
-        public new virtual Func<LogMessage, string> this[string key]
+        public bool Remove(string key)
         {
-            get => (ContainsKey(key) ? base[key] : (null));
-            set { base[key] = value; OnUpdated(); }
+            var deleted = _store.Remove(key);
+
+            OnUpdated();
+
+            return deleted;
         }
 
-        public virtual string this[string key, LogMessage log]
+        public bool TryGetValue(string key, out Func<LogMessage, string> value)
         {
-            get => (ContainsKey(key) ? base[key] : (m => key))(log);
+            return _store.TryGetValue(key, out value);
         }
 
-        protected virtual void InitFormats()
+        public void Add(KeyValuePair<string, Func<LogMessage, string>> item)
         {
-            base[nameof(Timestamp)] = DefaultTimestampFormat;
-            base[nameof(Message)] = DefaultMessageFormat;
-            base[nameof(Level)] = DefaultLevelTypeFormat;
-            base[nameof(Exception)] = DefaultExceptionFormat;
-            base[nameof(Extra)] = DefaultExtraFormat;
-            base["NewLine"] = m => Environment.NewLine;
-            base["ExNewLine"] = (m => m.Exception == null ? "" : Environment.NewLine);
+            _store.Add(item.Key, item.Value);
+
+            OnUpdated();
         }
 
-        protected virtual void OnUpdated()
+        public void Clear()
+        {
+            _store.Clear();
+
+            OnUpdated();
+        }
+
+        public bool Contains(KeyValuePair<string, Func<LogMessage, string>> item)
+        {
+            return _store.Contains(item);
+        }
+
+        public void CopyTo(KeyValuePair<string, Func<LogMessage, string>>[] array, int arrayIndex)
+        {
+            _store.CastTo<IDictionary<string, Func<LogMessage, string>>>()
+                  .CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(KeyValuePair<string, Func<LogMessage, string>> item)
+        {
+            var deleted = _store.Remove(item.Key);
+
+            OnUpdated();
+
+            return deleted;
+        }
+
+        public IEnumerator<KeyValuePair<string, Func<LogMessage, string>>> GetEnumerator()
+        {
+            return _store.GetEnumerator();
+        }
+
+        public Func<LogMessage, string> this[string key, Func<LogMessage, string> defaultFactory = null]
+        {
+            get => (ContainsKey(key) ? _store[key] : (defaultFactory));
+            set { _store[key] = value; OnUpdated(); }
+        }
+
+        public Func<LogMessage, string> this[string key]
+        {
+            get => (ContainsKey(key) ? _store[key] : (null));
+            set { _store[key] = value; OnUpdated(); }
+        }
+
+        public string this[string key, LogMessage log]
+        {
+            get => (ContainsKey(key) ? _store[key] : (m => key))(log);
+        }
+
+        void IDictionary<string, Func<LogMessage, string>>.Add(string key, Func<LogMessage, string> value)
+        {
+            Add(key, value);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        private void InitFormats()
+        {
+            _store[nameof(Timestamp)] = DefaultTimestampFormat;
+            _store[nameof(Message)] = DefaultMessageFormat;
+            _store[nameof(Level)] = DefaultLevelTypeFormat;
+            _store[nameof(Exception)] = DefaultExceptionFormat;
+            _store[nameof(Extra)] = DefaultExtraFormat;
+            _store["NewLine"] = m => Environment.NewLine;
+            _store["ExNewLine"] = (m => m.Exception == null ? "" : Environment.NewLine);
+        }
+
+        private void OnUpdated()
         {
             Updated?.Invoke(this, EventArgs.Empty);
         }
 
-        protected virtual string DefaultTimestampFormat(LogMessage log)
+        private string DefaultTimestampFormat(LogMessage log)
         {
             return log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.ff");
         }
 
-        protected virtual string DefaultMessageFormat(LogMessage log)
+        private string DefaultMessageFormat(LogMessage log)
         {
             return log.Message;
         }
 
-        protected virtual string DefaultLevelTypeFormat(LogMessage log)
+        private string DefaultLevelTypeFormat(LogMessage log)
         {
             return log.Level.ToString();
         }
 
-        protected virtual string DefaultExceptionFormat(LogMessage log)
+        private string DefaultExceptionFormat(LogMessage log)
         {
             return log.Exception?.ToString() ?? "";
         }
 
-        protected virtual string DefaultExtraFormat(LogMessage log)
+        private string DefaultExtraFormat(LogMessage log)
         {
             return log.Extra.Count == 0
                 ? string.Empty

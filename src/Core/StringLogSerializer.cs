@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Linq.Expressions;
 using System.Reflection;
-using NWrath.Synergy.Common.Structs;
 using NWrath.Synergy.Reflection.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
 
@@ -19,13 +16,13 @@ namespace NWrath.Logging
         public string OutputTemplate
         {
             get { return _outputTemplate; }
-            set { _outputTemplate = SetNewOutputTemplate(value); }
+            set { _outputTemplate = SetNewOutputTemplate(value ?? DefaultOutputTemplate); }
         }
 
         public ITokenFormatStore Formats
         {
             get { return _formats; }
-            set { _formats = SetNewFormats(value); }
+            set { _formats = SetNewFormats(value ?? new TokenFormatStore()); }
         }
 
         private string _outputTemplate = DefaultOutputTemplate;
@@ -37,6 +34,11 @@ namespace NWrath.Logging
         public StringLogSerializer()
         {
             SetNewFormats(_formats);
+        }
+
+        ~StringLogSerializer()
+        {
+            _formats.Updated -= SetSerializerFunc;
         }
 
         public string Serialize(LogMessage log)

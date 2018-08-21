@@ -7,14 +7,12 @@ namespace NWrath.Logging.Test.ApiTests
     public class LogTableSchemaTests
     {
         [Test]
-        public void LogTableSchema_Build_Default()
+        public void LogTableSchema_Default()
         {
             #region Arrange
 
-            var ts = new LogTableSchema();
-
-            var initScript = new StringBuilder("IF OBJECT_ID(N'ServerLog', N'U') IS NULL BEGIN ")
-                                        .Append("CREATE TABLE ServerLog(")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'{LogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE {LogTableSchema.DefaultTableName}(")
                                             .Append("Id BIGINT NOT NULL PRIMARY KEY IDENTITY,")
                                             .Append("Timestamp DATETIME NOT NULL,")
                                             .Append("Message VARCHAR(MAX) NOT NULL,")
@@ -22,7 +20,7 @@ namespace NWrath.Logging.Test.ApiTests
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = "INSERT INTO ServerLog(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
+            var insertScript = $"INSERT INTO {LogTableSchema.DefaultTableName}(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
 
             var defaultColumns = new[] {
                 LogTableSchema.IdColumn,
@@ -35,14 +33,14 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            ts.Build();
+            var ts = new LogTableSchema();
 
             #endregion Act
 
             #region Assert
 
             Assert.AreEqual(LogTableSchema.DefaultTableName, ts.TableName);
-            Assert.AreEqual(defaultColumns.Length, ts.GetColumns().Length);
+            Assert.AreEqual(defaultColumns.Length, ts.Columns.Length);
             Assert.AreEqual(initScript, ts.InitScript);
             Assert.AreEqual(insertScript, ts.InserLogScript);
 
@@ -50,7 +48,7 @@ namespace NWrath.Logging.Test.ApiTests
         }
 
         [Test]
-        public void LogTableSchema_Build_CustomScripts()
+        public void LogTableSchema_CustomScripts()
         {
             #region Arrange
 
@@ -58,13 +56,11 @@ namespace NWrath.Logging.Test.ApiTests
 
             var insertScript = "INSERT SCRIPT";
 
-            var ts = new LogTableSchema(initScript: initScript, inserLogScript: insertScript);
-
             #endregion Arrange
 
             #region Act
 
-            ts.Build();
+            var ts = new LogTableSchema(initScript: initScript, inserLogScript: insertScript);
 
             #endregion Act
 
@@ -77,13 +73,11 @@ namespace NWrath.Logging.Test.ApiTests
         }
 
         [Test]
-        public void LogTableSchema_Build_CustomTable()
+        public void LogTableSchema_CustomTable()
         {
             #region Arrange
 
             var newTableName = "CustomLogTable";
-
-            var ts = new LogTableSchema(newTableName);
 
             var initScript = new StringBuilder($"IF OBJECT_ID(N'{newTableName}', N'U') IS NULL BEGIN ")
                                         .Append($"CREATE TABLE {newTableName}(")
@@ -100,7 +94,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            ts.Build();
+            var ts = new LogTableSchema(newTableName);
 
             #endregion Act
 
@@ -114,7 +108,7 @@ namespace NWrath.Logging.Test.ApiTests
         }
 
         [Test]
-        public void LogTableSchema_Build_CustomColumns()
+        public void LogTableSchema_CustomColumns()
         {
             #region Arrange
 
@@ -122,28 +116,27 @@ namespace NWrath.Logging.Test.ApiTests
                 LogTableSchema.MessageColumn,
                 LogTableSchema.ExceptionColumn
             };
-            var ts = new LogTableSchema(columns: newColumns);
 
-            var initScript = new StringBuilder("IF OBJECT_ID(N'ServerLog', N'U') IS NULL BEGIN ")
-                                        .Append("CREATE TABLE ServerLog(")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'{LogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE {LogTableSchema.DefaultTableName}(")
                                             .Append("Message VARCHAR(MAX) NOT NULL,")
                                             .Append("Exception VARCHAR(MAX) NULL")
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = "INSERT INTO ServerLog(Message, Exception) VALUES(@Message, @Exception)";
+            var insertScript = $"INSERT INTO {LogTableSchema.DefaultTableName}(Message, Exception) VALUES(@Message, @Exception)";
 
             #endregion Arrange
 
             #region Act
 
-            ts.Build();
+            var ts = new LogTableSchema(columns: newColumns);
 
             #endregion Act
 
             #region Assert
 
-            Assert.AreEqual(newColumns.Length, ts.GetColumns().Length);
+            Assert.AreEqual(newColumns.Length, ts.Columns.Length);
             Assert.AreEqual(initScript, ts.InitScript);
             Assert.AreEqual(insertScript, ts.InserLogScript);
 

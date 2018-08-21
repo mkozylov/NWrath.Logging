@@ -22,10 +22,12 @@ namespace NWrath.Logging.Test.ApiTests
             };
             var tempFile = Path.GetTempFileName();
             var serializer = new StringLogSerializer();
-            var logger = new FileLogger(tempFile, serializer);
+            var logger = new FileLogger(tempFile) { Serializer = serializer };
             var expected = serializer.Serialize(msg) + Environment.NewLine;
             var target = string.Empty;
             var error = default(Exception);
+
+            LoggingWizard.Spell.FileLogger("f.log", minLevel: LogLevel.Error);
 
             #endregion Arrange
 

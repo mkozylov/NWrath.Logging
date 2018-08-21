@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq.Expressions;
-using System.Text;
-using System.Linq;
-using NWrath.Synergy.Common.Extensions.Collections;
-using NWrath.Synergy.Pipeline;
-using NWrath.Synergy.Common.Extensions;
-using System.Threading.Tasks;
-using System.Collections;
-using NWrath.Synergy.Common.Structs;
+﻿using NWrath.Synergy.Pipeline;
 
 namespace NWrath.Logging
 {
@@ -26,18 +14,29 @@ namespace NWrath.Logging
             }
         );
 
+        public override bool IsEnabled
+        {
+            get => _logger.IsEnabled;
+            set => _logger.IsEnabled = value;
+        }
+
+        public override ILogLevelVerifier LevelVerifier
+        {
+            get => _logger.LevelVerifier;
+            set => _logger.LevelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug);
+        }
+
         public PipeCollection<PipeLoggerContext<TLogger>> Pipes { get; set; }
 
         private TLogger _logger;
 
         public PipeLogger(
-            TLogger logger,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes = null
+            TLogger logger
             )
         {
             _logger = logger;
 
-            Pipes = pipes ?? ProduceDefaultPipes();
+            Pipes = ProduceDefaultPipes();
         }
 
         protected override void WriteLog(LogMessage log)
