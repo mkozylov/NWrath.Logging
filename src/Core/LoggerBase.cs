@@ -19,6 +19,17 @@ namespace NWrath.Logging
             }
         }
 
+        public virtual void Log(
+            string message,
+            DateTime? timestamp = null,
+            LogLevel level = LogLevel.Debug,
+            Exception exception = null,
+            object extra = null
+            )
+        {
+            Log(new LogMessage(message, timestamp, level, exception, extra));
+        }
+
         public virtual void Debug(string msg)
         {
             var logMsg = new LogMessage

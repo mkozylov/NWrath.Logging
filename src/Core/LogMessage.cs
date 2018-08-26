@@ -25,13 +25,19 @@ namespace NWrath.Logging
             string message,
             DateTime? timestamp = null,
             LogLevel level = LogLevel.Debug,
-            StringSet extra = null
+            Exception exception = null,
+            object extra = null
             )
         {
             Message = message;
             Timestamp = timestamp ?? DateTime.Now;
             Level = level;
-            Extra = extra ?? StringSet.Empty;
+            Exception = exception;
+
+            if (extra != null)
+            {
+                Extra = (extra as StringSet) ?? StringSet.FromObject(extra);
+            }
         }
 
         public LogMessage Clone()

@@ -19,5 +19,13 @@ namespace NWrath.Logging
         void Critical(string msg, Exception exception = null);
 
         void Log(LogMessage log);
+
+        void Log(
+            string message,
+            DateTime? timestamp = null,
+            LogLevel level = LogLevel.Debug,
+            Exception exception = null,
+            object extra = null
+            );
     }
 }
