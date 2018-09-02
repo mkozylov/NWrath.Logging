@@ -3,12 +3,12 @@
     public class DebugLogger
          : LoggerBase
     {
-        public IStringLogSerializer Serializer { get; set; }
+        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
+
+        private IStringLogSerializer _serializer = new StringLogSerializer();
 
         public DebugLogger()
         {
-            Serializer = new StringLogSerializer();
-
             System.Diagnostics.Debug.AutoFlush = true;
         }
 

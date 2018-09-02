@@ -8,7 +8,15 @@ namespace NWrath.Logging
     public class DbLogger
          : LoggerBase
     {
-        public string ConnectionString { get; set; }
+        public string ConnectionString
+        {
+            get => _connectionString;
+
+            set
+            {
+                _connectionString = value ?? throw new ArgumentNullException(Errors.NO_CONNECTION_STRING); ;
+            }
+        }
 
         public ILogTableSchema TableSchema
         {
@@ -18,19 +26,20 @@ namespace NWrath.Logging
             {
                 _tableSchema = value ?? new LogTableSchema();
 
-                Init();
+                SelfInit();
             }
         }
 
         private Lazy<DbLogger> _self;
         private LogTableColumnSchema[] _writeColumns;
         private ILogTableSchema _tableSchema = new LogTableSchema();
+        private string _connectionString;
 
         public DbLogger(string connectionString)
         {
             ConnectionString = connectionString;
 
-            Init();
+            SelfInit();
         }
 
         protected override void WriteLog(LogMessage log)
@@ -77,7 +86,7 @@ namespace NWrath.Logging
             }
         }
 
-        private void Init()
+        private void SelfInit()
         {
             _self = new Lazy<DbLogger>(() =>
             {

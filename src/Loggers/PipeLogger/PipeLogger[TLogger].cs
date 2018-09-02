@@ -1,10 +1,12 @@
-﻿using NWrath.Synergy.Pipeline;
+﻿using NWrath.Synergy.Common.Structs;
+using NWrath.Synergy.Pipeline;
+using System;
 
 namespace NWrath.Logging
 {
     public class PipeLogger<TLogger>
          : LoggerBase
-        where TLogger : ILogger
+        where TLogger : class, ILogger
     {
         public static IPipe<PipeLoggerContext<TLogger>> LogWriterPipe = new LambdaPipe<PipeLoggerContext<TLogger>>(
             (ctx, next) =>
@@ -16,25 +18,40 @@ namespace NWrath.Logging
 
         public override bool IsEnabled
         {
-            get => _logger.IsEnabled;
-            set => _logger.IsEnabled = value;
+            get => _baseLogger.IsEnabled;
+            set => _baseLogger.IsEnabled = value;
         }
 
         public override ILogLevelVerifier LevelVerifier
         {
-            get => _logger.LevelVerifier;
-            set => _logger.LevelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug);
+            get => _baseLogger.LevelVerifier;
+            set => _baseLogger.LevelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug);
         }
 
-        public PipeCollection<PipeLoggerContext<TLogger>> Pipes { get; set; }
+        public TLogger BaseLogger
+        {
+            get => _baseLogger;
+            set { _baseLogger = value ?? throw new ArgumentNullException(Errors.NULL_BASE_LOGGER); }
+        }
 
-        private TLogger _logger;
+        public PipeCollection<PipeLoggerContext<TLogger>> Pipes
+        {
+            get => _pipes;
+
+            set { _pipes = value ?? new PipeCollection<PipeLoggerContext<TLogger>>(); }
+        }
+
+        public Set Properties { get => _properties; set { _properties = value ?? new Set(); } }
+
+        private TLogger _baseLogger;
+        private Set _properties = new Set();
+        private PipeCollection<PipeLoggerContext<TLogger>> _pipes = new PipeCollection<PipeLoggerContext<TLogger>>();
 
         public PipeLogger(
             TLogger logger
             )
         {
-            _logger = logger;
+            BaseLogger = logger;
 
             Pipes = ProduceDefaultPipes();
         }
@@ -57,14 +74,14 @@ namespace NWrath.Logging
             {
                 (ctx, next) => {
                     next(ctx);
-                    _logger.Log(ctx.LogMessage);
+                    _baseLogger.Log(ctx.LogMessage);
                     }
             };
         }
 
         private PipeLoggerContext<TLogger> ProduceContext(LogMessage log)
         {
-            return new PipeLoggerContext<TLogger>(_logger, log);
+            return new PipeLoggerContext<TLogger>(_baseLogger, log, Properties);
         }
     }
 }

@@ -66,10 +66,11 @@ namespace NWrath.Logging
         {
             if (_writer?.IsValueCreated ?? false)
             {
+                _writer.Value
+                       .If(x => x.CanWrite, x => x.Flush());
+
                 _writer.Value.Dispose();
             }
-
-            _writer = null;
         }
 
         protected override void WriteLog(LogMessage log)
@@ -78,9 +79,9 @@ namespace NWrath.Logging
 
             var data = Encoding.GetBytes(msg);
 
-            _writer?.Value?.Write(data, 0, data.Length);
+            _writer.Value.Write(data, 0, data.Length);
 
-            _writer?.Value?.Flush();
+            _writer.Value.Flush();
         }
 
         private void SetWriter(string fileName, FileMode mode)

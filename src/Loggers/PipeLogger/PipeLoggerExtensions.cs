@@ -6,7 +6,7 @@ namespace NWrath.Logging
     public static class PipeLoggerExtensions
     {
         public static PipeLogger<TLogger> ClearPipes<TLogger>(this PipeLogger<TLogger> source)
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             source.Pipes.Clear();
 
@@ -17,7 +17,7 @@ namespace NWrath.Logging
             this PipeLogger<TLogger> source,
             IPipe<PipeLoggerContext<TLogger>>[] collection
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             source.Pipes.AddRange(collection);
 
@@ -28,7 +28,7 @@ namespace NWrath.Logging
             this PipeLogger<TLogger> source,
             params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] collection
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             source.Pipes.AddRange(collection);
 
@@ -36,7 +36,7 @@ namespace NWrath.Logging
         }
 
         public static PipeLogger<TLogger> UseDefaultWriterPipe<TLogger>(this PipeLogger<TLogger> source)
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             source.Pipes.Add(PipeLogger<TLogger>.LogWriterPipe);
 

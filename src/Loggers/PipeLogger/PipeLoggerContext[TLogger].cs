@@ -20,7 +20,7 @@ namespace NWrath.Logging
         {
             Logger = logger;
             LogMessage = logMessage;
-            Properties = properties ?? new Set();
+            Properties = properties ?? Properties;
         }
     }
 }

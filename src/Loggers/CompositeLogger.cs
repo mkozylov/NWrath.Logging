@@ -14,7 +14,7 @@ namespace NWrath.Logging
             {
                 if (value.IsEmpty())
                 {
-                    throw new Exception(Errors.NO_LOGGERS);
+                    throw new ArgumentException(Errors.NO_LOGGERS);
                 }
 
                 _loggers = value;

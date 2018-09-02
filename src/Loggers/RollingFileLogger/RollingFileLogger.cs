@@ -11,41 +11,48 @@ namespace NWrath.Logging
     public class RollingFileLogger
          : LoggerBase, IDisposable
     {
+        public static IPipe<RollingFileContext> LogWriterPipe = new LambdaPipe<RollingFileContext>(
+            (ctx, next) =>
+            {
+                next(ctx);
+
+                if (ctx.Logger.IsEnabled)
+                {
+                    ctx.Logger.Writer.Value.Log(ctx.LogMessage);
+                }
+            }
+        );
+
         public Lazy<IFileLogger> Writer
         {
             get => _writer;
 
             set
             {
-                if (_writer?.IsValueCreated ?? false)
-                {
-                    _writer.Value.Dispose();
-                    _writer = value;
-                }
+                Dispose();
+
+                _writer = value;
             }
         }
 
-        public PipeCollection<RollingFileContext> Pipes { get; set; }
+        public PipeCollection<RollingFileContext> Pipes
+        {
+            get => _pipes;
 
-        public IStringLogSerializer Serializer { get; set; }
+            set { _pipes = value ?? new PipeCollection<RollingFileContext>().Add(LogWriterPipe); }
+        }
 
-        public IRollingFileProvider FileProvider { get; set; }
+        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
 
-        public Encoding Encoding { get; set; }
+        public Encoding Encoding { get => _encoding; set { _encoding = value ?? Encoding.UTF8; } }
 
-        public static IPipe<RollingFileContext> LogWriterPipe = new LambdaPipe<RollingFileContext>(
-           (ctx, next) =>
-           {
-               next(ctx);
-
-               if (ctx.Logger.IsEnabled)
-               {
-                   ctx.Logger.Writer?.Value?.Log(ctx.LogMessage);
-               }
-           }
-        );
+        public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw new ArgumentNullException(Errors.NO_FILE_PROVIDER); } }
 
         private Lazy<IFileLogger> _writer;
+        private IRollingFileProvider _fileProvider;
+        private IStringLogSerializer _serializer = new StringLogSerializer();
+        private Encoding _encoding = Encoding.UTF8;
+        private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext>();
 
         #region Ctor
 
@@ -63,8 +70,6 @@ namespace NWrath.Logging
             )
         {
             FileProvider = fileNameProvider;
-            Serializer = new StringLogSerializer();
-            Encoding = Encoding.UTF8;
 
             SetDefaultPipes();
 
@@ -80,9 +85,10 @@ namespace NWrath.Logging
 
         public void Dispose()
         {
-            _writer?.Value?.Dispose();
-
-            _writer = null;
+            if (_writer.IsValueCreated)
+            {
+                _writer.Value.Dispose();
+            }
         }
 
         protected override void WriteLog(LogMessage log)
@@ -91,7 +97,7 @@ namespace NWrath.Logging
 
             var pipes = Pipes;
 
-            if (pipes?.Count > 0)
+            if (pipes.Count > 0)
             {
                 pipes.Pipeline.Perform(ctx);
             }

@@ -144,6 +144,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiTests\BackgroundLoggerTests.cs" />
+    <Compile Include="ApiTests\StreamLoggerTests.cs" />
     <Compile Include="ApiTests\WizardLoggingExtensionsTests.cs" />
     <Compile Include="ApiTests\LoggerJsonLoaderTests.cs" />
     <Compile Include="ApiTests\LogTableSchemaTests.cs" />

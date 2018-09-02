@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using NWrath.Synergy.Common.Extensions;
+using NWrath.Synergy.Common.Structs;
 using NWrath.Synergy.Pipeline;
 using System;
 using System.IO;
@@ -17,6 +18,10 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var path = Path.Combine(Environment.CurrentDirectory, "log.txt");
+            var defaultMinLevel = LogLevel.Debug;
+            var defaultEncoding = Encoding.UTF8;
+            var defaultFileMode = FileMode.Append;
+            var defaultOutputTemplate = StringLogSerializer.DefaultOutputTemplate;
             var minLevel = LogLevel.Warning;
             var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
             var outputTemplate = "{Message}";
@@ -53,25 +58,45 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Assert
 
+            Assert.AreEqual(defaultMinLevel, logger1.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultOutputTemplate, logger1.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger1.Encoding);
+            Assert.AreEqual(defaultFileMode, logger1.FileMode);
             Assert.AreEqual(path, logger1.FilePath);
 
-            Assert.AreEqual(path, logger2.FilePath);
             Assert.AreEqual(minLevel, logger2.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultOutputTemplate, logger2.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger2.Encoding);
+            Assert.AreEqual(defaultFileMode, logger2.FileMode);
+            Assert.AreEqual(path, logger2.FilePath);
 
-            Assert.AreEqual(path, logger3.FilePath);
+            Assert.AreEqual(defaultOutputTemplate, logger3.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger3.Encoding);
+            Assert.AreEqual(defaultFileMode, logger3.FileMode);
             Assert.AreEqual(levelVerifier, logger3.LevelVerifier);
+            Assert.AreEqual(path, logger3.FilePath);
 
             Assert.AreEqual(path, logger4.FilePath);
             Assert.AreEqual(minLevel, logger4.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(serializer, logger4.Serializer);
 
-            Assert.AreEqual(path, logger5.FilePath);
+            Assert.AreEqual(defaultEncoding, logger5.Encoding);
+            Assert.AreEqual(defaultFileMode, logger5.FileMode);
             Assert.AreEqual(levelVerifier, logger5.LevelVerifier);
             Assert.AreEqual(serializer, logger5.Serializer);
+            Assert.AreEqual(path, logger5.FilePath);
 
-            Assert.AreEqual(path, logger8.FilePath);
             Assert.AreEqual(minLevel, logger6.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(outputTemplate, logger5.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(outputTemplate, logger6.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger6.Encoding);
+            Assert.AreEqual(defaultFileMode, logger6.FileMode);
+            Assert.AreEqual(path, logger6.FilePath);
+
+            Assert.AreEqual(outputTemplate, logger7.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger7.Encoding);
+            Assert.AreEqual(defaultFileMode, logger7.FileMode);
+            Assert.AreEqual(levelVerifier, logger7.LevelVerifier);
+            Assert.AreEqual(path, logger7.FilePath);
 
             #endregion Assert
         }
@@ -159,30 +184,49 @@ namespace NWrath.Logging.Test.ApiTests
             var pipeDelegates = new Action<PipeLoggerContext<EmptyLogger>, Action<PipeLoggerContext<EmptyLogger>>>[] { stubPipeDelegate };
             var pipesApply = new Action<PipeCollection<PipeLoggerContext<EmptyLogger>>>(c => c.Add(stubPipe));
 
+            var properties = new Set();
+
             var pipedLogger = new EmptyLogger();
 
             #endregion Arrange
 
             #region Act
 
-            var logger1 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeCollection);
-            var logger2 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeArray);
-            var logger3 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeDelegates);
-            var logger4 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipesApply);
-            var logger5 = LoggingWizard.Spell.PipeLogger(pipedLogger, stubPipeDelegate);
-            var logger6 = LoggingWizard.Spell.PipeLogger(pipedLogger);
-            var logger7 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeCollection);
-            var logger8 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeArray);
-            var logger9 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeDelegates);
-            var logger10 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipesApply);
-            var logger11 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(stubPipeDelegate);
+            var logger1 = LoggingWizard.Spell.PipeLogger(pipedLogger);
+            var logger2 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeCollection);
+            var logger3 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeArray);
+            var logger4 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeDelegates);
+            var logger5 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipesApply);
+            var logger6 = LoggingWizard.Spell.PipeLogger(pipedLogger, stubPipeDelegate);
+            var logger7 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeCollection, properties);
+            var logger8 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeArray, properties);
+            var logger9 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeDelegates, properties);
+            var logger10 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipesApply, properties);
+            var logger11 = LoggingWizard.Spell.PipeLogger(pipedLogger, properties, stubPipeDelegate);
+
             var logger12 = LoggingWizard.Spell.PipeLogger<EmptyLogger>();
-            var logger13 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeCollection);
-            var logger14 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeArray);
-            var logger15 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeDelegates);
-            var logger16 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipesApply);
-            var logger17 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), stubPipeDelegate);
-            var logger18 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger());
+            var logger13 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeCollection);
+            var logger14 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeArray);
+            var logger15 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeDelegates);
+            var logger16 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipesApply);
+            var logger17 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(stubPipeDelegate);
+            var logger18 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeCollection, properties);
+            var logger19 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeArray, properties);
+            var logger20 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeDelegates, properties);
+            var logger21 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipesApply, properties);
+            var logger22 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(properties, stubPipeDelegate);
+
+            var logger23 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger());
+            var logger24 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeCollection);
+            var logger25 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeArray);
+            var logger26 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeDelegates);
+            var logger27 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipesApply);
+            var logger28 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), stubPipeDelegate);
+            var logger29 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeCollection, properties);
+            var logger30 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeArray, properties);
+            var logger31 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeDelegates, properties);
+            var logger32 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipesApply, properties);
+            var logger33 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), properties, stubPipeDelegate);
 
             #endregion Act
 
@@ -328,6 +372,9 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
+            var defaultMinLevel = LogLevel.Debug;
+            var defaultEncoding = Encoding.UTF8;
+            var defaultOutputTemplate = StringLogSerializer.DefaultOutputTemplate;
             var minLevel = LogLevel.Warning;
             var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
             var outputTemplate = "{Message}";
@@ -365,26 +412,17 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Assert
 
-            #endregion Assert
-        }
+            Assert.IsNotEmpty(logger1.Pipes);
+            Assert.AreEqual(defaultMinLevel, logger1.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultOutputTemplate, logger1.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultEncoding, logger1.Encoding);
+            Assert.AreEqual(folder, logger1.FileProvider.FolderPath);
 
-        [Test]
-        public void WizardLoggingExtensions_G()
-        {
-            #region Arrange
-
-            #endregion Arrange
-
-            #region Act
-
-            var logger1 = LoggingWizard.Spell.DbLogger("", c =>
-            {
-                c.Columns = new[] { LogTableSchema.IdColumn, LogTableSchema.MessageColumn };
-            });
-
-            #endregion Act
-
-            #region Assert
+            Assert.AreEqual(pipeCollection, logger2.Pipes);
+            Assert.AreEqual(serializer, logger2.Serializer);
+            Assert.AreEqual(encoding, logger2.Encoding);
+            Assert.AreEqual(defaultMinLevel, logger2.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(folder, logger2.FileProvider.FolderPath);
 
             #endregion Assert
         }

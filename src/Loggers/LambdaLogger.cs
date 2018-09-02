@@ -5,7 +5,9 @@ namespace NWrath.Logging
     public class LambdaLogger
          : LoggerBase
     {
-        public Action<LogMessage> WriteAction { get; set; }
+        public Action<LogMessage> WriteAction { get => _writeAction; set { _writeAction = value ?? throw new ArgumentNullException(Errors.NULL_LAMBDA); } }
+
+        private Action<LogMessage> _writeAction;
 
         public LambdaLogger(Action<LogMessage> writeAction)
         {
@@ -14,7 +16,7 @@ namespace NWrath.Logging
 
         protected override void WriteLog(LogMessage log)
         {
-            WriteAction(log);
+            _writeAction(log);
         }
     }
 }

@@ -32,8 +32,8 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.IsNotNull(logger);
-            Assert.AreEqual(isEnabledArg, logger.SafeLogger.IsEnabled);
-            Assert.AreEqual(loggerTypeArg, logger.SafeLogger.GetType());
+            Assert.AreEqual(isEnabledArg, logger.BaseLogger.IsEnabled);
+            Assert.AreEqual(loggerTypeArg, logger.BaseLogger.GetType());
 
             #endregion Assert
         }

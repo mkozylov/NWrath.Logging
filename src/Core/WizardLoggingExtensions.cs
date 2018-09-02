@@ -4,6 +4,7 @@ using NWrath.Synergy.Pipeline;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.IO;
+using NWrath.Synergy.Common.Structs;
 
 namespace NWrath.Logging
 {
@@ -194,71 +195,91 @@ namespace NWrath.Logging
             TLogger logger,
             params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
 
             collection.AddRange(pipes);
 
-            return PipeLogger(charms, logger, collection);
+            return PipeLogger(charms, logger, collection, null);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             TLogger logger,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes
+            Set properties = null,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
-            return new PipeLogger<TLogger>(logger) { Pipes = pipes };
+            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
+
+            collection.AddRange(pipes);
+
+            return PipeLogger(charms, logger, collection, properties);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            TLogger logger,
+            PipeCollection<PipeLoggerContext<TLogger>> pipes,
+            Set properties = null
+            )
+            where TLogger : class, ILogger
+        {
+            return new PipeLogger<TLogger>(logger) { Pipes = pipes, Properties = properties };
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
            this ILoggingWizardCharms charms,
            TLogger logger,
-           IPipe<PipeLoggerContext<TLogger>>[] pipes
+           IPipe<PipeLoggerContext<TLogger>>[] pipes,
+           Set properties = null
            )
-           where TLogger : ILogger
+           where TLogger : class, ILogger
         {
             var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
 
             collection.AddRange(pipes);
 
-            return PipeLogger(charms, logger, collection);
+            return PipeLogger(charms, logger, collection, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             TLogger logger,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
+            Set properties = null
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
             var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
 
             pipesApply(collection);
 
-            return PipeLogger(charms, logger, collection);
+            return PipeLogger(charms, logger, collection, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes
+            PipeCollection<PipeLoggerContext<TLogger>> pipes,
+            Set properties = null
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
-            return PipeLogger(charms, loggerFactory(charms), pipes);
+            return PipeLogger(charms, loggerFactory(charms), pipes, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
            this ILoggingWizardCharms charms,
            Func<ILoggingWizardCharms, TLogger> loggerFactory,
-           IPipe<PipeLoggerContext<TLogger>>[] pipes
+           IPipe<PipeLoggerContext<TLogger>>[] pipes,
+           Set properties = null
            )
-           where TLogger : ILogger
+           where TLogger : class, ILogger
         {
-            return PipeLogger(charms, loggerFactory(charms), pipes);
+            return PipeLogger(charms, loggerFactory(charms), pipes, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
@@ -266,55 +287,80 @@ namespace NWrath.Logging
             Func<ILoggingWizardCharms, TLogger> loggerFactory,
             params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
-            return PipeLogger(charms, loggerFactory(charms), pipes);
+            return PipeLogger(charms, loggerFactory(charms), pipes, null);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
+            Set properties = null,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger
+            where TLogger : class, ILogger
         {
-            return PipeLogger(charms, loggerFactory(charms), pipesApply);
+            return PipeLogger(charms, loggerFactory(charms), pipes, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes
+            Func<ILoggingWizardCharms, TLogger> loggerFactory,
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
+            Set properties = null
             )
-            where TLogger : ILogger, new()
+            where TLogger : class, ILogger
         {
-            return PipeLogger(charms, new TLogger(), pipes);
+            return PipeLogger(charms, loggerFactory(charms), pipesApply, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            IPipe<PipeLoggerContext<TLogger>>[] pipes
+            PipeCollection<PipeLoggerContext<TLogger>> pipes,
+            Set properties = null
             )
-            where TLogger : ILogger, new()
+            where TLogger : class, ILogger, new()
         {
-            return PipeLogger(charms, new TLogger(), pipes);
+            return PipeLogger(charms, new TLogger(), pipes, properties);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            IPipe<PipeLoggerContext<TLogger>>[] pipes,
+            Set properties = null
+            )
+            where TLogger : class, ILogger, new()
+        {
+            return PipeLogger(charms, new TLogger(), pipes, properties);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
             params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger, new()
+            where TLogger : class, ILogger, new()
         {
-            return PipeLogger(charms, new TLogger(), pipes);
+            return PipeLogger(charms, new TLogger(), pipes, null);
         }
 
         public static PipeLogger<TLogger> PipeLogger<TLogger>(
             this ILoggingWizardCharms charms,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply
+            Set properties = null,
+            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
             )
-            where TLogger : ILogger, new()
+            where TLogger : class, ILogger, new()
         {
-            return PipeLogger(charms, new TLogger(), pipesApply);
+            return PipeLogger(charms, new TLogger(), pipes, properties);
+        }
+
+        public static PipeLogger<TLogger> PipeLogger<TLogger>(
+            this ILoggingWizardCharms charms,
+            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
+            Set properties = null
+            )
+            where TLogger : class, ILogger, new()
+        {
+            return PipeLogger(charms, new TLogger(), pipesApply, properties);
         }
 
         #endregion PipeLogger
@@ -330,13 +376,16 @@ namespace NWrath.Logging
             PipeCollection<RollingFileContext> pipes = null
             )
         {
-            return new RollingFileLogger(folderPath)
+            var logger = new RollingFileLogger(folderPath)
             {
-                LevelVerifier = levelVerifier,
-                Serializer = serializer,
-                Encoding = encoding,
-                Pipes = pipes
+                LevelVerifier = levelVerifier
             };
+
+            logger.Serializer = serializer ?? logger.Serializer;
+            logger.Encoding = encoding ?? logger.Encoding;
+            logger.Pipes = pipes ?? logger.Pipes;
+
+            return logger;
         }
 
         public static RollingFileLogger RollingFileLogger(
@@ -401,7 +450,6 @@ namespace NWrath.Logging
             return RollingFileLogger(charms, folderPath, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply, encoding, pipes);
         }
 
-        //---------------------------------------
         public static RollingFileLogger RollingFileLogger(
             this ILoggingWizardCharms charms,
             IRollingFileProvider fileProvider,
@@ -411,13 +459,16 @@ namespace NWrath.Logging
             PipeCollection<RollingFileContext> pipes = null
             )
         {
-            return new RollingFileLogger(fileProvider)
+            var logger = new RollingFileLogger(fileProvider)
             {
-                LevelVerifier = levelVerifier,
-                Serializer = serializer,
-                Encoding = encoding,
-                Pipes = pipes
+                LevelVerifier = levelVerifier
             };
+
+            logger.Serializer = serializer ?? logger.Serializer;
+            logger.Encoding = encoding ?? logger.Encoding;
+            logger.Pipes = pipes ?? logger.Pipes;
+
+            return logger;
         }
 
         public static RollingFileLogger RollingFileLogger(

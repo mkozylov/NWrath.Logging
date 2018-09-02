@@ -27,8 +27,6 @@ namespace NWrath.Logging.Test.ApiTests
             var target = string.Empty;
             var error = default(Exception);
 
-            LoggingWizard.Spell.FileLogger("f.log", minLevel: LogLevel.Error);
-
             #endregion Arrange
 
             #region Act

@@ -48,6 +48,9 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
+            new FileInfo(file)
+                .If(f => f.Exists, t => t.Delete());
+
             fileBeforeWriteLogExists = new FileInfo(file).Exists;
             logger.Log(log);
             logger.Dispose();
@@ -62,9 +65,9 @@ namespace NWrath.Logging.Test.ApiTests
             Assert.IsFalse(fileBeforeWriteLogExists);
             Assert.IsTrue(logFile.Exists);
             Assert.AreEqual(expectedStr, File.ReadAllText(file));
-            //one call by default writer initializer, one call by createFileAction, because file does not exists
-            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Exactly(2));
-            fileProviderMock.Verify(x => x.TryResolveLastFile(), Times.Exactly(2));
+
+            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Exactly(1));
+            fileProviderMock.Verify(x => x.TryResolveLastFile(), Times.Exactly(1));
 
             logFile.Delete();
 
@@ -114,11 +117,16 @@ namespace NWrath.Logging.Test.ApiTests
                             n(c);
                         });
 
+            pipes.Insert(0, RollingFileLogger.LogWriterPipe);
+
             var logger = new RollingFileLogger(fileProviderMock.Object) { Pipes = pipes };
 
             #endregion Arrange
 
             #region Act
+
+            new FileInfo(file)
+                .If(f => f.Exists, t => t.Delete());
 
             fileBeforeWriteLogExists = new FileInfo(file).Exists;
             logger.Log(log);
@@ -129,7 +137,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.IsFalse(fileBeforeWriteLogExists);
-            Assert.IsFalse(new FileInfo(file).Exists);
+            Assert.IsTrue(new FileInfo(file).Exists);
             Assert.AreEqual(1, logs.Count);
             Assert.AreSame(logs[0], log);
             Assert.AreEqual(logs[0].Message, log.Message.ToUpper());
