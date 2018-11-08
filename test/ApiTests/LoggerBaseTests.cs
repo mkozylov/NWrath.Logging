@@ -13,7 +13,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void LoggerBase_LogDebug()
         {
             const string msg = "str";
-            var target = default(LogMessage);
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Debug(msg);
@@ -25,7 +25,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void LoggerBase_LogInfo()
         {
             const string msg = "str";
-            var target = default(LogMessage);
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Info(msg);
@@ -37,7 +37,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void LoggerBase_LogWarning()
         {
             const string msg = "str";
-            var target = default(LogMessage);
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Warning(msg);
@@ -49,7 +49,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void LoggerBase_LogError()
         {
             const string msg = "str";
-            var target = default(LogMessage);
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Error(msg);
@@ -61,7 +61,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void LoggerBase_LogCritical()
         {
             const string msg = "str";
-            var target = default(LogMessage);
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Critical(msg);
@@ -72,8 +72,8 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void LoggerBase_Log()
         {
-            var msg = new LogMessage { Message = "str" };
-            var target = default(LogMessage);
+            var msg = new LogRecord { Message = "str" };
+            var target = default(LogRecord);
             var loggerMock = CreateLoggerMock(writeLogCallback: x => target = x);
 
             loggerMock.Object.Log(msg);
@@ -87,7 +87,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             var loggerMock = CreateLoggerMock(verifierReturns: true);
 
-            loggerMock.Object.Log(new LogMessage());
+            loggerMock.Object.Log(new LogRecord());
 
             VerifyLogCall(loggerMock, logCallTimes: Times.Once(), writeLogCallTimes: Times.Once());
         }
@@ -97,7 +97,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             var loggerMock = CreateLoggerMock(verifierReturns: false);
 
-            loggerMock.Object.Log(new LogMessage());
+            loggerMock.Object.Log(new LogRecord());
 
             VerifyLogCall(loggerMock, logCallTimes: Times.Once(), writeLogCallTimes: Times.Never());
         }
@@ -107,7 +107,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             var loggerMock = CreateLoggerMock(loggerEnabled: true);
 
-            loggerMock.Object.Log(new LogMessage());
+            loggerMock.Object.Log(new LogRecord());
 
             VerifyLogCall(loggerMock, logCallTimes: Times.Once(), writeLogCallTimes: Times.Once());
         }
@@ -117,7 +117,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             var loggerMock = CreateLoggerMock(loggerEnabled: false);
 
-            loggerMock.Object.Log(new LogMessage());
+            loggerMock.Object.Log(new LogRecord());
 
             VerifyLogCall(loggerMock, logCallTimes: Times.Once(), writeLogCallTimes: Times.Never());
         }
@@ -127,7 +127,7 @@ namespace NWrath.Logging.Test.ApiTests
         private Mock<LoggerBase> CreateLoggerMock(
            bool loggerEnabled = true,
            bool verifierReturns = true,
-           Action<LogMessage> writeLogCallback = null
+           Action<LogRecord> writeLogCallback = null
            )
         {
             writeLogCallback = writeLogCallback ?? (x => { });
@@ -140,7 +140,7 @@ namespace NWrath.Logging.Test.ApiTests
                                .SetupProperty(x => x.IsEnabled, loggerEnabled)
                                .SetupProperty(x => x.LevelVerifier, verifierMock.Object)
                                .Apply(x => x.Protected()
-                                            .Setup("WriteLog", ItExpr.IsAny<LogMessage>())
+                                            .Setup("WriteRecord", ItExpr.IsAny<LogRecord>())
                                             .Callback(writeLogCallback));
 
             return loggerMock;
@@ -148,11 +148,11 @@ namespace NWrath.Logging.Test.ApiTests
 
         private void VerifyLogCall(Mock<LoggerBase> loggerMock, Times logCallTimes, Times writeLogCallTimes)
         {
-            loggerMock.Verify(x => x.Log(It.IsAny<LogMessage>()), logCallTimes);
-            loggerMock.Protected().Verify("WriteLog", writeLogCallTimes, ItExpr.IsAny<LogMessage>());
+            loggerMock.Verify(x => x.Log(It.IsAny<LogRecord>()), logCallTimes);
+            loggerMock.Protected().Verify("WriteRecord", writeLogCallTimes, ItExpr.IsAny<LogRecord>());
         }
 
-        private void AssertLogWithLevel(Mock<LoggerBase> loggerMock, string expectedMsg, LogLevel expectedLevel, LogMessage target)
+        private void AssertLogWithLevel(Mock<LoggerBase> loggerMock, string expectedMsg, LogLevel expectedLevel, LogRecord target)
         {
             VerifyLogCall(loggerMock, logCallTimes: Times.Once(), writeLogCallTimes: Times.Once());
             Assert.NotNull(target);

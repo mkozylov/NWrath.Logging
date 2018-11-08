@@ -6,28 +6,29 @@ using System.Text;
 namespace NWrath.Logging
 {
     public class StreamLogger
-         : LoggerBase, IDisposable
+         : LoggerBase
     {
         public Stream Writer { get => _writer; set { _writer = value ?? throw new ArgumentNullException(Errors.NULL_STREAM); } }
 
         public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
 
-        public Encoding Encoding { get => _encoding; set { _encoding = value ?? Encoding.UTF8; } }
+        public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
+
+        private bool AutoFlush { get; set; } = false;
 
         private Stream _writer;
-        private Encoding _encoding = Encoding.UTF8;
+        private Encoding _encoding = new UTF8Encoding(false);
         private IStringLogSerializer _serializer = new StringLogSerializer();
-        private bool _needFlush;
         private bool _leaveOpen;
 
         public StreamLogger(
             Stream writer,
-            bool needFlush = true,
+            bool autoFlush = false,
             bool leaveOpen = false
             )
         {
             Writer = writer;
-            _needFlush = needFlush;
+            AutoFlush = autoFlush;
             _leaveOpen = leaveOpen;
         }
 
@@ -36,8 +37,13 @@ namespace NWrath.Logging
             Dispose();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
+            if (AutoFlush && Writer.CanWrite)
+            {
+                Writer.Flush();
+            }
+
             if (!_leaveOpen)
             {
                 Writer.Close();
@@ -45,15 +51,15 @@ namespace NWrath.Logging
             }
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
-            var msg = Serializer.Serialize(log) + Environment.NewLine;
+            var msg = Serializer.Serialize(record) + Environment.NewLine;
 
             var data = Encoding.GetBytes(msg);
 
             Writer.Write(data, 0, data.Length);
 
-            if (_needFlush)
+            if (AutoFlush)
             {
                 Writer.Flush();
             }

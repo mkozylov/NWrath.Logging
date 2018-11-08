@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0268CD2F-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EB297915-26BC-4DA2-BC39-3A73290E1CA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWrath.Logging.Performance.Test", "NWrath.Logging.Performance.Test\NWrath.Logging.Performance.Test.csproj", "{14343C71-378B-4CC0-97C9-6EC6EF665A52}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14343C71-378B-4CC0-97C9-6EC6EF665A52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14343C71-378B-4CC0-97C9-6EC6EF665A52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14343C71-378B-4CC0-97C9-6EC6EF665A52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14343C71-378B-4CC0-97C9-6EC6EF665A52}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +38,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{46C41E52-127E-4D88-9EB4-61212EDCCB39} = {EB297915-26BC-4DA2-BC39-3A73290E1CA2}
 		{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324} = {0268CD2F-975B-4FFC-AA96-871D88E3375E}
+		{14343C71-378B-4CC0-97C9-6EC6EF665A52} = {0268CD2F-975B-4FFC-AA96-871D88E3375E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E538FDB-0477-4D51-9075-ACAE9FA2B924}

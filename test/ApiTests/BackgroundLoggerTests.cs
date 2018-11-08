@@ -20,7 +20,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var expectedCount = 100;
-            var list = new List<LogMessage>();
+            var list = new List<LogRecord>();
             var writeDelayCts = new CancellationTokenSource();
 
             var lambdaLogger = new LambdaLogger(async m =>
@@ -39,7 +39,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             foreach (var i in Enumerable.Range(1, expectedCount))
             {
-                logger.Log(new LogMessage(i.ToString()));
+                logger.Log(new LogRecord(i.ToString()));
             }
 
             #endregion Arrange

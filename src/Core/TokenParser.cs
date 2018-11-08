@@ -1,6 +1,4 @@
-﻿using NWrath.Synergy.Common.Extensions;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace NWrath.Logging
@@ -26,31 +24,31 @@ namespace NWrath.Logging
 
         public Token[] Parse(string template)
         {
-            var matches = _keyRegex.Matches(template)
-                                   .Cast<Match>();
+            var matches = _keyRegex.Matches(template);
 
             var temp = template;
+            var tokens = new List<Token>(matches.Count);
 
-            var tokens = matches.Aggregate(new List<Token>(), (list, item) =>
+            foreach (Match item in matches)
             {
-                if (temp.NotEmpty())
+                if (string.IsNullOrEmpty(temp))
                 {
-                    var leftStr = temp.Substring(0, temp.IndexOf(item.Value));
-
-                    temp = temp.Remove(0, leftStr.Length + item.Value.Length);
-
-                    if (leftStr.NotEmpty())
-                    {
-                        list.Add(new Token(leftStr));
-                    }
-
-                    list.Add(new Token(item.Groups[1].Value, item.Value));
+                    continue;
                 }
 
-                return list;
-            });
+                var leftStr = temp.Substring(0, temp.IndexOf(item.Value));
 
-            if (temp.NotEmpty())
+                temp = temp.Remove(0, leftStr.Length + item.Value.Length);
+
+                if (!string.IsNullOrEmpty(leftStr))
+                {
+                    tokens.Add(new Token(leftStr));
+                }
+
+                tokens.Add(new Token(item.Groups[1].Value, item.Value));
+            }
+
+            if (!string.IsNullOrEmpty(temp))
             {
                 tokens.Add(new Token(temp));
             }

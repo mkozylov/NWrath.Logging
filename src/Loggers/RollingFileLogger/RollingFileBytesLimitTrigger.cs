@@ -31,7 +31,7 @@ namespace NWrath.Logging
 
         public bool Predicate(RollingFileContext ctx)
         {
-            var str = ctx.Logger.Serializer.Serialize(ctx.LogMessage);
+            var str = ctx.Logger.Serializer.Serialize(ctx.LogRecord);
 
             var bytes = ctx.Logger.Encoding.GetBytes(str);
 

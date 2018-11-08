@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,14 +47,14 @@ namespace NWrath.Logging.Test.ApiTests
             {
                 Enumerable.Range(1, 1500).Each(x =>
                 {
-                    saveLogger.Log(new LogMessage { Message = "1" });
+                    saveLogger.Log(new LogRecord { Message = "1" });
                 });
             });
             var task2 = Task.Run(() =>
             {
                 Enumerable.Range(1, 1500).Each(x =>
                 {
-                    saveLogger.Log(new LogMessage { Message = "2" });
+                    saveLogger.Log(new LogRecord { Message = "2" });
                 });
             });
 
@@ -74,21 +75,30 @@ namespace NWrath.Logging.Test.ApiTests
             {
                 Enumerable.Range(1, 1500).Each(x =>
                 {
-                    logger.Log(new LogMessage { Message = "1" });
+                    logger.Log(new LogRecord { Message = "1" });
                 });
             });
             var task2 = Task.Run(() =>
             {
                 Enumerable.Range(1, 1500).Each(x =>
                 {
-                    logger.Log(new LogMessage { Message = "2" });
+                    logger.Log(new LogRecord { Message = "2" });
                 });
             });
 
-            Task.WaitAll(task1, task2);
+            var err = default(Exception);
+
+            try
+            {
+                Task.WaitAll(task1, task2);
+            }
+            catch (Exception ex)
+            {
+                err = ex;
+            }
 
             Assert.AreNotEqual(3000, messages.Count);
-            Assert.AreNotEqual(messages.Count(x => x == "1"), messages.Count(x => x == "2"));
+            Assert.IsTrue(err == null || err.ToString().Contains("Index was outside the bounds of the array"));
         }
     }
 }

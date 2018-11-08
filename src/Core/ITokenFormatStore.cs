@@ -4,19 +4,19 @@ using System.Collections.Generic;
 namespace NWrath.Logging
 {
     public interface ITokenFormatStore
-        : IDictionary<string, Func<LogMessage, string>>
+        : IDictionary<string, Func<LogRecord, string>>
     {
-        Func<LogMessage, string> Exception { get; set; }
+        Func<LogRecord, string> Exception { get; set; }
 
-        Func<LogMessage, string> Level { get; set; }
+        Func<LogRecord, string> Level { get; set; }
 
-        Func<LogMessage, string> Message { get; set; }
+        Func<LogRecord, string> Message { get; set; }
 
-        Func<LogMessage, string> Timestamp { get; set; }
+        Func<LogRecord, string> Timestamp { get; set; }
 
-        string this[string key, LogMessage log] { get; }
+        string this[string key, LogRecord record] { get; }
 
-        Func<LogMessage, string> this[string key, Func<LogMessage, string> defaultVal = null] { get; set; }
+        Func<LogRecord, string> this[string key, Func<LogRecord, string> defaultVal = null] { get; set; }
 
         event EventHandler Updated;
     }

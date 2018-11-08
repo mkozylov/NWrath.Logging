@@ -7,12 +7,14 @@ namespace NWrath.Logging.Test.ApiTests
     [TestFixture]
     public class DebugLoggerTests
     {
+#if DEBUG
+
         [Test]
         public void DebugLogger_Log()
         {
             #region Arrange
 
-            var msg = new LogMessage();
+            var msg = new LogRecord();
             var serializer = new StringLogSerializer();
             var logger = new DebugLogger { Serializer = serializer };
             var writer = new StringWriter();
@@ -34,5 +36,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             #endregion Assert
         }
+
+#endif
     }
 }

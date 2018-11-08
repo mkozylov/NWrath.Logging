@@ -29,17 +29,17 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void CompositeLogger_Log()
         {
-            var msg = new LogMessage();
-            var subMsg1 = default(LogMessage);
-            var subMsg2 = default(LogMessage);
+            var msg = new LogRecord();
+            var subMsg1 = default(LogRecord);
+            var subMsg2 = default(LogRecord);
 
             var subLoggerMock1 = new Mock<ILogger>();
-            subLoggerMock1.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => subMsg1 = m);
+            subLoggerMock1.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => subMsg1 = m);
 
             var subLoggerMock2 = new Mock<ILogger>();
-            subLoggerMock2.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => subMsg2 = m);
+            subLoggerMock2.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => subMsg2 = m);
 
             var logger = new CompositeLogger(new[] { subLoggerMock1.Object, subLoggerMock2.Object });
 

@@ -2,6 +2,6 @@
 {
     public interface ILogSerializer
     {
-        object Serialize(LogMessage log);
+        object Serialize(LogRecord record);
     }
 }

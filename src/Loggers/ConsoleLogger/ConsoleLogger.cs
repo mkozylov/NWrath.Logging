@@ -25,16 +25,16 @@ namespace NWrath.Logging
         }
 
         private IStringLogSerializer _serializer;
-        private Action<LogMessage> _writerAction;
+        private Action<LogRecord> _writerAction;
 
         public ConsoleLogger()
         {
             Serializer = new ConsoleLogSerializer();
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
-            _writerAction(log);
+            _writerAction(record);
         }
     }
 }

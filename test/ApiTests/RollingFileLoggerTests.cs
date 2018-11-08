@@ -18,7 +18,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             var currentFolder = Path.GetDirectoryName(GetType().Assembly.Location);
 
-            var log = new LogMessage
+            var log = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -81,7 +81,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             var currentFolder = Path.GetDirectoryName(GetType().Assembly.Location);
 
-            var log = new LogMessage
+            var log = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -103,17 +103,17 @@ namespace NWrath.Logging.Test.ApiTests
                 return file;
             });
 
-            var logs = new List<LogMessage>();
+            var logs = new List<LogRecord>();
 
             var pipes = new PipeCollection<RollingFileContext>()
                         .Add((c, n) =>
                         {
                             n(c);
-                            logs.Add(c.LogMessage);
+                            logs.Add(c.LogRecord);
                         })
                         .Add((c, n) =>
                         {
-                            c.LogMessage.Message = c.LogMessage.Message.ToUpper();
+                            c.LogRecord.Message = c.LogRecord.Message.ToUpper();
                             n(c);
                         });
 

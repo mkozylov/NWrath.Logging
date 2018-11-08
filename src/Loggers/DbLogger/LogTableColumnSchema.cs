@@ -29,19 +29,9 @@ namespace NWrath.Logging
             string name,
             string typeDefinition,
             bool isInternal,
-            Func<LogMessage, object> serializerLambda
+            Func<LogRecord, object> serializerLambda
             )
             : this(name, typeDefinition, isInternal, new LambdaLogSerializer(serializerLambda))
-        {
-        }
-
-        public LogTableColumnSchema(
-            string name,
-            string typeDefinition,
-            bool isInternal,
-            string serializerExpr
-            )
-          : this(name, typeDefinition, isInternal, (LambdaLogSerializer)serializerExpr)
         {
         }
     }

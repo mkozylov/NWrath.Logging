@@ -11,7 +11,7 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void JsonLogSerializer_Serialize()
         {
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Message = "str",
                 Exception = new NotImplementedException(),

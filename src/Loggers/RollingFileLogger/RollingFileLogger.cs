@@ -9,7 +9,7 @@ using NWrath.Synergy.Pipeline;
 namespace NWrath.Logging
 {
     public class RollingFileLogger
-         : LoggerBase, IDisposable
+         : LoggerBase
     {
         public static IPipe<RollingFileContext> LogWriterPipe = new LambdaPipe<RollingFileContext>(
             (ctx, next) =>
@@ -18,7 +18,7 @@ namespace NWrath.Logging
 
                 if (ctx.Logger.IsEnabled)
                 {
-                    ctx.Logger.Writer.Value.Log(ctx.LogMessage);
+                    ctx.Logger.Writer.Value.Log(ctx.LogRecord);
                 }
             }
         );
@@ -44,14 +44,14 @@ namespace NWrath.Logging
 
         public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
 
-        public Encoding Encoding { get => _encoding; set { _encoding = value ?? Encoding.UTF8; } }
+        public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
 
         public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw new ArgumentNullException(Errors.NO_FILE_PROVIDER); } }
 
         private Lazy<IFileLogger> _writer;
         private IRollingFileProvider _fileProvider;
         private IStringLogSerializer _serializer = new StringLogSerializer();
-        private Encoding _encoding = Encoding.UTF8;
+        private Encoding _encoding = new UTF8Encoding(false);
         private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext>();
 
         #region Ctor
@@ -83,7 +83,7 @@ namespace NWrath.Logging
 
         #endregion Ctor
 
-        public void Dispose()
+        public override void Dispose()
         {
             if (_writer.IsValueCreated)
             {
@@ -91,9 +91,9 @@ namespace NWrath.Logging
             }
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
-            var ctx = ProduceContext(log);
+            var ctx = ProduceContext(record);
 
             var pipes = Pipes;
 
@@ -129,9 +129,9 @@ namespace NWrath.Logging
                 .AddDailyRollerPipe();
         }
 
-        private RollingFileContext ProduceContext(LogMessage log)
+        private RollingFileContext ProduceContext(LogRecord record)
         {
-            return new RollingFileContext(this, log);
+            return new RollingFileContext(this, record);
         }
     }
 }

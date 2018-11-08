@@ -9,31 +9,31 @@ namespace NWrath.Logging
     public class TokenFormatStore
         : ITokenFormatStore
     {
-        public Func<LogMessage, string> Timestamp
+        public Func<LogRecord, string> Timestamp
         {
             get => this[nameof(Timestamp)];
             set => this[nameof(Timestamp)] = value;
         }
 
-        public Func<LogMessage, string> Message
+        public Func<LogRecord, string> Message
         {
             get => this[nameof(Message)];
             set => this[nameof(Message)] = value;
         }
 
-        public Func<LogMessage, string> Level
+        public Func<LogRecord, string> Level
         {
             get => this[nameof(Level)];
             set => this[nameof(Level)] = value;
         }
 
-        public Func<LogMessage, string> Exception
+        public Func<LogRecord, string> Exception
         {
             get => this[nameof(Exception)];
             set => this[nameof(Exception)] = value;
         }
 
-        public Func<LogMessage, string> Extra
+        public Func<LogRecord, string> Extra
         {
             get => this[nameof(Extra)];
             set => this[nameof(Extra)] = value;
@@ -41,7 +41,7 @@ namespace NWrath.Logging
 
         public ICollection<string> Keys => _store.Keys;
 
-        public ICollection<Func<LogMessage, string>> Values => _store.Values;
+        public ICollection<Func<LogRecord, string>> Values => _store.Values;
 
         public int Count => _store.Count;
 
@@ -49,7 +49,7 @@ namespace NWrath.Logging
 
         public event EventHandler Updated;
 
-        private Dictionary<string, Func<LogMessage, string>> _store = new Dictionary<string, Func<LogMessage, string>>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, Func<LogRecord, string>> _store = new Dictionary<string, Func<LogRecord, string>>(StringComparer.OrdinalIgnoreCase);
 
         public TokenFormatStore()
         {
@@ -61,7 +61,7 @@ namespace NWrath.Logging
             Updated = null;
         }
 
-        public ITokenFormatStore Add(string key, Func<LogMessage, string> val)
+        public ITokenFormatStore Add(string key, Func<LogRecord, string> val)
         {
             _store.Add(key, val);
 
@@ -84,12 +84,12 @@ namespace NWrath.Logging
             return deleted;
         }
 
-        public bool TryGetValue(string key, out Func<LogMessage, string> value)
+        public bool TryGetValue(string key, out Func<LogRecord, string> value)
         {
             return _store.TryGetValue(key, out value);
         }
 
-        public void Add(KeyValuePair<string, Func<LogMessage, string>> item)
+        public void Add(KeyValuePair<string, Func<LogRecord, string>> item)
         {
             _store.Add(item.Key, item.Value);
 
@@ -103,18 +103,18 @@ namespace NWrath.Logging
             OnUpdated();
         }
 
-        public bool Contains(KeyValuePair<string, Func<LogMessage, string>> item)
+        public bool Contains(KeyValuePair<string, Func<LogRecord, string>> item)
         {
             return _store.Contains(item);
         }
 
-        public void CopyTo(KeyValuePair<string, Func<LogMessage, string>>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<string, Func<LogRecord, string>>[] array, int arrayIndex)
         {
-            _store.CastTo<IDictionary<string, Func<LogMessage, string>>>()
+            _store.CastTo<IDictionary<string, Func<LogRecord, string>>>()
                   .CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<string, Func<LogMessage, string>> item)
+        public bool Remove(KeyValuePair<string, Func<LogRecord, string>> item)
         {
             var deleted = _store.Remove(item.Key);
 
@@ -123,29 +123,29 @@ namespace NWrath.Logging
             return deleted;
         }
 
-        public IEnumerator<KeyValuePair<string, Func<LogMessage, string>>> GetEnumerator()
+        public IEnumerator<KeyValuePair<string, Func<LogRecord, string>>> GetEnumerator()
         {
             return _store.GetEnumerator();
         }
 
-        public Func<LogMessage, string> this[string key, Func<LogMessage, string> defaultFactory = null]
+        public Func<LogRecord, string> this[string key, Func<LogRecord, string> defaultFactory = null]
         {
             get => (ContainsKey(key) ? _store[key] : (defaultFactory));
             set { _store[key] = value; OnUpdated(); }
         }
 
-        public Func<LogMessage, string> this[string key]
+        public Func<LogRecord, string> this[string key]
         {
             get => (ContainsKey(key) ? _store[key] : (null));
             set { _store[key] = value; OnUpdated(); }
         }
 
-        public string this[string key, LogMessage log]
+        public string this[string key, LogRecord record]
         {
-            get => (ContainsKey(key) ? _store[key] : (m => key))(log);
+            get => (ContainsKey(key) ? _store[key] : (m => key))(record);
         }
 
-        void IDictionary<string, Func<LogMessage, string>>.Add(string key, Func<LogMessage, string> value)
+        void IDictionary<string, Func<LogRecord, string>>.Add(string key, Func<LogRecord, string> value)
         {
             Add(key, value);
         }
@@ -171,31 +171,76 @@ namespace NWrath.Logging
             Updated?.Invoke(this, EventArgs.Empty);
         }
 
-        private string DefaultTimestampFormat(LogMessage log)
+        private string DefaultTimestampFormat(LogRecord record)
         {
-            return log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.ff");
+            return ToIsoStringFast(record.Timestamp);
         }
 
-        private string DefaultMessageFormat(LogMessage log)
+        private string DefaultMessageFormat(LogRecord record)
         {
-            return log.Message;
+            return record.Message;
         }
 
-        private string DefaultLevelTypeFormat(LogMessage log)
+        private string DefaultLevelTypeFormat(LogRecord record)
         {
-            return log.Level.ToString();
+            return record.Level.ToString();
         }
 
-        private string DefaultExceptionFormat(LogMessage log)
+        private string DefaultExceptionFormat(LogRecord record)
         {
-            return log.Exception?.ToString() ?? "";
+            return record.Exception?.ToString() ?? "";
         }
 
-        private string DefaultExtraFormat(LogMessage log)
+        private string DefaultExtraFormat(LogRecord record)
         {
-            return log.Extra.Count == 0
+            return record.Extra.Count == 0
                 ? string.Empty
-                : log.Extra.AsJson();
+                : record.Extra.AsJson();
+        }
+
+        private static string ToIsoStringFast(DateTime? dateTime)
+        {
+            if (!dateTime.HasValue)
+            {
+                return string.Empty;
+            }
+
+            var dt = dateTime.Value;
+            var chars = new char[22];
+            Write4Chars(chars, 0, dt.Year);
+            chars[4] = '-';
+            Write2Chars(chars, 5, dt.Month);
+            chars[7] = '-';
+            Write2Chars(chars, 8, dt.Day);
+            chars[10] = ' ';
+            Write2Chars(chars, 11, dt.Hour);
+            chars[13] = ':';
+            Write2Chars(chars, 14, dt.Minute);
+            chars[16] = ':';
+            Write2Chars(chars, 17, dt.Second);
+            chars[19] = '.';
+            Write2Chars(chars, 20, dt.Millisecond / 10);
+            //chars[22] = Digit(dt.Millisecond % 10);
+            return new string(chars);
+        }
+
+        private static void Write4Chars(char[] chars, int offset, int value)
+        {
+            chars[offset] = Digit(value / 1000);
+            chars[offset + 1] = Digit(value / 100 % 10);
+            chars[offset + 2] = Digit(value / 10 % 10);
+            chars[offset + 3] = Digit(value % 10);
+        }
+
+        private static void Write2Chars(char[] chars, int offset, int value)
+        {
+            chars[offset] = Digit(value / 10);
+            chars[offset + 1] = Digit(value % 10);
+        }
+
+        private static char Digit(int value)
+        {
+            return (char)(value + '0');
         }
     }
 }

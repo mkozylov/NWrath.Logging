@@ -2,26 +2,34 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace NWrath.Logging
 {
     public class BackgroundLogger
-         : LoggerBase, IDisposable
+         : LoggerBase
     {
+        public static readonly int DefaultBatchSize = 100;
+
+        public static readonly TimeSpan DefaultFlushPeriod = TimeSpan.FromSeconds(1);
+
         public override bool IsEnabled
         {
             get => base.IsEnabled;
 
             set
             {
+                if (base.IsEnabled == value) return;
+
                 base.IsEnabled = value;
 
                 if (value)
                 {
-                    StartWriterTask();
+                    InitQueue();
                 }
                 else
                 {
@@ -42,21 +50,30 @@ namespace NWrath.Logging
             set { _baseLogger = value ?? throw new ArgumentNullException(Errors.NULL_BASE_LOGGER); }
         }
 
+        public TimeSpan FlushPeriod { get; private set; }
+
+        public int BatchSize { get; private set; }
+
         private ILogger _baseLogger;
-        private Task _writerTask;
-        private ConcurrentQueue<LogMessage> _queue = new ConcurrentQueue<LogMessage>();
-        private TimeSpan _flushPeriod;
+        private Task _watchTask;
+        private Lazy<BatchBlock<LogRecord>> _queue;
+        private ActionBlock<LogRecord[]> _writeBlock;
         private CancellationTokenSource _cts;
+        private bool _leaveOpen;
 
         public BackgroundLogger(
             ILogger baseLogger,
-            TimeSpan? flushPeriod = null
+            TimeSpan? flushPeriod = null,
+            int? batchSize = null,
+            bool leaveOpen = false
             )
         {
             BaseLogger = baseLogger;
-            _flushPeriod = flushPeriod ?? TimeSpan.FromSeconds(1);
+            FlushPeriod = flushPeriod ?? TimeSpan.FromSeconds(1);
+            BatchSize = batchSize ?? DefaultBatchSize;
+            _leaveOpen = leaveOpen;
 
-            StartWriterTask();
+            InitQueue();
         }
 
         ~BackgroundLogger()
@@ -64,51 +81,74 @@ namespace NWrath.Logging
             Dispose();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            _cts.Cancel();
+            _cts?.Cancel();
+            _watchTask?.Wait();
 
-            _writerTask.Wait();
-        }
-
-        public override void Log(LogMessage log)
-        {
-            if (IsEnabled)
+            if (_queue.IsValueCreated)
             {
-                WriteLog(log);
+                _queue.Value.Complete();
+                _writeBlock.Completion.Wait();
+            }
+
+            if (!_leaveOpen)
+            {
+                _baseLogger.Dispose();
             }
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
-            _queue.Enqueue(log);
+            _queue.Value.Post(record);
         }
 
-        private void StartWriterTask()
+        private void StartWatchBuffer()
         {
             _cts = new CancellationTokenSource();
 
-            _writerTask = Task.Run(WriterLoop, _cts.Token);
+            _watchTask = Task.Run(WatchBufferLoopAsync);
         }
 
-        private async Task WriterLoop()
+        private void InitQueue()
         {
-            while (!_cts.IsCancellationRequested || _queue.Count > 0)
+            _queue = new Lazy<BatchBlock<LogRecord>>(() =>
             {
-                var count = _queue.Count;
-
-                for (int i = 0; i < count; i++)
-                {
-                    if (_queue.TryDequeue(out LogMessage log))
+                var buffer = new BatchBlock<LogRecord>(
+                    BatchSize,
+                    new GroupingDataflowBlockOptions
                     {
-                        _baseLogger.Log(log);
-                    }
+                        EnsureOrdered = true
+                    });
+
+                _writeBlock = new ActionBlock<LogRecord[]>(
+                    batch => _baseLogger.Log(batch),
+                    new ExecutionDataflowBlockOptions
+                    {
+                        EnsureOrdered = true
+                    });
+
+                buffer.LinkTo(_writeBlock, new DataflowLinkOptions { PropagateCompletion = true });
+
+                StartWatchBuffer();
+
+                return buffer;
+            });
+        }
+
+        private async Task WatchBufferLoopAsync()
+        {
+            while (!_cts.IsCancellationRequested)
+            {
+                if (_queue.IsValueCreated)
+                {
+                    _queue.Value.TriggerBatch();
                 }
 
                 try
                 {
-                    await Task.Delay(_flushPeriod, _cts.Token)
-                              .ConfigureAwait(false);
+                    await Task.Delay(FlushPeriod, _cts.Token)
+                        .ConfigureAwait(false);
                 }
                 catch (TaskCanceledException)
                 {

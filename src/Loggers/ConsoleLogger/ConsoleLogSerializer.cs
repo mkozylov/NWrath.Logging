@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using NWrath.Synergy.Reflection.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
+using FastExpressionCompiler;
 
 namespace NWrath.Logging
 {
@@ -36,7 +37,7 @@ namespace NWrath.Logging
         private ITokenConsoleColorStore _colors = new TokenConsoleColorStore();
         private Lazy<IStringLogSerializer> _serializeFunc;
         private ITokenParser _parser = new TokenParser();
-        private static PropertyInfo[] _logProps = typeof(LogMessage).GetProperties();
+        private static PropertyInfo[] _logProps = typeof(LogRecord).GetProperties();
 
         public ConsoleLogSerializer()
         {
@@ -50,21 +51,21 @@ namespace NWrath.Logging
             _colors.Updated -= SetSerializerFunc;
         }
 
-        public string Serialize(LogMessage log)
+        public string Serialize(LogRecord record)
         {
-            return _serializeFunc.Value.Serialize(log);
+            return _serializeFunc.Value.Serialize(record);
         }
 
-        object ILogSerializer.Serialize(LogMessage log)
+        object ILogSerializer.Serialize(LogRecord record)
         {
-            return Serialize(log);
+            return Serialize(record);
         }
 
         private IStringLogSerializer BuildSerializer()
         {
             var consoleType = typeof(Console);
             var tokens = _parser.Parse(OutputTemplate);
-            var logExpr = Expression.Parameter(typeof(LogMessage), "log");
+            var logExpr = Expression.Parameter(typeof(LogRecord), "log");
             var blocks = new List<Expression>();
             var strVars = new List<ParameterExpression>();
             var logProp = default(PropertyInfo);
@@ -83,7 +84,7 @@ namespace NWrath.Logging
                 var valExpr = default(Expression);
                 var colorExpr = default(Expression);
 
-                if (t.IsString)
+                if (t.IsLiteral)
                 {
                     valExpr = Expression.Constant(t.Value);
                 }
@@ -99,11 +100,13 @@ namespace NWrath.Logging
                     {
                         var msgPropExpr = Expression.Property(logExpr, logProp);
 
-                        valExpr = Expression.Call(msgPropExpr, nameof(object.ToString), null);
+                        valExpr = logProp.PropertyType == typeof(string)
+                           ? (Expression)msgPropExpr
+                           : Expression.Call(msgPropExpr, nameof(object.ToString), null);
                     }
                     else
                     {
-                        var extraPropExpr = Expression.Property(logExpr, nameof(LogMessage.Extra));
+                        var extraPropExpr = Expression.Property(logExpr, nameof(LogRecord.Extra));
 
                         var callGetExtra = Expression.Call(tryGetExtraMI, extraPropExpr, Expression.Constant(t.Value), Expression.Constant(t.Key));
 
@@ -149,18 +152,64 @@ namespace NWrath.Logging
                 );
 
             blocks.Add(
-                Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string[]) }),
-                    Expression.NewArrayInit(typeof(string), strVars)
-                    )
+                BuildStringConcat(tokens, strVars)
                 );
 
             var body = Expression.Block(strVars, blocks);
 
-            var writerLambda = Expression.Lambda<Func<LogMessage, string>>(body, logExpr);
+            var writerLambda = Expression.Lambda<Func<LogRecord, string>>(body, logExpr);
 
-            return new LambdaLogSerializer(writerLambda.Compile());
+            return new LambdaLogSerializer(writerLambda.CompileFast());
+        }
+
+        private Expression BuildStringConcat(Token[] tokens, List<ParameterExpression> strExprs)
+        {
+            Expression body;
+
+            if (tokens.Length == 1)
+            {
+                body = strExprs[0];
+            }
+            else if (tokens.Length == 2)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1]
+                    );
+            }
+            else if (tokens.Length == 3)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1],
+                    strExprs[2]
+                    );
+            }
+            else if (tokens.Length == 4)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string), typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1],
+                    strExprs[2],
+                    strExprs[3]
+                    );
+            }
+            else
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string[]) }),
+                    Expression.NewArrayInit(typeof(string), strExprs)
+                    );
+            }
+
+            return body;
         }
 
         private string SetNewOutputTemplate(string newOutputFormat)

@@ -25,9 +25,9 @@ namespace NWrath.Logging
 
         private static bool _isInstanceSet;
 
-        public static void Log(LogMessage log)
+        public static void Log(LogRecord record)
         {
-            _instance.Value.Log(log);
+            _instance.Value.Log(record);
         }
 
         public static void Debug(string msg)

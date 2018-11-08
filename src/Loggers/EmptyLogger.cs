@@ -3,12 +3,11 @@
     public class EmptyLogger
          : LoggerBase
     {
-        public override void Log(LogMessage log)
+        public override void Log(LogRecord record)
         {
-            WriteLog(log);
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
         }
     }

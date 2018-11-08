@@ -4,33 +4,33 @@ using System.Collections.Generic;
 namespace NWrath.Logging
 {
     public class TokenConsoleColorStore
-        : Dictionary<string, Func<LogMessage, ConsoleColor>>, ITokenConsoleColorStore
+        : Dictionary<string, Func<LogRecord, ConsoleColor>>, ITokenConsoleColorStore
     {
-        public Func<LogMessage, ConsoleColor> Timestamp
+        public Func<LogRecord, ConsoleColor> Timestamp
         {
             get => this[nameof(Timestamp)];
             set => this[nameof(Timestamp)] = value;
         }
 
-        public Func<LogMessage, ConsoleColor> Message
+        public Func<LogRecord, ConsoleColor> Message
         {
             get => this[nameof(Message)];
             set => this[nameof(Message)] = value;
         }
 
-        public Func<LogMessage, ConsoleColor> Level
+        public Func<LogRecord, ConsoleColor> Level
         {
             get => this[nameof(Level)];
             set => this[nameof(Level)] = value;
         }
 
-        public Func<LogMessage, ConsoleColor> Exception
+        public Func<LogRecord, ConsoleColor> Exception
         {
             get => this[nameof(Exception)];
             set => this[nameof(Exception)] = value;
         }
 
-        public Func<LogMessage, ConsoleColor> Extra
+        public Func<LogRecord, ConsoleColor> Extra
         {
             get => this[nameof(Extra)];
             set => this[nameof(Extra)] = value;
@@ -49,7 +49,7 @@ namespace NWrath.Logging
             Updated = null;
         }
 
-        public new ITokenConsoleColorStore Add(string key, Func<LogMessage, ConsoleColor> val)
+        public new ITokenConsoleColorStore Add(string key, Func<LogRecord, ConsoleColor> val)
         {
             base.Add(key, val);
 
@@ -58,21 +58,21 @@ namespace NWrath.Logging
             return this;
         }
 
-        public Func<LogMessage, ConsoleColor> this[string key, Func<LogMessage, ConsoleColor> defaultFactory = null]
+        public Func<LogRecord, ConsoleColor> this[string key, Func<LogRecord, ConsoleColor> defaultFactory = null]
         {
             get => (ContainsKey(key) ? base[key] : (defaultFactory));
             set { base[key] = value; OnUpdated(); }
         }
 
-        public new Func<LogMessage, ConsoleColor> this[string key]
+        public new Func<LogRecord, ConsoleColor> this[string key]
         {
             get => (ContainsKey(key) ? base[key] : (null));
             set { base[key] = value; OnUpdated(); }
         }
 
-        public ConsoleColor this[string key, LogMessage log]
+        public ConsoleColor this[string key, LogRecord record]
         {
-            get => (ContainsKey(key) ? base[key] : (m => ConsoleColor.White))(log);
+            get => (ContainsKey(key) ? base[key] : (m => ConsoleColor.White))(record);
         }
 
         private void InitColors()
@@ -89,21 +89,21 @@ namespace NWrath.Logging
             Updated?.Invoke(this, EventArgs.Empty);
         }
 
-        private ConsoleColor DefaultTimestampColor(LogMessage log)
+        private ConsoleColor DefaultTimestampColor(LogRecord record)
         {
             return ConsoleColor.White;
         }
 
-        private ConsoleColor DefaultMessageColor(LogMessage log)
+        private ConsoleColor DefaultMessageColor(LogRecord record)
         {
             return ConsoleColor.White;
         }
 
-        private ConsoleColor DefaultLevelTypeColor(LogMessage log)
+        private ConsoleColor DefaultLevelTypeColor(LogRecord record)
         {
             var color = ConsoleColor.White;
 
-            switch (log.Level)
+            switch (record.Level)
             {
                 case LogLevel.Debug:
                     color = ConsoleColor.Gray;
@@ -129,12 +129,12 @@ namespace NWrath.Logging
             return color;
         }
 
-        private ConsoleColor DefaultExceptionColor(LogMessage log)
+        private ConsoleColor DefaultExceptionColor(LogRecord record)
         {
             return ConsoleColor.Gray;
         }
 
-        private ConsoleColor DefaultExtraColor(LogMessage log)
+        private ConsoleColor DefaultExtraColor(LogRecord record)
         {
             return ConsoleColor.Cyan;
         }

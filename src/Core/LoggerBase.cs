@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NWrath.Synergy.Common.Structs;
+using System;
 
 namespace NWrath.Logging
 {
@@ -11,11 +12,11 @@ namespace NWrath.Logging
 
         private ILogLevelVerifier _levelVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
 
-        public virtual void Log(LogMessage log)
+        public virtual void Log(LogRecord record)
         {
-            if (IsEnabled && LevelVerifier.Verify(log.Level))
+            if (IsEnabled && VerifyRecord(record))
             {
-                WriteLog(log);
+                WriteRecord(record);
             }
         }
 
@@ -24,17 +25,32 @@ namespace NWrath.Logging
             DateTime? timestamp = null,
             LogLevel level = LogLevel.Debug,
             Exception exception = null,
-            object extra = null
+            StringSet extra = null
             )
         {
-            Log(new LogMessage(message, timestamp, level, exception, extra));
+            Log(new LogRecord(message, timestamp, level, exception, extra));
+        }
+
+        public virtual void Log(LogRecord[] batch)
+        {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
+            foreach (var log in batch)
+            {
+                if (VerifyRecord(log))
+                {
+                    WriteRecord(log);
+                }
+            }
         }
 
         public virtual void Debug(string msg)
         {
-            var logMsg = new LogMessage
+            var logMsg = new LogRecord
             {
-                Timestamp = DateTime.Now,
                 Message = msg,
                 Level = LogLevel.Debug
             };
@@ -44,9 +60,8 @@ namespace NWrath.Logging
 
         public virtual void Info(string msg)
         {
-            var logMsg = new LogMessage
+            var logMsg = new LogRecord
             {
-                Timestamp = DateTime.Now,
                 Message = msg,
                 Level = LogLevel.Info
             };
@@ -56,9 +71,8 @@ namespace NWrath.Logging
 
         public virtual void Warning(string msg, Exception exception = null)
         {
-            var logMsg = new LogMessage
+            var logMsg = new LogRecord
             {
-                Timestamp = DateTime.Now,
                 Message = msg,
                 Level = LogLevel.Warning,
                 Exception = exception
@@ -69,9 +83,8 @@ namespace NWrath.Logging
 
         public virtual void Error(string msg, Exception exception = null)
         {
-            var logMsg = new LogMessage
+            var logMsg = new LogRecord
             {
-                Timestamp = DateTime.Now,
                 Message = msg,
                 Level = LogLevel.Error,
                 Exception = exception
@@ -82,9 +95,8 @@ namespace NWrath.Logging
 
         public virtual void Critical(string msg, Exception exception = null)
         {
-            var logMsg = new LogMessage
+            var logMsg = new LogRecord
             {
-                Timestamp = DateTime.Now,
                 Message = msg,
                 Level = LogLevel.Critical,
                 Exception = exception
@@ -93,6 +105,15 @@ namespace NWrath.Logging
             Log(logMsg);
         }
 
-        protected abstract void WriteLog(LogMessage log);
+        public virtual void Dispose()
+        {
+        }
+
+        protected virtual bool VerifyRecord(LogRecord record)
+        {
+            return LevelVerifier.Verify(record.Level);
+        }
+
+        protected abstract void WriteRecord(LogRecord record);
     }
 }

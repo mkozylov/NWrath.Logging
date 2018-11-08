@@ -22,19 +22,37 @@ namespace NWrath.Logging
         }
 
         private ILogger[] _loggers;
+        private bool _leaveOpen;
 
-        public CompositeLogger(ILogger[] loggers)
+        public CompositeLogger(ILogger[] loggers, bool leaveOpen = false)
         {
             Loggers = loggers;
+            _leaveOpen = leaveOpen;
         }
 
-        protected override void WriteLog(LogMessage log)
+        ~CompositeLogger()
+        {
+            Dispose();
+        }
+
+        public override void Dispose()
+        {
+            if (!_leaveOpen)
+            {
+                foreach (var logger in _loggers)
+                {
+                    logger.Dispose();
+                }
+            }
+        }
+
+        protected override void WriteRecord(LogRecord record)
         {
             var collection = _loggers;
 
             foreach (var l in collection)
             {
-                l.Log(log);
+                l.Log(record);
             }
         }
     }

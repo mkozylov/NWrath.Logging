@@ -14,7 +14,7 @@ namespace NWrath.Logging
 
             set
             {
-                _connectionString = value ?? throw new ArgumentNullException(Errors.NO_CONNECTION_STRING); ;
+                _connectionString = value ?? throw new ArgumentNullException(Errors.NO_CONNECTION_STRING);
             }
         }
 
@@ -42,7 +42,7 @@ namespace NWrath.Logging
             SelfInit();
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
             using (var con = CreateConnection(_self.Value.ConnectionString))
             using (var cmd = con.CreateCommand())
@@ -58,7 +58,7 @@ namespace NWrath.Logging
 
                     p.ParameterName = $"@{col.Name}";
 
-                    p.Value = col.Serializer.Serialize(log);
+                    p.Value = col.Serializer.Serialize(record);
 
                     cmd.Parameters.Add(p);
                 }

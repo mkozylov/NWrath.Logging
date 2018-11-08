@@ -7,7 +7,7 @@ namespace NWrath.Logging
     {
         TLogger Logger { get; }
 
-        LogMessage LogMessage { get; set; }
+        LogRecord LogRecord { get; set; }
 
         Set Properties { get; }
     }

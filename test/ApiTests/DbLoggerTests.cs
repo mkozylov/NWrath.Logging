@@ -15,8 +15,8 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var connectionStr = "connectionStr";
-            var log1 = new LogMessage("log1");
-            var log2 = new LogMessage("log2");
+            var log1 = new LogRecord("log1");
+            var log2 = new LogRecord("log2");
             var loggerMock = new Mock<DbLogger>(connectionStr) { CallBase = true };
 
             var loggerMockProtected = loggerMock.Protected();
@@ -46,14 +46,14 @@ namespace NWrath.Logging.Test.ApiTests
             AssertDefaultSchemaDbCommand(firstCommand, log1);
             AssertDefaultSchemaDbCommand(secondCommand, log2);
             loggerMockProtected.Verify("ExecuteInitScript", Times.Once(), ItExpr.IsAny<string>());
-            loggerMockProtected.Verify("WriteLog", Times.Exactly(2), ItExpr.IsAny<LogMessage>());
+            loggerMockProtected.Verify("WriteRecord", Times.Exactly(2), ItExpr.IsAny<LogRecord>());
 
             #endregion Assert
         }
 
         #region Internal
 
-        private void AssertDefaultSchemaDbCommand(DbCommand cmd, LogMessage log)
+        private void AssertDefaultSchemaDbCommand(DbCommand cmd, LogRecord log)
         {
             Assert.AreEqual(3, cmd.Parameters.Count);
 

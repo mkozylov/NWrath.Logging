@@ -10,7 +10,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void StringLogSerializer_OutputTemplateWithUnknownToken()
         {
             var serializer = new StringLogSerializer { OutputTemplate = "{Message}{Unknown}{Level}" };
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Message = "str",
                 Level = LogLevel.Debug
@@ -28,7 +28,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void StringLogSerializer_DefaultOutputTemplate()
         {
             var serializer = new StringLogSerializer { OutputTemplate = StringLogSerializer.DefaultOutputTemplate };
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -51,7 +51,7 @@ namespace NWrath.Logging.Test.ApiTests
             serializer.Formats["Num"] = m => "1";
             serializer.Formats.Message = m => $"Message: {m.Message}";
             serializer.Formats.Level = m => ((int)m.Level).ToString();
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Message = "str",
                 Level = LogLevel.Debug
@@ -69,7 +69,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void StringLogSerializer_OutputTemplateDemandChanges()
         {
             var serializer = new StringLogSerializer();
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Message = "str",
                 Level = LogLevel.Debug
@@ -95,7 +95,7 @@ namespace NWrath.Logging.Test.ApiTests
         public void StringLogSerializer_FormatsDemandChanges()
         {
             var serializer = new StringLogSerializer();
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Today,
                 Message = "str",
@@ -136,7 +136,7 @@ namespace NWrath.Logging.Test.ApiTests
 
         #region Internal
 
-        private string SerializeToDefaultOutputTemplate(LogMessage msg)
+        private string SerializeToDefaultOutputTemplate(LogRecord msg)
         {
             return $"{msg.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.ff")} [{msg.Level}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}";
         }

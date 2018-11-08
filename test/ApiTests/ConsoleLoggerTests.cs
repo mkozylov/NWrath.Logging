@@ -14,7 +14,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             var serializer = new ConsoleLogSerializer();
             var logger = new ConsoleLogger { Serializer = serializer };
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",

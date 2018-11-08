@@ -2,6 +2,6 @@
 {
     public interface IStringLogSerializer
     {
-        string Serialize(LogMessage log);
+        string Serialize(LogRecord record);
     }
 }

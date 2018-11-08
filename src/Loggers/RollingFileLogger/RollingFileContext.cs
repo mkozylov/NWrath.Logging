@@ -6,18 +6,18 @@ namespace NWrath.Logging
     {
         public RollingFileLogger Logger { get; private set; }
 
-        public LogMessage LogMessage { get; set; }
+        public LogRecord LogRecord { get; set; }
 
         public Set Properties { get; private set; }
 
         public RollingFileContext(
             RollingFileLogger logger,
-            LogMessage logMessage,
+            LogRecord logRecord,
             Set properties = null
             )
         {
             Logger = logger;
-            LogMessage = logMessage;
+            LogRecord = logRecord;
             Properties = properties ?? new Set();
         }
     }

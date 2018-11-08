@@ -12,7 +12,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -20,7 +20,7 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
 
-            var pipedMsg = default(LogMessage);
+            var pipedMsg = default(LogRecord);
 
             var levelVerifierMock = new Mock<ILogLevelVerifier>();
             levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
@@ -28,8 +28,8 @@ namespace NWrath.Logging.Test.ApiTests
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
             targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
-            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => pipedMsg = m);
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => pipedMsg = m);
 
             var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
 
@@ -53,7 +53,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -61,7 +61,7 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
 
-            var pipedMsg = default(LogMessage);
+            var pipedMsg = default(LogRecord);
 
             var levelVerifierMock = new Mock<ILogLevelVerifier>();
             levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
@@ -69,14 +69,14 @@ namespace NWrath.Logging.Test.ApiTests
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
             targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
-            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => pipedMsg = m);
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => pipedMsg = m);
 
             var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
 
             logger.Pipes.Add((ctx, next) =>
             {
-                ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper();
+                ctx.LogRecord.Message = ctx.LogRecord.Message.ToUpper();
             });
 
             #endregion Arrange
@@ -101,8 +101,8 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = LogMessage.Empty;
-            var pipedMsg = default(LogMessage);
+            var msg = LogRecord.Empty;
+            var pipedMsg = default(LogRecord);
 
             var levelVerifierMock = new Mock<ILogLevelVerifier>();
             levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
@@ -110,8 +110,8 @@ namespace NWrath.Logging.Test.ApiTests
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
             targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
-            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => pipedMsg = m);
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => pipedMsg = m);
 
             var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
             logger.Pipes.Clear();
@@ -127,7 +127,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.AreEqual(0, logger.Pipes.Count);
-            Assert.AreSame(default(LogMessage), pipedMsg);
+            Assert.AreSame(default(LogRecord), pipedMsg);
 
             #endregion Assert
         }
@@ -137,14 +137,14 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
                 Level = LogLevel.Error,
                 Exception = new Exception("Ex")
             };
-            var pipedMsg = default(LogMessage);
+            var pipedMsg = default(LogRecord);
 
             var pipe1Called = 0;
             var pipe2Called = 0;
@@ -155,13 +155,13 @@ namespace NWrath.Logging.Test.ApiTests
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
             targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
-            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => pipedMsg = m);
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => pipedMsg = m);
 
             var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
             logger.Pipes.AddRange(
-                (ctx, next) => { pipe1Called++; ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper(); next(ctx); },
-                (ctx, next) => { pipe2Called++; ctx.LogMessage.Level = LogLevel.Debug; next(ctx); }
+                (ctx, next) => { pipe1Called++; ctx.LogRecord.Message = ctx.LogRecord.Message.ToUpper(); next(ctx); },
+                (ctx, next) => { pipe2Called++; ctx.LogRecord.Level = LogLevel.Debug; next(ctx); }
                 );
 
             #endregion Arrange
@@ -189,14 +189,14 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
                 Level = LogLevel.Error,
                 Exception = new Exception("Ex")
             };
-            var pipedMsg = default(LogMessage);
+            var pipedMsg = default(LogRecord);
 
             var pipe1Called = 0;
             var pipe2Called = 0;
@@ -207,13 +207,13 @@ namespace NWrath.Logging.Test.ApiTests
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
             targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
-            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogMessage>()))
-                          .Callback<LogMessage>(m => pipedMsg = m);
+            targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
+                          .Callback<LogRecord>(m => pipedMsg = m);
 
             var logger = new PipeLogger<ILogger>(targetLoggerMock.Object);
             logger.Pipes.AddRange(
-                (ctx, next) => { pipe1Called++; ctx.LogMessage.Message = ctx.LogMessage.Message.ToUpper(); },
-                (ctx, next) => { pipe2Called++; ctx.LogMessage.Level = LogLevel.Debug; next(ctx); }
+                (ctx, next) => { pipe1Called++; ctx.LogRecord.Message = ctx.LogRecord.Message.ToUpper(); },
+                (ctx, next) => { pipe2Called++; ctx.LogRecord.Level = LogLevel.Debug; next(ctx); }
                 );
 
             #endregion Arrange

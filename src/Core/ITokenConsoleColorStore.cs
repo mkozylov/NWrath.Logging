@@ -4,21 +4,21 @@ using System.Collections.Generic;
 namespace NWrath.Logging
 {
     public interface ITokenConsoleColorStore
-        : IDictionary<string, Func<LogMessage, ConsoleColor>>
+        : IDictionary<string, Func<LogRecord, ConsoleColor>>
     {
-        Func<LogMessage, ConsoleColor> Timestamp { get; set; }
+        Func<LogRecord, ConsoleColor> Timestamp { get; set; }
 
-        Func<LogMessage, ConsoleColor> Message { get; set; }
+        Func<LogRecord, ConsoleColor> Message { get; set; }
 
-        Func<LogMessage, ConsoleColor> Level { get; set; }
+        Func<LogRecord, ConsoleColor> Level { get; set; }
 
-        Func<LogMessage, ConsoleColor> Exception { get; set; }
+        Func<LogRecord, ConsoleColor> Exception { get; set; }
 
-        Func<LogMessage, ConsoleColor> Extra { get; set; }
+        Func<LogRecord, ConsoleColor> Extra { get; set; }
 
-        ConsoleColor this[string key, LogMessage log] { get; }
+        ConsoleColor this[string key, LogRecord record] { get; }
 
-        Func<LogMessage, ConsoleColor> this[string key, Func<LogMessage, ConsoleColor> defaultVal = null] { get; set; }
+        Func<LogRecord, ConsoleColor> this[string key, Func<LogRecord, ConsoleColor> defaultVal = null] { get; set; }
 
         event EventHandler Updated;
     }

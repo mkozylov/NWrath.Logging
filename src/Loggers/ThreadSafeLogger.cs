@@ -25,23 +25,49 @@ namespace NWrath.Logging
 
         private ILogger _baseLogger;
         private object _thisLock = new object();
+        private bool _leaveOpen;
 
-        public ThreadSafeLogger(ILogger logger)
+        public ThreadSafeLogger(
+            ILogger logger,
+            bool leaveOpen = false
+            )
         {
             BaseLogger = logger;
+            _leaveOpen = leaveOpen;
         }
 
-        public override void Log(LogMessage log)
+        ~ThreadSafeLogger()
         {
-            WriteLog(log);
+            Dispose();
         }
 
-        protected override void WriteLog(LogMessage log)
+        public override void Log(LogRecord record)
         {
             lock (_thisLock)
             {
-                _baseLogger.Log(log);
+                _baseLogger.Log(record);
             }
+        }
+
+        public override void Log(LogRecord[] batch)
+        {
+            lock (_thisLock)
+            {
+                _baseLogger.Log(batch);
+            }
+        }
+
+        public override void Dispose()
+        {
+            if (!_leaveOpen)
+            {
+                _baseLogger.Dispose();
+            }
+        }
+
+        protected override void WriteRecord(LogRecord record)
+        {
+            _baseLogger.Log(record);
         }
     }
 }

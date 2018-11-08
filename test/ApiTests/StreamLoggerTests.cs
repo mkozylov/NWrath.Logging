@@ -16,7 +16,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage();
+            var msg = new LogRecord();
             var writer = new MemoryStream();
             var serializer = new StringLogSerializer();
             var logger = new StreamLogger(writer) { Serializer = serializer };
@@ -54,7 +54,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             using (logger)
             {
-                logger.Log(LogMessage.Empty);
+                logger.Log(LogRecord.Empty);
             }
 
             #endregion Act
@@ -80,7 +80,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            logger.Log(LogMessage.Empty);
+            logger.Log(LogRecord.Empty);
             logger = null;
             GC.Collect();
             //Need wait for destructor call

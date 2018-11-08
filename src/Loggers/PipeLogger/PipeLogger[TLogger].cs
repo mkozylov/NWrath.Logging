@@ -12,7 +12,7 @@ namespace NWrath.Logging
             (ctx, next) =>
             {
                 next(ctx);
-                ctx.Logger?.Log(ctx.LogMessage);
+                ctx.Logger?.Log(ctx.LogRecord);
             }
         );
 
@@ -46,21 +46,36 @@ namespace NWrath.Logging
         private TLogger _baseLogger;
         private Set _properties = new Set();
         private PipeCollection<PipeLoggerContext<TLogger>> _pipes = new PipeCollection<PipeLoggerContext<TLogger>>();
+        private bool _leaveOpen;
 
         public PipeLogger(
-            TLogger logger
+            TLogger logger,
+            bool leaveOpen = false
             )
         {
             BaseLogger = logger;
-
+            _leaveOpen = leaveOpen;
             Pipes = ProduceDefaultPipes();
         }
 
-        protected override void WriteLog(LogMessage log)
+        ~PipeLogger()
+        {
+            Dispose();
+        }
+
+        public override void Dispose()
+        {
+            if (!_leaveOpen)
+            {
+                BaseLogger.Dispose();
+            }
+        }
+
+        protected override void WriteRecord(LogRecord record)
         {
             var pipes = Pipes;
 
-            var ctx = ProduceContext(log);
+            var ctx = ProduceContext(record);
 
             if (pipes?.Count > 0)
             {
@@ -74,14 +89,14 @@ namespace NWrath.Logging
             {
                 (ctx, next) => {
                     next(ctx);
-                    _baseLogger.Log(ctx.LogMessage);
+                    _baseLogger.Log(ctx.LogRecord);
                     }
             };
         }
 
-        private PipeLoggerContext<TLogger> ProduceContext(LogMessage log)
+        private PipeLoggerContext<TLogger> ProduceContext(LogRecord record)
         {
-            return new PipeLoggerContext<TLogger>(_baseLogger, log, Properties);
+            return new PipeLoggerContext<TLogger>(_baseLogger, record, Properties);
         }
     }
 }

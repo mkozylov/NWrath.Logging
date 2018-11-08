@@ -13,7 +13,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",

@@ -49,11 +49,11 @@ namespace NWrath.Logging.Test.ApiTests
         private void GeneralAssert(Token[] tokens, string[] tokenKeys, string[] textStrs)
         {
             Assert.AreEqual(tokenKeys.Length + textStrs.Length, tokens.Length);
-            Assert.AreEqual(tokenKeys.Length, tokens.Count(x => !x.IsString));
-            Assert.AreEqual(textStrs.Length, tokens.Count(x => x.IsString));
-            Assert.That(tokens.Where(x => !x.IsString)
+            Assert.AreEqual(tokenKeys.Length, tokens.Count(x => !x.IsLiteral));
+            Assert.AreEqual(textStrs.Length, tokens.Count(x => x.IsLiteral));
+            Assert.That(tokens.Where(x => !x.IsLiteral)
                               .All(x => tokenKeys.Contains(x.Value)));
-            Assert.That(tokens.Where(x => x.IsString)
+            Assert.That(tokens.Where(x => x.IsLiteral)
                               .All(x => textStrs.Contains(x.Value)));
         }
     }

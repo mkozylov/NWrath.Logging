@@ -17,14 +17,14 @@ namespace NWrath.Logging
             Settings = settings;
         }
 
-        public string Serialize(LogMessage log)
+        public string Serialize(LogRecord record)
         {
-            return JsonConvert.SerializeObject(log, Settings);
+            return JsonConvert.SerializeObject(record, Settings);
         }
 
-        object ILogSerializer.Serialize(LogMessage log)
+        object ILogSerializer.Serialize(LogRecord record)
         {
-            return Serialize(log);
+            return Serialize(record);
         }
     }
 }

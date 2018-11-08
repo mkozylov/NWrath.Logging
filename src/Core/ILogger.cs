@@ -1,8 +1,10 @@
-﻿using System;
+﻿using NWrath.Synergy.Common.Structs;
+using System;
 
 namespace NWrath.Logging
 {
     public interface ILogger
+        : IDisposable
     {
         ILogLevelVerifier LevelVerifier { get; set; }
 
@@ -18,14 +20,16 @@ namespace NWrath.Logging
 
         void Critical(string msg, Exception exception = null);
 
-        void Log(LogMessage log);
+        void Log(LogRecord record);
 
         void Log(
             string message,
             DateTime? timestamp = null,
             LogLevel level = LogLevel.Debug,
             Exception exception = null,
-            object extra = null
+            StringSet extra = null
             );
+
+        void Log(LogRecord[] batch);
     }
 }

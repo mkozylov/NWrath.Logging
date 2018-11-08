@@ -14,7 +14,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -45,7 +45,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var msg = new LogMessage
+            var msg = new LogRecord
             {
                 Timestamp = DateTime.Now,
                 Message = "str",
@@ -78,19 +78,19 @@ namespace NWrath.Logging.Test.ApiTests
 
             Assert.AreEqual(
                 serializer.Colors.Timestamp(msg),
-                consoleColors[nameof(LogMessage.Timestamp)]
+                consoleColors[nameof(LogRecord.Timestamp)]
                 );
             Assert.AreEqual(
                serializer.Colors.Message(msg),
-               consoleColors[nameof(LogMessage.Message)]
+               consoleColors[nameof(LogRecord.Message)]
                );
             Assert.AreEqual(
                serializer.Colors.Level(msg),
-               consoleColors[nameof(LogMessage.Level)]
+               consoleColors[nameof(LogRecord.Level)]
                );
             Assert.AreEqual(
                serializer.Colors.Exception(msg),
-               consoleColors[nameof(LogMessage.Exception)]
+               consoleColors[nameof(LogRecord.Exception)]
                );
 
             #endregion Assert

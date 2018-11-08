@@ -8,3 +8,5 @@
 /src/obj
 /test/bin
 /test/obj
+/NWrath.Logging.Performance.Test/bin
+/NWrath.Logging.Performance.Test/obj

@@ -8,18 +8,18 @@ namespace NWrath.Logging
     {
         public TLogger Logger { get; private set; }
 
-        public LogMessage LogMessage { get; set; }
+        public LogRecord LogRecord { get; set; }
 
         public Set Properties { get; } = Set.Empty;
 
         public PipeLoggerContext(
             TLogger logger,
-            LogMessage logMessage,
+            LogRecord logRecord,
             Set properties = null
             )
         {
             Logger = logger;
-            LogMessage = logMessage;
+            LogRecord = logRecord;
             Properties = properties ?? Properties;
         }
     }

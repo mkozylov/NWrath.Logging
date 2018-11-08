@@ -12,9 +12,9 @@
             System.Diagnostics.Debug.AutoFlush = true;
         }
 
-        protected override void WriteLog(LogMessage log)
+        protected override void WriteRecord(LogRecord record)
         {
-            var msg = Serializer.Serialize(log);
+            var msg = Serializer.Serialize(record);
 
             System.Diagnostics.Debug.WriteLine(msg);
         }

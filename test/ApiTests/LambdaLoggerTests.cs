@@ -10,14 +10,14 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void LambdaLogger_Log()
         {
-            var writeActionMock = new Mock<Action<LogMessage>>();
-            writeActionMock.Setup(x => x(It.IsAny<LogMessage>()));
+            var writeActionMock = new Mock<Action<LogRecord>>();
+            writeActionMock.Setup(x => x(It.IsAny<LogRecord>()));
 
             var logger = new LambdaLogger(writeActionMock.Object);
-            logger.Log(new LogMessage());
+            logger.Log(new LogRecord());
 
             Assert.AreEqual(logger.WriteAction, writeActionMock.Object);
-            writeActionMock.Verify(x => x(It.IsAny<LogMessage>()));
+            writeActionMock.Verify(x => x(It.IsAny<LogRecord>()));
         }
     }
 }
