@@ -10,3 +10,7 @@
 /test/obj
 /NWrath.Logging.Performance.Test/bin
 /NWrath.Logging.Performance.Test/obj
+/test/performance/bin
+/test/performance/obj
+/test/unit/bin
+/test/unit/obj

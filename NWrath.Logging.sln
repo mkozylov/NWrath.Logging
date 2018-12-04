@@ -5,13 +5,13 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NWrath.Logging", "src\NWrath.Logging.csproj", "{46C41E52-127E-4D88-9EB4-61212EDCCB39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWrath.Logging.Test", "test\NWrath.Logging.Test.csproj", "{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWrath.Logging.Test", "test\unit\NWrath.Logging.Test.csproj", "{2B69C501-CC96-4DA1-BCA9-8DA6D97CE324}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0268CD2F-975B-4FFC-AA96-871D88E3375E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EB297915-26BC-4DA2-BC39-3A73290E1CA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWrath.Logging.Performance.Test", "NWrath.Logging.Performance.Test\NWrath.Logging.Performance.Test.csproj", "{14343C71-378B-4CC0-97C9-6EC6EF665A52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NWrath.Logging.Performance.Test", "test\performance\NWrath.Logging.Performance.Test.csproj", "{14343C71-378B-4CC0-97C9-6EC6EF665A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
