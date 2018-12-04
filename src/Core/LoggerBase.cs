@@ -1,17 +1,23 @@
 ﻿using NWrath.Synergy.Common.Structs;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace NWrath.Logging
 {
     public abstract class LoggerBase
         : ILogger
     {
-        public virtual ILogLevelVerifier LevelVerifier { get => _levelVerifier; set { _levelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug); } }
+        public virtual ILogRecordVerifier RecordVerifier
+        {
+            get => _recordVerifier;
+            set { _recordVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug); }
+        }
 
         public virtual bool IsEnabled { get; set; } = true;
 
-        private ILogLevelVerifier _levelVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
+        private ILogRecordVerifier _recordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public virtual void Log(LogRecord record)
         {
             if (IsEnabled && VerifyRecord(record))
@@ -20,31 +26,43 @@ namespace NWrath.Logging
             }
         }
 
-        public virtual void Log(
-            string message,
-            DateTime? timestamp = null,
-            LogLevel level = LogLevel.Debug,
-            Exception exception = null,
-            StringSet extra = null
-            )
-        {
-            Log(new LogRecord(message, timestamp, level, exception, extra));
-        }
-
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public virtual void Log(LogRecord[] batch)
         {
-            if (!IsEnabled)
+            if (!IsEnabled || batch.Length == 0)
             {
                 return;
             }
 
-            foreach (var log in batch)
+            foreach (var record in batch)
             {
-                if (VerifyRecord(log))
+                if (VerifyRecord(record))
                 {
-                    WriteRecord(log);
+                    WriteRecord(record);
                 }
             }
+        }
+
+        public virtual void Log(
+           string message,
+           DateTime? timestamp = null,
+           LogLevel level = LogLevel.Debug,
+           Exception exception = null,
+           StringSet extra = null
+           )
+        {
+            Log(new LogRecord(message, timestamp, level, exception, extra));
+        }
+
+        public virtual void Log<TExtra>(
+           string message,
+           DateTime? timestamp = null,
+           LogLevel level = LogLevel.Debug,
+           Exception exception = null,
+           TExtra extra = default(TExtra)
+           )
+        {
+            Log(new LogRecord(message, timestamp, level, exception, (extra as StringSet) ?? StringSet.FromObject(extra)));
         }
 
         public virtual void Debug(string msg)
@@ -111,7 +129,7 @@ namespace NWrath.Logging
 
         protected virtual bool VerifyRecord(LogRecord record)
         {
-            return LevelVerifier.Verify(record.Level);
+            return RecordVerifier.Verify(record);
         }
 
         protected abstract void WriteRecord(LogRecord record);

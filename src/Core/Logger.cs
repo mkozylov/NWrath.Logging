@@ -11,17 +11,18 @@ namespace NWrath.Logging
 
             set
             {
-                value.Required(() => throw new ArgumentNullException());
+                if (value == null)
+                {
+                    throw new ArgumentNullException();
+                }
 
                 _isInstanceSet = true;
 
-                _instance = new Lazy<ILogger>(() => (Decorator == null ? value : Decorator(value)));
+                _instance = new Lazy<ILogger>(() => value);
             }
         }
 
-        public static Func<ILogger, ILogger> Decorator { get; set; } = l => new ThreadSafeLogger(l);
-
-        private static Lazy<ILogger> _instance = new Lazy<ILogger>(() => throw new Exception(Errors.NO_LOGGERS));
+        private static Lazy<ILogger> _instance = new Lazy<ILogger>(() => throw Errors.NO_LOGGERS);
 
         private static bool _isInstanceSet;
 

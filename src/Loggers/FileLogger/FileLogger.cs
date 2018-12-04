@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -95,9 +96,10 @@ namespace NWrath.Logging
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public void Log(byte[] data)
         {
-            if (!IsEnabled)
+            if (!IsEnabled || data.Length == 0)
             {
                 return;
             }
@@ -110,6 +112,7 @@ namespace NWrath.Logging
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord[] batch)
         {
             if (!IsEnabled || batch.Length == 0)

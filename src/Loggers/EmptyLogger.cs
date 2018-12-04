@@ -7,6 +7,10 @@
         {
         }
 
+        public override void Log(LogRecord[] batch)
+        {
+        }
+
         protected override void WriteRecord(LogRecord record)
         {
         }

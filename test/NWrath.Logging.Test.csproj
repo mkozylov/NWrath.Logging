@@ -196,10 +196,9 @@
     <Compile Include="ApiTests\ConsoleLogSerializerTests.cs" />
     <Compile Include="ApiTests\LambdaLogSerializerTests.cs" />
     <Compile Include="ApiTests\LambdaLoggerTests.cs" />
-    <Compile Include="ApiTests\ThreadSafeLoggerTests.cs" />
     <Compile Include="ApiTests\CompositeLoggerTests.cs" />
     <Compile Include="ApiTests\StringLogSerializerTests.cs" />
-    <Compile Include="ApiTests\LogLevelVerifierTests.cs" />
+    <Compile Include="ApiTests\LogRecordVerifierTests.cs" />
     <Compile Include="ApiTests\LoggerBaseTests.cs" />
     <Compile Include="ApiTests\TokenParserTests.cs" />
     <Compile Include="Structs\DbParameterStub.cs" />

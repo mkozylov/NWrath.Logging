@@ -103,31 +103,31 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new NotImplementedException()
             };
 
-            serializer.Formats.Timestamp = m => nameof(ITokenFormatStore.Timestamp);
+            serializer.Formats.Timestamp = m => nameof(RecordFormatStore.Timestamp);
             Assert.AreEqual(
-                $"{nameof(ITokenFormatStore.Timestamp)} [{msg.Level}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
+                $"{nameof(RecordFormatStore.Timestamp)} [{msg.Level}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
                 serializer.Serialize(msg)
                 );
 
-            serializer.Formats.Level = m => nameof(ITokenFormatStore.Level);
+            serializer.Formats.Level = m => nameof(RecordFormatStore.Level);
             Assert.AreEqual(
-               $"{nameof(ITokenFormatStore.Timestamp)} [{nameof(ITokenFormatStore.Level)}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
+               $"{nameof(RecordFormatStore.Timestamp)} [{nameof(RecordFormatStore.Level)}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
                serializer.Serialize(msg)
                );
 
-            serializer.Formats.Message = m => nameof(ITokenFormatStore.Message);
+            serializer.Formats.Message = m => nameof(RecordFormatStore.Message);
             Assert.AreEqual(
-                $"{nameof(ITokenFormatStore.Timestamp)} [{nameof(ITokenFormatStore.Level)}] {nameof(ITokenFormatStore.Message)}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
+                $"{nameof(RecordFormatStore.Timestamp)} [{nameof(RecordFormatStore.Level)}] {nameof(RecordFormatStore.Message)}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}",
                 serializer.Serialize(msg)
                 );
 
-            serializer.Formats.Exception = m => nameof(ITokenFormatStore.Exception);
+            serializer.Formats.Exception = m => nameof(RecordFormatStore.Exception);
             Assert.AreEqual(
-               $"{nameof(ITokenFormatStore.Timestamp)} [{nameof(ITokenFormatStore.Level)}] {nameof(ITokenFormatStore.Message)}{Environment.NewLine}{nameof(ITokenFormatStore.Exception)}",
+               $"{nameof(RecordFormatStore.Timestamp)} [{nameof(RecordFormatStore.Level)}] {nameof(RecordFormatStore.Message)}{Environment.NewLine}{nameof(RecordFormatStore.Exception)}",
                serializer.Serialize(msg)
                );
 
-            serializer.Formats = new TokenFormatStore();
+            serializer.Formats = new RecordFormatStore();
             Assert.AreEqual(
                 SerializeToDefaultOutputTemplate(msg),
                 serializer.Serialize(msg)

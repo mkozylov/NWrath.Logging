@@ -18,14 +18,14 @@ namespace NWrath.Logging.Test.ApiTests
             var loader = new LoggerJsonLoader();
             var loggerTypeArg = typeof(EmptyLogger);
             var isEnabledArg = false;
-            var json = GetThreadSafeLoggerJsonWithComplexCtor(loggerTypeArg, isEnabledArg);
+            var json = GetBackgroundLoggerJsonWithComplexCtor(loggerTypeArg, isEnabledArg);
             var section = JObject.Parse(json);
 
             #endregion Arrange
 
             #region Act
 
-            var logger = loader.Load(section) as ThreadSafeLogger;
+            var logger = loader.Load(section) as BackgroundLogger;
 
             #endregion Act
 
@@ -239,11 +239,11 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.IsInstanceOf<EmptyLogger>(logger1);
-            Assert.IsInstanceOf<MinimumLogLevelVerifier>(logger1.LevelVerifier);
-            Assert.AreEqual(LogLevel.Debug, logger1.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.IsInstanceOf<MinimumLogLevelVerifier>(logger1.RecordVerifier);
+            Assert.AreEqual(LogLevel.Debug, logger1.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.IsInstanceOf<EmptyLogger>(logger2);
-            Assert.IsInstanceOf<MinimumLogLevelVerifier>(logger2.LevelVerifier);
-            Assert.AreEqual(LogLevel.Error, logger2.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.IsInstanceOf<MinimumLogLevelVerifier>(logger2.RecordVerifier);
+            Assert.AreEqual(LogLevel.Error, logger2.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
 
             #endregion Assert
         }
@@ -285,16 +285,18 @@ namespace NWrath.Logging.Test.ApiTests
                 .ToString();
         }
 
-        private string GetThreadSafeLoggerJsonWithComplexCtor(Type loggerType, bool isEnabled)
+        private string GetBackgroundLoggerJsonWithComplexCtor(Type loggerType, bool isEnabled)
         {
             return new StringBuilder()
                 .Append("{")
-                    .Append("\"NWrath.Logging.ThreadSafeLogger\": {")
+                    .Append("\"NWrath.Logging.BackgroundLogger\": {")
                         .Append("\"$ctor\": [")
                             .Append($"{{ \"{loggerType.FullName}\": {{")
                               .Append($"\"IsEnabled\": {isEnabled.ToString().ToLower()}")
                             .Append("}}, ")
-                            .Append("false")
+                            .Append("null, ")
+                            .Append("null, ")
+                            .Append("true, ")
                         .Append("]")
                     .Append("}")
                 .Append("}")

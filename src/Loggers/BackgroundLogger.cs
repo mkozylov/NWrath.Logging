@@ -38,16 +38,10 @@ namespace NWrath.Logging
             }
         }
 
-        public override ILogLevelVerifier LevelVerifier
-        {
-            get => BaseLogger.LevelVerifier;
-            set { BaseLogger.LevelVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug); }
-        }
-
         public ILogger BaseLogger
         {
             get => _baseLogger;
-            set { _baseLogger = value ?? throw new ArgumentNullException(Errors.NULL_BASE_LOGGER); }
+            set { _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER; }
         }
 
         public TimeSpan FlushPeriod { get; private set; }
@@ -81,13 +75,39 @@ namespace NWrath.Logging
             Dispose();
         }
 
+        public override void Log(LogRecord record)
+        {
+            if (IsEnabled && VerifyRecord(record))
+            {
+                WriteRecord(record);
+            }
+        }
+
+        public override void Log(LogRecord[] batch)
+        {
+            if (!IsEnabled || batch.Length == 0)
+            {
+                return;
+            }
+
+            foreach (var record in batch)
+            {
+                if (!VerifyRecord(record))
+                {
+                    continue;
+                }
+
+                _queue.Value.Post(record);
+            }
+        }
+
         public override void Dispose()
         {
-            _cts?.Cancel();
-            _watchTask?.Wait();
-
             if (_queue.IsValueCreated)
             {
+                _cts.Cancel();
+                _watchTask.Wait();
+
                 _queue.Value.Complete();
                 _writeBlock.Completion.Wait();
             }

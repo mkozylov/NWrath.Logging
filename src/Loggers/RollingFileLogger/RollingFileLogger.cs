@@ -11,7 +11,7 @@ namespace NWrath.Logging
     public class RollingFileLogger
          : LoggerBase
     {
-        public static IPipe<RollingFileContext> LogWriterPipe = new LambdaPipe<RollingFileContext>(
+        public static IPipe<RollingFileContext> LogWriterPipe => new LambdaPipe<RollingFileContext>(
             (ctx, next) =>
             {
                 next(ctx);
@@ -39,20 +39,20 @@ namespace NWrath.Logging
         {
             get => _pipes;
 
-            set { _pipes = value ?? new PipeCollection<RollingFileContext>().Add(LogWriterPipe); }
+            set { _pipes = value ?? new PipeCollection<RollingFileContext> { LogWriterPipe }; }
         }
 
         public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
 
         public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
 
-        public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw new ArgumentNullException(Errors.NO_FILE_PROVIDER); } }
+        public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw Errors.NO_FILE_PROVIDER; } }
 
         private Lazy<IFileLogger> _writer;
         private IRollingFileProvider _fileProvider;
         private IStringLogSerializer _serializer = new StringLogSerializer();
         private Encoding _encoding = new UTF8Encoding(false);
-        private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext>();
+        private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext> { LogWriterPipe };
 
         #region Ctor
 
@@ -73,7 +73,7 @@ namespace NWrath.Logging
 
             SetDefaultPipes();
 
-            _writer = new Lazy<IFileLogger>(CreateDefaultFileWriter);
+            SetDefaultWriter();
         }
 
         ~RollingFileLogger()
@@ -103,30 +103,30 @@ namespace NWrath.Logging
             }
         }
 
-        private IFileLogger CreateDefaultFileWriter()
+        private void SetDefaultWriter()
         {
-            if (!Directory.Exists(FileProvider.FolderPath))
+            _writer = new Lazy<IFileLogger>(() =>
             {
-                Directory.CreateDirectory(FileProvider.FolderPath);
-            }
+                if (!Directory.Exists(FileProvider.FolderPath))
+                {
+                    Directory.CreateDirectory(FileProvider.FolderPath);
+                }
 
-            var fileName = FileProvider.TryResolveLastFile();
+                var fileName = FileProvider.TryResolveLastFile();
 
-            if (fileName.IsEmpty()
-                || new FileInfo(fileName).CreationTime.Date != Clock.Today)
-            {
-                fileName = FileProvider.ProduceNewFile();
-            }
+                if (fileName.IsEmpty()
+                    || new FileInfo(fileName).CreationTime.Date != Clock.Today)
+                {
+                    fileName = FileProvider.ProduceNewFile();
+                }
 
-            return new FileLogger(fileName) { FileMode = FileMode.Append };
+                return new FileLogger(fileName) { FileMode = FileMode.Append };
+            });
         }
 
         private void SetDefaultPipes()
         {
-            Pipes = new PipeCollection<RollingFileContext>();
-
-            this.AddDefaultWriterPipe()
-                .AddDailyRollerPipe();
+            this.AddDailyRollerPipe();
         }
 
         private RollingFileContext ProduceContext(LogRecord record)

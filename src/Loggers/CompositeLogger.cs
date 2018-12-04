@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using NWrath.Synergy.Common.Extensions.Collections;
 
 namespace NWrath.Logging
@@ -14,7 +16,7 @@ namespace NWrath.Logging
             {
                 if (value.IsEmpty())
                 {
-                    throw new ArgumentException(Errors.NO_LOGGERS);
+                    throw Errors.NO_LOGGERS;
                 }
 
                 _loggers = value;
@@ -43,6 +45,30 @@ namespace NWrath.Logging
                 {
                     logger.Dispose();
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public override void Log(LogRecord[] batch)
+        {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
+            var verifiedBatch = batch.Where(r => VerifyRecord(r))
+                                     .ToArray();
+
+            if (verifiedBatch.Length == 0)
+            {
+                return;
+            }
+
+            var collection = _loggers;
+
+            foreach (var l in collection)
+            {
+                l.Log(verifiedBatch);
             }
         }
 

@@ -28,7 +28,7 @@ namespace NWrath.Logging.Performance.Test
 
             new BenchmarkCaseGroup
             {
-                Info = "run once for code compile",
+                Info = "run once for code precompile",
                 ItemsCounts = new[] { 1 },
                 Benchmarks = benchmarks
             }.Start();

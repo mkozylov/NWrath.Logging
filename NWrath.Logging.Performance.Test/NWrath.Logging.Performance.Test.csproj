@@ -65,6 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmarks\NWrathDbLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\SerilogFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathBackgroundFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathFileLoggerBenchmark.cs" />

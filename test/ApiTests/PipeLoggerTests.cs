@@ -22,12 +22,12 @@ namespace NWrath.Logging.Test.ApiTests
 
             var pipedMsg = default(LogRecord);
 
-            var levelVerifierMock = new Mock<ILogLevelVerifier>();
-            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
+            var levelVerifierMock = new Mock<ILogRecordVerifier>();
+            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogRecord>())).Returns(true);
 
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
-            targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
+            targetLoggerMock.SetupProperty(x => x.RecordVerifier, levelVerifierMock.Object);
             targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
                           .Callback<LogRecord>(m => pipedMsg = m);
 
@@ -63,12 +63,12 @@ namespace NWrath.Logging.Test.ApiTests
 
             var pipedMsg = default(LogRecord);
 
-            var levelVerifierMock = new Mock<ILogLevelVerifier>();
-            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
+            var levelVerifierMock = new Mock<ILogRecordVerifier>();
+            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogRecord>())).Returns(true);
 
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
-            targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
+            targetLoggerMock.SetupProperty(x => x.RecordVerifier, levelVerifierMock.Object);
             targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
                           .Callback<LogRecord>(m => pipedMsg = m);
 
@@ -104,12 +104,12 @@ namespace NWrath.Logging.Test.ApiTests
             var msg = LogRecord.Empty;
             var pipedMsg = default(LogRecord);
 
-            var levelVerifierMock = new Mock<ILogLevelVerifier>();
-            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
+            var levelVerifierMock = new Mock<ILogRecordVerifier>();
+            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogRecord>())).Returns(true);
 
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
-            targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
+            targetLoggerMock.SetupProperty(x => x.RecordVerifier, levelVerifierMock.Object);
             targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
                           .Callback<LogRecord>(m => pipedMsg = m);
 
@@ -149,12 +149,12 @@ namespace NWrath.Logging.Test.ApiTests
             var pipe1Called = 0;
             var pipe2Called = 0;
 
-            var levelVerifierMock = new Mock<ILogLevelVerifier>();
-            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
+            var levelVerifierMock = new Mock<ILogRecordVerifier>();
+            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogRecord>())).Returns(true);
 
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
-            targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
+            targetLoggerMock.SetupProperty(x => x.RecordVerifier, levelVerifierMock.Object);
             targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
                           .Callback<LogRecord>(m => pipedMsg = m);
 
@@ -201,12 +201,12 @@ namespace NWrath.Logging.Test.ApiTests
             var pipe1Called = 0;
             var pipe2Called = 0;
 
-            var levelVerifierMock = new Mock<ILogLevelVerifier>();
-            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogLevel>())).Returns(true);
+            var levelVerifierMock = new Mock<ILogRecordVerifier>();
+            levelVerifierMock.Setup(x => x.Verify(It.IsAny<LogRecord>())).Returns(true);
 
             var targetLoggerMock = new Mock<ILogger>();
             targetLoggerMock.SetupProperty(x => x.IsEnabled, true);
-            targetLoggerMock.SetupProperty(x => x.LevelVerifier, levelVerifierMock.Object);
+            targetLoggerMock.SetupProperty(x => x.RecordVerifier, levelVerifierMock.Object);
             targetLoggerMock.Setup(x => x.Log(It.IsAny<LogRecord>()))
                           .Callback<LogRecord>(m => pipedMsg = m);
 

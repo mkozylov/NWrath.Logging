@@ -6,7 +6,7 @@ namespace NWrath.Logging
     public interface ILogger
         : IDisposable
     {
-        ILogLevelVerifier LevelVerifier { get; set; }
+        ILogRecordVerifier RecordVerifier { get; set; }
 
         bool IsEnabled { get; set; }
 
@@ -28,6 +28,14 @@ namespace NWrath.Logging
             LogLevel level = LogLevel.Debug,
             Exception exception = null,
             StringSet extra = null
+            );
+
+        void Log<TExtra>(
+            string message,
+            DateTime? timestamp = null,
+            LogLevel level = LogLevel.Debug,
+            Exception exception = null,
+            TExtra extra = default(TExtra)
             );
 
         void Log(LogRecord[] batch);

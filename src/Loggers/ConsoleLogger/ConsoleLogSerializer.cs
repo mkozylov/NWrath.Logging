@@ -20,21 +20,21 @@ namespace NWrath.Logging
             set { _outputTemplate = SetNewOutputTemplate(value ?? DefaultOutputTemplate); }
         }
 
-        public ITokenFormatStore Formats
+        public RecordFormatStore Formats
         {
             get { return _formats; }
-            set { _formats = SetNewFormats(value ?? new TokenFormatStore()); }
+            set { _formats = SetNewFormats(value ?? new RecordFormatStore()); }
         }
 
-        public ITokenConsoleColorStore Colors
+        public RecordConsoleColorStore Colors
         {
             get { return _colors; }
-            set { _colors = SetNewColors(value ?? new TokenConsoleColorStore()); }
+            set { _colors = SetNewColors(value ?? new RecordConsoleColorStore()); }
         }
 
         private string _outputTemplate = DefaultOutputTemplate;
-        private ITokenFormatStore _formats = new TokenFormatStore();
-        private ITokenConsoleColorStore _colors = new TokenConsoleColorStore();
+        private RecordFormatStore _formats = new RecordFormatStore();
+        private RecordConsoleColorStore _colors = new RecordConsoleColorStore();
         private Lazy<IStringLogSerializer> _serializeFunc;
         private ITokenParser _parser = new TokenParser();
         private static PropertyInfo[] _logProps = typeof(LogRecord).GetProperties();
@@ -219,7 +219,7 @@ namespace NWrath.Logging
             return newOutputFormat;
         }
 
-        private ITokenFormatStore SetNewFormats(ITokenFormatStore newFormats)
+        private RecordFormatStore SetNewFormats(RecordFormatStore newFormats)
         {
             _serializeFunc = new Lazy<IStringLogSerializer>(BuildSerializer);
 
@@ -231,7 +231,7 @@ namespace NWrath.Logging
             return newFormats;
         }
 
-        private ITokenConsoleColorStore SetNewColors(ITokenConsoleColorStore newColors)
+        private RecordConsoleColorStore SetNewColors(RecordConsoleColorStore newColors)
         {
             _serializeFunc = new Lazy<IStringLogSerializer>(BuildSerializer);
 

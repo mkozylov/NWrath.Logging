@@ -6,28 +6,33 @@ using System.Linq;
 namespace NWrath.Logging
 {
     public class MultipleLogLevelVerifier
-        : ILogLevelVerifier
+        : ILogRecordVerifier
     {
-        public LogLevel[] Levels { get; private set; }
+        public LogLevel[] Levels
+        {
+            get => _levels;
+
+            set
+            {
+                if ((value?.Length ?? 0) == 0)
+                {
+                    throw Errors.NO_LOG_LEVELS;
+                }
+
+                _levels = value;
+            }
+        }
+
+        private LogLevel[] _levels;
 
         public MultipleLogLevelVerifier(LogLevel[] levels)
         {
-            SetMultipleLevel(levels);
-        }
-
-        public void SetMultipleLevel(params LogLevel[] levels)
-        {
-            levels.Required(
-                x => x.NotEmpty(),
-                () => throw new ArgumentException("You must specify at least one log level")
-                );
-
             Levels = levels;
         }
 
-        public bool Verify(LogLevel level)
+        public bool Verify(LogRecord record)
         {
-            return Levels.Contains(level);
+            return Levels.Contains(record.Level);
         }
     }
 }

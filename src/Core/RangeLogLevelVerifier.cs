@@ -4,35 +4,50 @@ using System;
 namespace NWrath.Logging
 {
     public class RangeLogLevelVerifier
-        : ILogLevelVerifier
+        : ILogRecordVerifier
     {
-        public LogLevel[] Range { get; private set; }
+        public LogLevel MinLevel
+        {
+            get => _minLevel;
+
+            set
+            {
+                if ((int)value > (int)_maxLevel)
+                {
+                    throw Errors.WRONG_LOG_LEVELS;
+                }
+
+                _minLevel = value;
+            }
+        }
+
+        public LogLevel MaxLevel
+        {
+            get => _maxLevel;
+
+            set
+            {
+                if ((int)value < (int)_minLevel)
+                {
+                    throw Errors.WRONG_LOG_LEVELS;
+                }
+
+                _maxLevel = value;
+            }
+        }
+
+        private LogLevel _minLevel;
+        private LogLevel _maxLevel;
 
         public RangeLogLevelVerifier(LogLevel minLevel, LogLevel maxLevel)
         {
-            SetRangeLevel(minLevel, maxLevel);
+            MaxLevel = maxLevel;
+            MinLevel = minLevel;
         }
 
-        public void SetRangeLevel(LogLevel minLevel, LogLevel maxLevel)
+        public bool Verify(LogRecord record)
         {
-            minLevel.Required(
-                l => (int)l <= (int)maxLevel,
-                () => throw new ArgumentException($"The min level({minLevel}) can not be higher than the max level({maxLevel})")
-                );
-
-            Range = new[] { minLevel, maxLevel };
-        }
-
-        public bool Verify(LogLevel level)
-        {
-            return level >= Range[0] && level <= Range[1];
-        }
-
-        private enum VerifierType
-        {
-            Minimum,
-            Multiple,
-            Range
+            return record.Level >= _minLevel && record.Level <= _maxLevel;
         }
     }
 }

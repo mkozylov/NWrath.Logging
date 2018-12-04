@@ -8,7 +8,7 @@ namespace NWrath.Logging
     public class StreamLogger
          : LoggerBase
     {
-        public Stream Writer { get => _writer; set { _writer = value ?? throw new ArgumentNullException(Errors.NULL_STREAM); } }
+        public Stream Writer { get => _writer; set { _writer = value ?? throw Errors.NULL_STREAM; } }
 
         public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
 

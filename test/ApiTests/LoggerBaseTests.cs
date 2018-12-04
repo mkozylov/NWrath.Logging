@@ -132,13 +132,13 @@ namespace NWrath.Logging.Test.ApiTests
         {
             writeLogCallback = writeLogCallback ?? (x => { });
 
-            var verifierMock = new Mock<ILogLevelVerifier>()
-                                  .Apply(x => x.Setup(s => s.Verify(It.IsAny<LogLevel>())).Returns(verifierReturns));
+            var verifierMock = new Mock<ILogRecordVerifier>()
+                                  .Apply(x => x.Setup(s => s.Verify(It.IsAny<LogRecord>())).Returns(verifierReturns));
 
             var loggerMock = new Mock<LoggerBase>()
                                .Apply(x => x.CallBase = true)
                                .SetupProperty(x => x.IsEnabled, loggerEnabled)
-                               .SetupProperty(x => x.LevelVerifier, verifierMock.Object)
+                               .SetupProperty(x => x.RecordVerifier, verifierMock.Object)
                                .Apply(x => x.Protected()
                                             .Setup("WriteRecord", ItExpr.IsAny<LogRecord>())
                                             .Callback(writeLogCallback));

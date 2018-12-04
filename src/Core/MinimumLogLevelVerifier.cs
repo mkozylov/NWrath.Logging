@@ -1,23 +1,18 @@
 ﻿namespace NWrath.Logging
 {
     public class MinimumLogLevelVerifier
-        : ILogLevelVerifier
+        : ILogRecordVerifier
     {
-        public LogLevel MinimumLevel { get; private set; } = LogLevel.Debug;
+        public LogLevel MinimumLevel { get; set; }
 
         public MinimumLogLevelVerifier(LogLevel minLevel)
-        {
-            SetMinimumLevel(minLevel);
-        }
-
-        public void SetMinimumLevel(LogLevel minLevel)
         {
             MinimumLevel = minLevel;
         }
 
-        public bool Verify(LogLevel level)
+        public bool Verify(LogRecord record)
         {
-            return level >= MinimumLevel;
+            return record.Level >= MinimumLevel;
         }
     }
 }

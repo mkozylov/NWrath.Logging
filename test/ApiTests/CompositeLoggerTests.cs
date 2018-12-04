@@ -14,8 +14,8 @@ namespace NWrath.Logging.Test.ApiTests
 
             var loggers = new ILogger[] { new Mock<ILogger>().Object };
 
-            Assert.Throws<ArgumentException>(() => new CompositeLogger(new ILogger[] { }), err);
-            Assert.Throws<ArgumentException>(() => new CompositeLogger(loggers).Loggers = new ILogger[] { }, err);
+            Assert.Throws<ArgumentException>(() => new CompositeLogger(new ILogger[] { }), err.Message);
+            Assert.Throws<ArgumentException>(() => new CompositeLogger(loggers).Loggers = new ILogger[] { }, err.Message);
         }
 
         [Test]

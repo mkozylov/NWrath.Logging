@@ -22,6 +22,7 @@ namespace NWrath.Logging.Test.ApiTests
             var defaultEncoding = new UTF8Encoding(false);
             var defaultFileMode = FileMode.Append;
             var defaultOutputTemplate = StringLogSerializer.DefaultOutputTemplate;
+            var defaultAutoFlush = true;
             var minLevel = LogLevel.Warning;
             var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
             var outputTemplate = "{Message}";
@@ -29,167 +30,79 @@ namespace NWrath.Logging.Test.ApiTests
             var serializerApply = new Action<StringLogSerializer>(s => { s.OutputTemplate = outputTemplate; });
             var encoding = Encoding.ASCII;
             var fileMode = FileMode.Truncate;
+            var autoFlush = false;
 
             #endregion Arrange
 
             #region Act
 
-            var logger1 = LoggingWizard.Spell.FileLogger(path);
-            var logger2 = LoggingWizard.Spell.FileLogger(path, minLevel);
-            var logger3 = LoggingWizard.Spell.FileLogger(path, levelVerifier);
-            var logger4 = LoggingWizard.Spell.FileLogger(path, minLevel, serializer);
-            var logger5 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializer);
-            var logger6 = LoggingWizard.Spell.FileLogger(path, minLevel, serializerApply);
-            var logger7 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializerApply);
-            var logger8 = LoggingWizard.Spell.FileLogger(path, minLevel, serializer, encoding);
-            var logger9 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializer, encoding);
-            var logger10 = LoggingWizard.Spell.FileLogger(path, minLevel, serializerApply, encoding);
-            var logger11 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializerApply, encoding);
-            var logger12 = LoggingWizard.Spell.FileLogger(path, minLevel, serializer, encoding, fileMode);
-            var logger13 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializer, encoding, fileMode);
-            var logger14 = LoggingWizard.Spell.FileLogger(path, minLevel, serializerApply, encoding, fileMode);
-            var logger15 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializerApply, encoding, fileMode);
-            var logger16 = LoggingWizard.Spell.FileLogger(path, serializer);
-            var logger17 = LoggingWizard.Spell.FileLogger(path, serializerApply);
-            var logger18 = LoggingWizard.Spell.FileLogger(path, encoding: encoding);
-            var logger19 = LoggingWizard.Spell.FileLogger(path, fileMode: fileMode);
+            var logger1 = LoggingWizard.Spell.FileLogger(path, serializer, encoding, fileMode, autoFlush);
+            var logger2 = LoggingWizard.Spell.FileLogger(path, serializerApply, encoding, fileMode, autoFlush);
+            var logger3 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializer, encoding, fileMode, autoFlush);
+            var logger4 = LoggingWizard.Spell.FileLogger(path, levelVerifier, serializerApply, encoding, fileMode, autoFlush);
+            var logger5 = LoggingWizard.Spell.FileLogger(path, minLevel, serializer, encoding, fileMode, autoFlush);
+            var logger6 = LoggingWizard.Spell.FileLogger(path, minLevel, serializerApply, encoding, fileMode, autoFlush);
+            var logger7 = LoggingWizard.Spell.FileLogger(path);
 
             #endregion Act
 
             #region Assert
 
             //1
-            Assert.AreEqual(defaultMinLevel, logger1.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultOutputTemplate, logger1.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(defaultEncoding, logger1.Encoding);
-            Assert.AreEqual(defaultFileMode, logger1.FileMode);
+            Assert.AreEqual(defaultMinLevel, logger1.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(serializer, logger1.Serializer);
+            Assert.AreEqual(encoding, logger1.Encoding);
+            Assert.AreEqual(fileMode, logger1.FileMode);
             Assert.AreEqual(path, logger1.FilePath);
+            Assert.AreEqual(autoFlush, logger1.AutoFlush);
 
             //2
-            Assert.AreEqual(minLevel, logger2.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultOutputTemplate, logger2.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(defaultEncoding, logger2.Encoding);
-            Assert.AreEqual(defaultFileMode, logger2.FileMode);
+            Assert.AreEqual(defaultMinLevel, logger2.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(outputTemplate, logger2.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(encoding, logger2.Encoding);
+            Assert.AreEqual(fileMode, logger2.FileMode);
             Assert.AreEqual(path, logger2.FilePath);
+            Assert.AreEqual(autoFlush, logger2.AutoFlush);
 
             //3
-            Assert.AreEqual(defaultOutputTemplate, logger3.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(defaultEncoding, logger3.Encoding);
-            Assert.AreEqual(defaultFileMode, logger3.FileMode);
-            Assert.AreEqual(levelVerifier, logger3.LevelVerifier);
+            Assert.AreEqual(outputTemplate, logger3.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(encoding, logger3.Encoding);
+            Assert.AreEqual(fileMode, logger3.FileMode);
+            Assert.AreEqual(levelVerifier, logger3.RecordVerifier);
             Assert.AreEqual(path, logger3.FilePath);
+            Assert.AreEqual(autoFlush, logger3.AutoFlush);
 
             //4
-            Assert.AreEqual(minLevel, logger4.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(serializer, logger4.Serializer);
-            Assert.AreEqual(defaultEncoding, logger4.Encoding);
-            Assert.AreEqual(defaultFileMode, logger4.FileMode);
+            Assert.AreEqual(levelVerifier, logger4.RecordVerifier);
+            Assert.AreEqual(outputTemplate, logger4.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(encoding, logger4.Encoding);
+            Assert.AreEqual(fileMode, logger4.FileMode);
             Assert.AreEqual(path, logger4.FilePath);
+            Assert.AreEqual(autoFlush, logger4.AutoFlush);
 
             //5
-            Assert.AreEqual(defaultEncoding, logger5.Encoding);
-            Assert.AreEqual(defaultFileMode, logger5.FileMode);
-            Assert.AreEqual(levelVerifier, logger5.LevelVerifier);
+            Assert.AreEqual(encoding, logger5.Encoding);
+            Assert.AreEqual(fileMode, logger5.FileMode);
+            Assert.AreEqual(minLevel, logger5.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(serializer, logger5.Serializer);
             Assert.AreEqual(path, logger5.FilePath);
+            Assert.AreEqual(autoFlush, logger5.AutoFlush);
 
             //6
-            Assert.AreEqual(minLevel, logger6.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(encoding, logger6.Encoding);
+            Assert.AreEqual(fileMode, logger6.FileMode);
+            Assert.AreEqual(minLevel, logger6.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(outputTemplate, logger6.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(defaultEncoding, logger6.Encoding);
-            Assert.AreEqual(defaultFileMode, logger6.FileMode);
             Assert.AreEqual(path, logger6.FilePath);
+            Assert.AreEqual(autoFlush, logger6.AutoFlush);
 
             //7
-            Assert.AreEqual(outputTemplate, logger7.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(path, logger7.FilePath);
             Assert.AreEqual(defaultEncoding, logger7.Encoding);
             Assert.AreEqual(defaultFileMode, logger7.FileMode);
-            Assert.AreEqual(levelVerifier, logger7.LevelVerifier);
-            Assert.AreEqual(path, logger7.FilePath);
-
-            //8
-            Assert.AreEqual(outputTemplate, logger8.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(minLevel, logger8.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(encoding, logger8.Encoding);
-            Assert.AreEqual(defaultFileMode, logger8.FileMode);
-            Assert.AreEqual(path, logger8.FilePath);
-
-            //9
-            Assert.AreEqual(levelVerifier, logger9.LevelVerifier);
-            Assert.AreEqual(encoding, logger9.Encoding);
-            Assert.AreEqual(defaultFileMode, logger9.FileMode);
-            Assert.AreEqual(serializer, logger9.Serializer);
-            Assert.AreEqual(path, logger9.FilePath);
-
-            //10
-            Assert.AreEqual(minLevel, logger10.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(outputTemplate, logger10.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(encoding, logger10.Encoding);
-            Assert.AreEqual(defaultFileMode, logger10.FileMode);
-            Assert.AreEqual(path, logger10.FilePath);
-
-            //11
-            Assert.AreEqual(outputTemplate, logger11.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(encoding, logger11.Encoding);
-            Assert.AreEqual(defaultFileMode, logger11.FileMode);
-            Assert.AreEqual(levelVerifier, logger11.LevelVerifier);
-            Assert.AreEqual(path, logger11.FilePath);
-
-            //12
-            Assert.AreEqual(minLevel, logger12.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(encoding, logger12.Encoding);
-            Assert.AreEqual(fileMode, logger12.FileMode);
-            Assert.AreEqual(serializer, logger12.Serializer);
-            Assert.AreEqual(path, logger12.FilePath);
-
-            //13
-            Assert.AreEqual(levelVerifier, logger13.LevelVerifier);
-            Assert.AreEqual(encoding, logger13.Encoding);
-            Assert.AreEqual(fileMode, logger13.FileMode);
-            Assert.AreEqual(serializer, logger13.Serializer);
-            Assert.AreEqual(path, logger13.FilePath);
-
-            //14
-            Assert.AreEqual(minLevel, logger14.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(encoding, logger14.Encoding);
-            Assert.AreEqual(fileMode, logger14.FileMode);
-            Assert.AreEqual(outputTemplate, logger14.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(path, logger14.FilePath);
-
-            //15
-            Assert.AreEqual(levelVerifier, logger15.LevelVerifier);
-            Assert.AreEqual(encoding, logger15.Encoding);
-            Assert.AreEqual(fileMode, logger15.FileMode);
-            Assert.AreEqual(outputTemplate, logger15.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(path, logger15.FilePath);
-
-            //16
-            Assert.AreEqual(defaultMinLevel, logger16.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultEncoding, logger16.Encoding);
-            Assert.AreEqual(defaultFileMode, logger16.FileMode);
-            Assert.AreEqual(serializer, logger16.Serializer);
-            Assert.AreEqual(path, logger16.FilePath);
-
-            //17
-            Assert.AreEqual(defaultMinLevel, logger17.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultEncoding, logger17.Encoding);
-            Assert.AreEqual(defaultFileMode, logger17.FileMode);
-            Assert.AreEqual(outputTemplate, logger17.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(path, logger17.FilePath);
-
-            //18
-            Assert.AreEqual(encoding, logger18.Encoding);
-            Assert.AreEqual(defaultFileMode, logger18.FileMode);
-            Assert.AreEqual(defaultMinLevel, logger18.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultOutputTemplate, logger18.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(path, logger18.FilePath);
-
-            //19
-            Assert.AreEqual(defaultEncoding, logger19.Encoding);
-            Assert.AreEqual(fileMode, logger19.FileMode);
-            Assert.AreEqual(defaultMinLevel, logger19.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
-            Assert.AreEqual(defaultOutputTemplate, logger19.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
-            Assert.AreEqual(path, logger19.FilePath);
+            Assert.AreEqual(defaultMinLevel, logger7.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultOutputTemplate, logger7.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
+            Assert.AreEqual(defaultAutoFlush, logger7.AutoFlush);
 
             #endregion Assert
         }
@@ -433,32 +346,32 @@ namespace NWrath.Logging.Test.ApiTests
             #endregion Assert
         }
 
-        [Test]
-        public void WizardLoggingExtensions_ThreadSafeLogger()
-        {
-            #region Arrange
+        //[Test]
+        //public void WizardLoggingExtensions_ThreadSafeLogger()
+        //{
+        //    #region Arrange
 
-            var minLevel = LogLevel.Warning;
-            var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
-            var safeLogger = new Mock<ILogger>().Object;
-            var safeLoggerFactory = new Func<ILoggingWizardCharms, ILogger>(s => new Mock<ILogger>().Object);
+        //    var minLevel = LogLevel.Warning;
+        //    var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
+        //    var safeLogger = new Mock<ILogger>().Object;
+        //    var safeLoggerFactory = new Func<ILoggingWizardCharms, ILogger>(s => new Mock<ILogger>().Object);
 
-            #endregion Arrange
+        //    #endregion Arrange
 
-            #region Act
+        //    #region Act
 
-            var logger1 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger);
-            var logger2 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, minLevel);
-            var logger3 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, levelVerifier);
-            var logger4 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, minLevel);
-            var logger5 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, levelVerifier);
+        //    var logger1 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger);
+        //    var logger2 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, minLevel);
+        //    var logger3 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, levelVerifier);
+        //    var logger4 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, minLevel);
+        //    var logger5 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, levelVerifier);
 
-            #endregion Act
+        //    #endregion Act
 
-            #region Assert
+        //    #region Assert
 
-            #endregion Assert
-        }
+        //    #endregion Assert
+        //}
 
         [Test]
         public void WizardLoggingExtensions_RollingFileLogger()
@@ -506,7 +419,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.IsNotEmpty(logger1.Pipes);
-            Assert.AreEqual(defaultMinLevel, logger1.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultMinLevel, logger1.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(defaultOutputTemplate, logger1.Serializer.CastTo<StringLogSerializer>().OutputTemplate);
             Assert.AreEqual(defaultEncoding, logger1.Encoding);
             Assert.AreEqual(folder, logger1.FileProvider.FolderPath);
@@ -514,7 +427,7 @@ namespace NWrath.Logging.Test.ApiTests
             Assert.AreEqual(pipeCollection, logger2.Pipes);
             Assert.AreEqual(serializer, logger2.Serializer);
             Assert.AreEqual(encoding, logger2.Encoding);
-            Assert.AreEqual(defaultMinLevel, logger2.LevelVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
+            Assert.AreEqual(defaultMinLevel, logger2.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(folder, logger2.FileProvider.FolderPath);
 
             #endregion Assert

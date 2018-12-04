@@ -214,7 +214,7 @@ namespace NWrath.Logging
             switch (jvalue.Type)
             {
                 case JTokenType.String:
-                    loggerInstance.LevelVerifier = new MinimumLogLevelVerifier(
+                    loggerInstance.RecordVerifier = new MinimumLogLevelVerifier(
                         ParseLogLevel(jvalue.Value<string>())
                         );
                     break;
@@ -222,14 +222,14 @@ namespace NWrath.Logging
                 case JTokenType.Object:
                     var rangeLevel = (JProperty)jvalue.First;
 
-                    loggerInstance.LevelVerifier = new RangeLogLevelVerifier(
+                    loggerInstance.RecordVerifier = new RangeLogLevelVerifier(
                         ParseLogLevel(rangeLevel.Name),
                         ParseLogLevel(rangeLevel.Value.ToString())
                         );
                     break;
 
                 case JTokenType.Array:
-                    loggerInstance.LevelVerifier = new MultipleLogLevelVerifier(
+                    loggerInstance.RecordVerifier = new MultipleLogLevelVerifier(
                         jvalue.Values<string>().Select(x => ParseLogLevel(x)).ToArray()
                         );
                     break;
