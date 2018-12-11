@@ -4,7 +4,7 @@ using System.Text;
 
 namespace NWrath.Logging
 {
-    public class LogTableSchema
+    public class SqlLogTableSchema
         : ILogTableSchema
     {
         #region DefaultColumns
@@ -70,7 +70,7 @@ namespace NWrath.Logging
 
         public LogTableColumnSchema[] Columns { get; private set; }
 
-        public LogTableSchema(
+        public SqlLogTableSchema(
             string tableName = DefaultTableName,
             string initScript = null,
             string inserLogScript = null,
@@ -84,7 +84,7 @@ namespace NWrath.Logging
             InserLogScript = inserLogScript ?? BuildDefaultInserLogScript();
         }
 
-        public LogTableSchema(LogTableSchemaConfig config)
+        public SqlLogTableSchema(LogTableSchemaConfig config)
             : this(config.TableName, config.InitScript, config.InserLogScript, config.Columns)
         {
         }

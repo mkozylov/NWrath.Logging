@@ -4,15 +4,15 @@ using System.Text;
 namespace NWrath.Logging.Test.ApiTests
 {
     [TestFixture]
-    public class LogTableSchemaTests
+    public class SqlLogTableSchemaTests
     {
         [Test]
         public void LogTableSchema_Default()
         {
             #region Arrange
 
-            var initScript = new StringBuilder($"IF OBJECT_ID(N'{LogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
-                                        .Append($"CREATE TABLE {LogTableSchema.DefaultTableName}(")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'{SqlLogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE {SqlLogTableSchema.DefaultTableName}(")
                                             .Append("Id BIGINT NOT NULL PRIMARY KEY IDENTITY,")
                                             .Append("Timestamp DATETIME NOT NULL,")
                                             .Append("Message VARCHAR(MAX) NOT NULL,")
@@ -20,26 +20,26 @@ namespace NWrath.Logging.Test.ApiTests
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO {LogTableSchema.DefaultTableName}(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
+            var insertScript = $"INSERT INTO {SqlLogTableSchema.DefaultTableName}(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
 
             var defaultColumns = new[] {
-                LogTableSchema.IdColumn,
-                LogTableSchema.TimestampColumn,
-                LogTableSchema.MessageColumn,
-                LogTableSchema.LevelColumn
+                SqlLogTableSchema.IdColumn,
+                SqlLogTableSchema.TimestampColumn,
+                SqlLogTableSchema.MessageColumn,
+                SqlLogTableSchema.LevelColumn
             };
 
             #endregion Arrange
 
             #region Act
 
-            var ts = new LogTableSchema();
+            var ts = new SqlLogTableSchema();
 
             #endregion Act
 
             #region Assert
 
-            Assert.AreEqual(LogTableSchema.DefaultTableName, ts.TableName);
+            Assert.AreEqual(SqlLogTableSchema.DefaultTableName, ts.TableName);
             Assert.AreEqual(defaultColumns.Length, ts.Columns.Length);
             Assert.AreEqual(initScript, ts.InitScript);
             Assert.AreEqual(insertScript, ts.InserLogScript);
@@ -60,7 +60,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            var ts = new LogTableSchema(initScript: initScript, inserLogScript: insertScript);
+            var ts = new SqlLogTableSchema(initScript: initScript, inserLogScript: insertScript);
 
             #endregion Act
 
@@ -94,7 +94,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            var ts = new LogTableSchema(newTableName);
+            var ts = new SqlLogTableSchema(newTableName);
 
             #endregion Act
 
@@ -113,24 +113,24 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var newColumns = new[] {
-                LogTableSchema.MessageColumn,
-                LogTableSchema.ExceptionColumn
+                SqlLogTableSchema.MessageColumn,
+                SqlLogTableSchema.ExceptionColumn
             };
 
-            var initScript = new StringBuilder($"IF OBJECT_ID(N'{LogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
-                                        .Append($"CREATE TABLE {LogTableSchema.DefaultTableName}(")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'{SqlLogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE {SqlLogTableSchema.DefaultTableName}(")
                                             .Append("Message VARCHAR(MAX) NOT NULL,")
                                             .Append("Exception VARCHAR(MAX) NULL")
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO {LogTableSchema.DefaultTableName}(Message, Exception) VALUES(@Message, @Exception)";
+            var insertScript = $"INSERT INTO {SqlLogTableSchema.DefaultTableName}(Message, Exception) VALUES(@Message, @Exception)";
 
             #endregion Arrange
 
             #region Act
 
-            var ts = new LogTableSchema(columns: newColumns);
+            var ts = new SqlLogTableSchema(columns: newColumns);
 
             #endregion Act
 

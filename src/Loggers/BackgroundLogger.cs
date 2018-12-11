@@ -33,7 +33,7 @@ namespace NWrath.Logging
                 }
                 else
                 {
-                    Dispose();
+                    Dispose(true);
                 }
             }
         }
@@ -103,6 +103,16 @@ namespace NWrath.Logging
 
         public override void Dispose()
         {
+            Dispose(false);
+        }
+
+        protected override void WriteRecord(LogRecord record)
+        {
+            _queue.Value.Post(record);
+        }
+
+        private void Dispose(bool leaveOpenBaseLoger)
+        {
             if (_queue.IsValueCreated)
             {
                 _cts.Cancel();
@@ -112,15 +122,10 @@ namespace NWrath.Logging
                 _writeBlock.Completion.Wait();
             }
 
-            if (!_leaveOpen)
+            if (!leaveOpenBaseLoger && !_leaveOpen)
             {
                 _baseLogger.Dispose();
             }
-        }
-
-        protected override void WriteRecord(LogRecord record)
-        {
-            _queue.Value.Post(record);
         }
 
         private void StartWatchBuffer()

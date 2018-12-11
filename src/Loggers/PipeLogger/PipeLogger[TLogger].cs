@@ -60,14 +60,9 @@ namespace NWrath.Logging
 
         protected override void WriteRecord(LogRecord record)
         {
-            var pipes = Pipes;
-
             var ctx = ProduceContext(record);
 
-            if (pipes.Count > 0)
-            {
-                pipes.Pipeline.Perform(ctx);
-            }
+            Pipes.Pipeline?.Perform(ctx);
         }
 
         private PipeLoggerContext<TLogger> ProduceContext(LogRecord record)

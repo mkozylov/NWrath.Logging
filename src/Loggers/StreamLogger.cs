@@ -59,7 +59,7 @@ namespace NWrath.Logging
 
             Writer.Write(data, 0, data.Length);
 
-            if (AutoFlush)
+            if (AutoFlush && Writer.CanWrite)
             {
                 Writer.Flush();
             }

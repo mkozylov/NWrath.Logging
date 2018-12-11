@@ -64,9 +64,9 @@ namespace NWrath.Logging
                 return;
             }
 
-            var collection = _loggers;
+            var loggers = _loggers;
 
-            foreach (var l in collection)
+            foreach (var l in loggers)
             {
                 l.Log(verifiedBatch);
             }
@@ -74,9 +74,9 @@ namespace NWrath.Logging
 
         protected override void WriteRecord(LogRecord record)
         {
-            var collection = _loggers;
+            var loggers = _loggers;
 
-            foreach (var l in collection)
+            foreach (var l in loggers)
             {
                 l.Log(record);
             }

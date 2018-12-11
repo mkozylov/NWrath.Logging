@@ -61,9 +61,9 @@ namespace NWrath.Logging.Test.ApiTests
             var m = cmd.Parameters[1];
             var l = cmd.Parameters[2];
 
-            Assert.AreEqual("@Timestamp", t.ParameterName);
-            Assert.AreEqual("@Message", m.ParameterName);
-            Assert.AreEqual("@Level", l.ParameterName);
+            Assert.AreEqual("Timestamp", t.ParameterName);
+            Assert.AreEqual("Message", m.ParameterName);
+            Assert.AreEqual("Level", l.ParameterName);
 
             Assert.AreEqual($"{log.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}", t.Value.ToString());
             Assert.AreEqual(log.Message, m.Value);

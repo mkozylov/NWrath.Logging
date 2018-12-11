@@ -26,7 +26,7 @@ namespace NWrath.Logging
 
             set
             {
-                _tableSchema = value ?? new LogTableSchema();
+                _tableSchema = value ?? throw Errors.NULL_LOG_TABLE_SCHEMA;
 
                 SelfInit();
             }
@@ -34,7 +34,7 @@ namespace NWrath.Logging
 
         private Lazy<DbLogger> _self;
         private LogTableColumnSchema[] _writeColumns;
-        private ILogTableSchema _tableSchema = new LogTableSchema();
+        private ILogTableSchema _tableSchema = new SqlLogTableSchema();
         private string _connectionString;
 
         public DbLogger(string connectionString)
@@ -64,7 +64,7 @@ namespace NWrath.Logging
                 {
                     var p = cmd.CreateParameter();
 
-                    p.ParameterName = $"@{col.Name}";
+                    p.ParameterName = col.Name;
 
                     cmd.Parameters.Add(p);
                 }
@@ -78,7 +78,7 @@ namespace NWrath.Logging
 
                     foreach (var col in _writeColumns)
                     {
-                        cmd.Parameters[$"@{col.Name}"].Value = col.Serializer.Serialize(record);
+                        cmd.Parameters[col.Name].Value = col.Serializer.Serialize(record);
                     }
 
                     cmd.ExecuteNonQuery();
@@ -100,7 +100,7 @@ namespace NWrath.Logging
                 {
                     var p = cmd.CreateParameter();
 
-                    p.ParameterName = $"@{col.Name}";
+                    p.ParameterName = col.Name;
 
                     p.Value = col.Serializer.Serialize(record);
 

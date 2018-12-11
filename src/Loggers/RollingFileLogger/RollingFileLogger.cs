@@ -71,6 +71,11 @@ namespace NWrath.Logging
         {
             FileProvider = fileNameProvider;
 
+            if (!Directory.Exists(FileProvider.FolderPath))
+            {
+                Directory.CreateDirectory(FileProvider.FolderPath);
+            }
+
             SetDefaultPipes();
 
             SetDefaultWriter();
@@ -107,11 +112,6 @@ namespace NWrath.Logging
         {
             _writer = new Lazy<IFileLogger>(() =>
             {
-                if (!Directory.Exists(FileProvider.FolderPath))
-                {
-                    Directory.CreateDirectory(FileProvider.FolderPath);
-                }
-
                 var fileName = FileProvider.TryResolveLastFile();
 
                 if (fileName.IsEmpty()

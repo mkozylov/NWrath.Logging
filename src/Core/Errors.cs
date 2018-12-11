@@ -12,6 +12,8 @@ namespace NWrath.Logging
 
         public static ArgumentNullException NULL_LAMBDA = new ArgumentNullException("You need set lambda action!");
 
+        public static ArgumentNullException NULL_LOG_TABLE_SCHEMA = new ArgumentNullException("You need set log table schema!");
+
         public static ArgumentException NO_FILE_PROVIDER = new ArgumentException("You need set file provider!");
 
         public static ArgumentException NO_CONNECTION_STRING = new ArgumentException("You need set db connection string!");

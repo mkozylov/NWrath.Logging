@@ -14,6 +14,12 @@ namespace NWrath.Logging.Performance.Test
     {
         private static void Main(string[] args)
         {
+            var logger = LoggingWizard.Spell.DbLogger("Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True");
+
+            logger.Log("qwe");
+
+            logger.Dispose();
+
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 
             var items = new[] { 64000 };

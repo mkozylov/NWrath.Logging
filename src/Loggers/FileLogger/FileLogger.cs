@@ -21,7 +21,7 @@ namespace NWrath.Logging
 
                 if (_isEnabled)
                 {
-                    SetWriter(_filePath, FileMode);
+                    SetWriter(_filePath);
                 }
                 else
                 {
@@ -30,7 +30,7 @@ namespace NWrath.Logging
             }
         }
 
-        public string FilePath { get => _filePath; set { Dispose(); SetWriter(value, FileMode); } }
+        public string FilePath { get => _filePath; set { Dispose(); SetWriter(value); } }
 
         public long FileSize
         {
@@ -67,7 +67,7 @@ namespace NWrath.Logging
         {
             _filePath = filePath;
 
-            SetWriter(filePath, FileMode);
+            SetWriter(filePath);
         }
 
         ~FileLogger()
@@ -154,15 +154,15 @@ namespace NWrath.Logging
             }
         }
 
-        private void SetWriter(string fileName, FileMode mode)
+        private void SetWriter(string fileName)
         {
             _filePath = fileName;
 
             _writer = new Lazy<FileStream>(() =>
             {
                 return new FileStream(
-                    fileName,
-                    mode,
+                    FilePath,
+                    FileMode,
                     FileAccess.Write,
                     FileShare.Read
                     );

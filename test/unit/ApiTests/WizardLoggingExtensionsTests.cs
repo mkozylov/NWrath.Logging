@@ -116,9 +116,9 @@ namespace NWrath.Logging.Test.ApiTests
             var tableName = "Log";
             var minLevel = LogLevel.Warning;
             var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
-            var tableSchema = new LogTableSchema(tableName);
+            var tableSchema = new SqlLogTableSchema(tableName);
             var tableSchemaApply = new Action<LogTableSchemaConfig>(s => s.TableName = tableName);
-            var defTableSchema = new LogTableSchema();
+            var defTableSchema = new SqlLogTableSchema();
 
             #endregion Arrange
 
@@ -387,8 +387,10 @@ namespace NWrath.Logging.Test.ApiTests
             var serializer = new StringLogSerializer { OutputTemplate = outputTemplate };
             var serializerApply = new Action<StringLogSerializer>(s => { s.OutputTemplate = outputTemplate; });
             var encoding = Encoding.ASCII;
-            var folder = "folder";
-            var fileNameProvider = new Mock<IRollingFileProvider>().Object;
+            var folder = Environment.CurrentDirectory;
+            var fileNameProviderMock = new Mock<IRollingFileProvider>();
+            fileNameProviderMock.SetupGet(x => x.FolderPath).Returns(folder);
+            var fileNameProvider = fileNameProviderMock.Object;
             var stubPipe = LambdaPipe<RollingFileContext>.Stub;
             var stubPipeDelegate = new Action<RollingFileContext, Action<RollingFileContext>>(
                 (c, n) => { stubPipe.Perform(c); n(c); }

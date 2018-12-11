@@ -24,22 +24,25 @@ namespace NWrath.Logging
                                   .Where(x => x.CreationTime <= expireTime)
                                   .ToArray();
 
-            var isCurrentFileExpired = false;
+            var currentExpiredFile = "";
 
             foreach (var file in expiredFiles)
             {
                 if (ctx.Logger.Writer.IsValueCreated
                     && file.FullName == ctx.Logger.Writer.Value.FilePath)
                 {
-                    isCurrentFileExpired = true;
+                    currentExpiredFile = file.FullName;
                 }
-
-                file.Delete();
+                else
+                {
+                    file.Delete();
+                }
             }
 
-            if (isCurrentFileExpired)
+            if (!string.IsNullOrEmpty(currentExpiredFile))
             {
                 ctx.Logger.Writer.Value.FilePath = ctx.Logger.FileProvider.ProduceNewFile();
+                File.Delete(currentExpiredFile);
             }
         }
     }

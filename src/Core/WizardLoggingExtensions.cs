@@ -688,7 +688,7 @@ namespace NWrath.Logging
         {
             return new DbLogger(connectionString)
             {
-                TableSchema = tableSchema,
+                TableSchema = tableSchema ?? new SqlLogTableSchema(),
                 RecordVerifier = recordVerifier
             };
         }
@@ -714,7 +714,7 @@ namespace NWrath.Logging
 
             schemaApply(args);
 
-            var schema = new LogTableSchema(args.TableName, args.InitScript, args.InserLogScript, args.Columns);
+            var schema = new SqlLogTableSchema(args.TableName, args.InitScript, args.InserLogScript, args.Columns);
 
             return new DbLogger(connectionString)
             {
@@ -825,8 +825,28 @@ namespace NWrath.Logging
         public static LambdaLogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord> writeAction,
+            Action<LogRecord[]> batchAction,
             ILogRecordVerifier recordVerifier
             )
+        {
+            return new LambdaLogger(writeAction, batchAction) { RecordVerifier = recordVerifier };
+        }
+
+        public static LambdaLogger LambdaLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogRecord> writeAction,
+            Action<LogRecord[]> batchAction,
+            LogLevel minLevel
+            )
+        {
+            return LambdaLogger(charms, writeAction, batchAction, new MinimumLogLevelVerifier(minLevel));
+        }
+
+        public static LambdaLogger LambdaLogger(
+           this ILoggingWizardCharms charms,
+           Action<LogRecord> writeAction,
+           ILogRecordVerifier recordVerifier
+           )
         {
             return new LambdaLogger(writeAction) { RecordVerifier = recordVerifier };
         }
@@ -837,7 +857,7 @@ namespace NWrath.Logging
             LogLevel minLevel
             )
         {
-            return LambdaLogger(charms, writeAction, new MinimumLogLevelVerifier(minLevel));
+            return LambdaLogger(charms, writeAction, null, minLevel);
         }
 
         public static LambdaLogger LambdaLogger(
@@ -845,7 +865,16 @@ namespace NWrath.Logging
             Action<LogRecord> writeAction
             )
         {
-            return LambdaLogger(charms, writeAction, new MinimumLogLevelVerifier(LogLevel.Debug));
+            return LambdaLogger(charms, writeAction, (Action<LogRecord[]>)null);
+        }
+
+        public static LambdaLogger LambdaLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogRecord> writeAction,
+            Action<LogRecord[]> batchAction
+            )
+        {
+            return LambdaLogger(charms, writeAction, batchAction, new MinimumLogLevelVerifier(LogLevel.Debug));
         }
 
         #endregion Lambda

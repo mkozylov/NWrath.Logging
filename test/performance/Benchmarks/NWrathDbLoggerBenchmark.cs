@@ -17,7 +17,7 @@ namespace NWrath.Logging.Performance.Test
         {
             _logger = LoggingWizard.Spell.BackgroundLogger(f => f.DbLogger(
                         "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True",
-                        s => s.Columns = new[] { LogTableSchema.IdColumn, LogTableSchema.MessageColumn }
+                        s => s.Columns = new[] { SqlLogTableSchema.IdColumn, SqlLogTableSchema.MessageColumn }
                         ));
         }
 
