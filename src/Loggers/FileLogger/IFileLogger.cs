@@ -6,12 +6,12 @@ namespace NWrath.Logging
     public interface IFileLogger
         : ILogger
     {
-        string FilePath { get; set; }
+        string FilePath { get; }
 
         long FileSize { get; }
 
-        FileMode FileMode { get; set; }
-
         void Log(byte[] data);
+
+        void SetFile(string filePath, FileMode fileMode = FileMode.Append);
     }
 }

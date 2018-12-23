@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using NWrath.Synergy.Common.Structs;
 using NWrath.Synergy.Reflection.Extensions;
+using System.Reflection;
+using System.Globalization;
 
 namespace NWrath.Logging
 {
@@ -151,8 +153,8 @@ namespace NWrath.Logging
                                  {
                                      var parameters = c.GetParameters();
 
-                                     return expectedCtorArgsCount == parameters.Length
-                                            && (parameters.Length == 0 || ctorArgTypes.Select((x, i) => x == null || (parameters.ElementAtOrDefault(i)?.ParameterType?.IsAssignableFrom(x) ?? false))
+                                     return //expectedCtorArgsCount == parameters.Length &&
+                                            (parameters.Length == 0 || ctorArgTypes.Select((x, i) => x == null || (parameters.ElementAtOrDefault(i)?.ParameterType?.IsAssignableFrom(x) ?? false))
                                                                                       .All(x => x));
                                  })
                                  ?.GetParameters();
@@ -162,7 +164,17 @@ namespace NWrath.Logging
                         : ctorProp.Select((t, i) => _factories.First(f => f.Predicate(t)).Produce(t, ctorParams.ElementAtOrDefault(i)?.ParameterType))
                                   .ToArray();
 
-            return Activator.CreateInstance(type, args);
+            if (args.Length > 0 && args.Length > expectedCtorArgsCount)
+            {
+                args = args.Concat(Enumerable.Repeat(Type.Missing, args.Length - expectedCtorArgsCount))
+                           .ToArray();
+            }
+
+            return Activator.CreateInstance(type,
+                    BindingFlags.CreateInstance |
+                    BindingFlags.Public |
+                    BindingFlags.Instance |
+                    BindingFlags.OptionalParamBinding, null, args, CultureInfo.CurrentCulture);
         }
 
         private void AssignInstanceMembers(JProperty prop, Type type, object instance)

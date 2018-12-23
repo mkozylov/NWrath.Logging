@@ -31,11 +31,11 @@ namespace NWrath.Logging
 
         public bool Predicate(RollingFileContext ctx)
         {
-            var str = ctx.Logger.Serializer.Serialize(ctx.LogRecord);
+            var str = ctx.Serializer.Serialize(ctx.LogRecord);
 
-            var bytes = ctx.Logger.Encoding.GetBytes(str);
+            var bytes = ctx.Encoding.GetBytes(str);
 
-            return (ctx.Logger.Writer.Value.FileSize + bytes.Length) > BytesLimit;
+            return (ctx.LogFile.Size + bytes.Length) > BytesLimit;
         }
     }
 }

@@ -5,7 +5,7 @@
     {
         public void Execute(RollingFileContext ctx)
         {
-            ctx.Logger.IsEnabled = false;
+            ctx.IsLoggerEnabled = false;
         }
     }
 }

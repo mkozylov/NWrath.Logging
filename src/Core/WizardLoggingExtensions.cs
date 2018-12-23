@@ -22,12 +22,11 @@ namespace NWrath.Logging
            bool autoFlush = true
            )
         {
-            return new FileLogger(filePath)
+            return new FileLogger(filePath, fileMode)
             {
                 Serializer = serializer,
                 Encoding = encoding,
                 RecordVerifier = recordVerifier,
-                FileMode = fileMode,
                 AutoFlush = autoFlush
             };
         }
@@ -71,12 +70,11 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath)
+            return new FileLogger(filePath, fileMode)
             {
                 Serializer = serializer,
                 Encoding = encoding,
                 RecordVerifier = recordVerifier,
-                FileMode = fileMode,
                 AutoFlush = autoFlush
             };
         }
@@ -95,12 +93,11 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath)
+            return new FileLogger(filePath, fileMode)
             {
                 Serializer = serializer,
                 Encoding = encoding,
                 RecordVerifier = new MinimumLogLevelVerifier(minLevel),
-                FileMode = fileMode,
                 AutoFlush = autoFlush
             };
         }
@@ -118,12 +115,11 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath)
+            return new FileLogger(filePath, fileMode)
             {
                 Serializer = serializer,
                 Encoding = encoding,
                 RecordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug),
-                FileMode = fileMode,
                 AutoFlush = autoFlush
             };
         }
@@ -197,195 +193,6 @@ namespace NWrath.Logging
         }
 
         #endregion Console
-
-        #region Pipe
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            TLogger logger,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger
-        {
-            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
-
-            collection.AddRange(pipes);
-
-            return PipeLogger(charms, logger, collection, null);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            TLogger logger,
-            Set properties = null,
-            bool leaveOpen = false,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger
-        {
-            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
-
-            collection.AddRange(pipes);
-
-            return PipeLogger(charms, logger, collection, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            TLogger logger,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger
-        {
-            return new PipeLogger<TLogger>(logger, leaveOpen) { Pipes = pipes, Properties = properties };
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-           this ILoggingWizardCharms charms,
-           TLogger logger,
-           IPipe<PipeLoggerContext<TLogger>>[] pipes,
-           Set properties = null,
-           bool leaveOpen = false
-           )
-           where TLogger : class, ILogger
-        {
-            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
-
-            collection.AddRange(pipes);
-
-            return PipeLogger(charms, logger, collection, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            TLogger logger,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger
-        {
-            var collection = new PipeCollection<PipeLoggerContext<TLogger>>();
-
-            pipesApply(collection);
-
-            return PipeLogger(charms, logger, collection, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger
-        {
-            return PipeLogger(charms, loggerFactory(charms), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-           this ILoggingWizardCharms charms,
-           Func<ILoggingWizardCharms, TLogger> loggerFactory,
-           IPipe<PipeLoggerContext<TLogger>>[] pipes,
-           Set properties = null,
-           bool leaveOpen = false
-           )
-           where TLogger : class, ILogger
-        {
-            return PipeLogger(charms, loggerFactory(charms), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger
-        {
-            return PipeLogger(charms, loggerFactory(charms), pipes, null);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            Set properties = null,
-            bool leaveOpen = false,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger
-        {
-            return PipeLogger(charms, loggerFactory(charms), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Func<ILoggingWizardCharms, TLogger> loggerFactory,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger
-        {
-            return PipeLogger(charms, loggerFactory(charms), pipesApply, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            PipeCollection<PipeLoggerContext<TLogger>> pipes,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            IPipe<PipeLoggerContext<TLogger>>[] pipes,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), pipes, null);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Set properties = null,
-            bool leaveOpen = false,
-            params Action<PipeLoggerContext<TLogger>, Action<PipeLoggerContext<TLogger>>>[] pipes
-            )
-            where TLogger : class, ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), pipes, properties, leaveOpen);
-        }
-
-        public static PipeLogger<TLogger> PipeLogger<TLogger>(
-            this ILoggingWizardCharms charms,
-            Action<PipeCollection<PipeLoggerContext<TLogger>>> pipesApply,
-            Set properties = null,
-            bool leaveOpen = false
-            )
-            where TLogger : class, ILogger, new()
-        {
-            return PipeLogger(charms, new TLogger(), pipesApply, properties, leaveOpen);
-        }
-
-        #endregion Pipe
 
         #region RollingFile
 
@@ -900,118 +707,6 @@ namespace NWrath.Logging
 
         #endregion LoadFromJson
 
-        #region Stream
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            ILogRecordVerifier recordVerifier,
-            IStringLogSerializer serializer = null,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            return new StreamLogger(writer, autoFlush, leaveOpen)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = recordVerifier
-            };
-        }
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            LogLevel minLevel,
-            IStringLogSerializer serializer = null,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            return StreamLogger(charms, writer, new MinimumLogLevelVerifier(minLevel), serializer, encoding, autoFlush, leaveOpen);
-        }
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            IStringLogSerializer serializer = null,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            return StreamLogger(charms, writer, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, autoFlush, leaveOpen);
-        }
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            ILogRecordVerifier recordVerifier,
-            Action<StringLogSerializer> serializerApply,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            var serializer = new StringLogSerializer();
-
-            serializerApply?.Invoke(serializer);
-
-            return new StreamLogger(writer, autoFlush, leaveOpen)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = recordVerifier
-            };
-        }
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            LogLevel minLevel,
-            Action<StringLogSerializer> serializerApply,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            var serializer = new StringLogSerializer();
-
-            serializerApply?.Invoke(serializer);
-
-            return new StreamLogger(writer, autoFlush, leaveOpen)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = new MinimumLogLevelVerifier(minLevel)
-            };
-        }
-
-        public static StreamLogger StreamLogger(
-            this ILoggingWizardCharms charms,
-            Stream writer,
-            Action<StringLogSerializer> serializerApply,
-            Encoding encoding = null,
-            bool autoFlush = false,
-            bool leaveOpen = false
-            )
-        {
-            var serializer = new StringLogSerializer();
-
-            serializerApply?.Invoke(serializer);
-
-            return new StreamLogger(writer, autoFlush, leaveOpen)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug)
-            };
-        }
-
-        #endregion Stream
-
         #region Background
 
         public static BackgroundLogger BackgroundLogger(
@@ -1067,53 +762,5 @@ namespace NWrath.Logging
         }
 
         #endregion Background
-
-        #region ThreadSave
-
-        //public static ThreadSafeLogger ThreadSafeLogger(
-        //    this ILoggingWizardCharms charms,
-        //    ILogger logger,
-        //    ILogLevelVerifier recordVerifier,
-        //    bool leaveOpen = false
-        //    )
-        //{
-        //    return new ThreadSafeLogger(logger, leaveOpen);
-        //}
-
-        //public static ThreadSafeLogger ThreadSafeLogger(
-        //    this ILoggingWizardCharms charms,
-        //    Func<ILoggingWizardCharms, ILogger> loggerFactory,
-        //    ILogLevelVerifier recordVerifier,
-        //    bool leaveOpen = false
-        //    )
-        //{
-        //    var logger = loggerFactory(charms);
-
-        //    return ThreadSafeLogger(charms, logger, recordVerifier, leaveOpen);
-        //}
-
-        //public static ThreadSafeLogger ThreadSafeLogger(
-        //   this ILoggingWizardCharms charms,
-        //   ILogger logger,
-        //   LogLevel minLevel = LogLevel.Debug,
-        //    bool leaveOpen = false
-        //   )
-        //{
-        //    return ThreadSafeLogger(charms, logger, new MinimumLogLevelVerifier(minLevel), leaveOpen);
-        //}
-
-        //public static ThreadSafeLogger ThreadSafeLogger(
-        //    this ILoggingWizardCharms charms,
-        //    Func<ILoggingWizardCharms, ILogger> loggerFactory,
-        //    LogLevel minLevel = LogLevel.Debug,
-        //    bool leaveOpen = false
-        //    )
-        //{
-        //    var logger = loggerFactory(charms);
-
-        //    return ThreadSafeLogger(charms, logger, new MinimumLogLevelVerifier(minLevel), leaveOpen);
-        //}
-
-        #endregion ThreadSave
     }
 }

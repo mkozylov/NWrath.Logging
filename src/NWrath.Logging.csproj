@@ -10,7 +10,7 @@
     <PackageLicenseUrl>https://github.com/mkozylov/NWrath.Logging/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mkozylov/NWrath.Logging/wiki</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mkozylov/NWrath.Logging/</RepositoryUrl>
-    <Version>1.0.5</Version>
+    <Version>1.0.7</Version>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
@@ -26,6 +26,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Loggers\PipeLogger\**" />
+    <EmbeddedResource Remove="Loggers\PipeLogger\**" />
+    <None Remove="Loggers\PipeLogger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Loggers\StreamLogger.cs" />
     <Compile Remove="Loggers\ThreadSafeLogger.cs" />
   </ItemGroup>
 

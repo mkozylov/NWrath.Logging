@@ -70,12 +70,12 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var loader = new LoggerJsonLoader();
-            var filePathProp1 = "path1";
-            var filePathProp2 = "path2";
+            var autoFlushProp1 = true;
+            var autoFlushProp2 = false;
             var enabledProp1 = false;
             var enabledProp2 = true;
-            var json1 = GetFileLoggerJsonWithSimpleProperties(filePathProp1, enabledProp1);
-            var json2 = GetFileLoggerJsonWithSimpleProperties(filePathProp2, enabledProp2);
+            var json1 = GetFileLoggerJsonWithSimpleProperties(autoFlushProp1, enabledProp1);
+            var json2 = GetFileLoggerJsonWithSimpleProperties(autoFlushProp2, enabledProp2);
             var section1 = JObject.Parse(json1);
             var section2 = JObject.Parse(json2);
 
@@ -91,10 +91,10 @@ namespace NWrath.Logging.Test.ApiTests
             #region Assert
 
             Assert.IsNotNull(logger1);
-            Assert.AreEqual(filePathProp1, logger1.FilePath);
+            Assert.AreEqual(autoFlushProp1, logger1.AutoFlush);
             Assert.AreEqual(enabledProp1, logger1.IsEnabled);
             Assert.IsNotNull(logger2);
-            Assert.AreEqual(filePathProp2, logger2.FilePath);
+            Assert.AreEqual(autoFlushProp2, logger2.AutoFlush);
             Assert.AreEqual(enabledProp2, logger2.IsEnabled);
 
             #endregion Assert
@@ -331,12 +331,12 @@ namespace NWrath.Logging.Test.ApiTests
                 .ToString();
         }
 
-        private string GetFileLoggerJsonWithSimpleProperties(string filePath, bool isEnabled)
+        private string GetFileLoggerJsonWithSimpleProperties(bool autoFlush, bool isEnabled)
         {
             return new StringBuilder()
                 .Append("{")
                     .Append("\"NWrath.Logging.FileLogger\": {")
-                        .Append($"\"FilePath\": \"{filePath}\", ")
+                        .Append($"\"AutoFlush\": {autoFlush.ToString().ToLower()}, ")
                         .Append($"\"IsEnabled\": {isEnabled.ToString().ToLower()}, ")
                         .Append("\"Level\": \"Debug\", ")
                         .Append("\"$ctor\": [")

@@ -176,72 +176,6 @@ namespace NWrath.Logging.Test.ApiTests
         }
 
         [Test]
-        public void WizardLoggingExtensions_PipeLogger()
-        {
-            #region Arrange
-
-            var stubPipe = LambdaPipe<PipeLoggerContext<EmptyLogger>>.Stub;
-            var stubPipeDelegate = new Action<PipeLoggerContext<EmptyLogger>, Action<PipeLoggerContext<EmptyLogger>>>(
-                (c, n) => { stubPipe.Perform(c); n(c); }
-                );
-
-            var pipeCollection = new PipeCollection<PipeLoggerContext<EmptyLogger>>().Apply(c => c.Add(stubPipe));
-            var pipeArray = new IPipe<PipeLoggerContext<EmptyLogger>>[] { stubPipe };
-            var pipeDelegates = new Action<PipeLoggerContext<EmptyLogger>, Action<PipeLoggerContext<EmptyLogger>>>[] { stubPipeDelegate };
-            var pipesApply = new Action<PipeCollection<PipeLoggerContext<EmptyLogger>>>(c => c.Add(stubPipe));
-
-            var properties = new Set();
-            var leaveOpen = false;
-            var pipedLogger = new EmptyLogger();
-
-            #endregion Arrange
-
-            #region Act
-
-            var logger1 = LoggingWizard.Spell.PipeLogger(pipedLogger);
-            var logger2 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeCollection);
-            var logger3 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeArray);
-            var logger4 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeDelegates);
-            var logger5 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipesApply);
-            var logger6 = LoggingWizard.Spell.PipeLogger(pipedLogger, stubPipeDelegate);
-            var logger7 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeCollection, properties);
-            var logger8 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeArray, properties);
-            var logger9 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipeDelegates, properties);
-            var logger10 = LoggingWizard.Spell.PipeLogger(pipedLogger, pipesApply, properties);
-            var logger11 = LoggingWizard.Spell.PipeLogger(pipedLogger, properties, leaveOpen, stubPipeDelegate);
-
-            var logger12 = LoggingWizard.Spell.PipeLogger<EmptyLogger>();
-            var logger13 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeCollection);
-            var logger14 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeArray);
-            var logger15 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeDelegates);
-            var logger16 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipesApply);
-            var logger17 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(stubPipeDelegate);
-            var logger18 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeCollection, properties);
-            var logger19 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeArray, properties);
-            var logger20 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipeDelegates, properties);
-            var logger21 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(pipesApply, properties);
-            var logger22 = LoggingWizard.Spell.PipeLogger<EmptyLogger>(properties, leaveOpen, stubPipeDelegate);
-
-            var logger23 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger());
-            var logger24 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeCollection);
-            var logger25 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeArray);
-            var logger26 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeDelegates);
-            var logger27 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipesApply);
-            var logger28 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), stubPipeDelegate);
-            var logger29 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeCollection, properties);
-            var logger30 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeArray, properties);
-            var logger31 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipeDelegates, properties);
-            var logger32 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), pipesApply, properties);
-            var logger33 = LoggingWizard.Spell.PipeLogger(s => s.EmptyLogger(), properties, leaveOpen, stubPipeDelegate);
-
-            #endregion Act
-
-            #region Assert
-
-            #endregion Assert
-        }
-
-        [Test]
         public void WizardLoggingExtensions_DebugLogger()
         {
             #region Arrange
@@ -346,33 +280,6 @@ namespace NWrath.Logging.Test.ApiTests
             #endregion Assert
         }
 
-        //[Test]
-        //public void WizardLoggingExtensions_ThreadSafeLogger()
-        //{
-        //    #region Arrange
-
-        //    var minLevel = LogLevel.Warning;
-        //    var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
-        //    var safeLogger = new Mock<ILogger>().Object;
-        //    var safeLoggerFactory = new Func<ILoggingWizardCharms, ILogger>(s => new Mock<ILogger>().Object);
-
-        //    #endregion Arrange
-
-        //    #region Act
-
-        //    var logger1 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger);
-        //    var logger2 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, minLevel);
-        //    var logger3 = LoggingWizard.Spell.ThreadSafeLogger(safeLogger, levelVerifier);
-        //    var logger4 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, minLevel);
-        //    var logger5 = LoggingWizard.Spell.ThreadSafeLogger(safeLoggerFactory, levelVerifier);
-
-        //    #endregion Act
-
-        //    #region Assert
-
-        //    #endregion Assert
-        //}
-
         [Test]
         public void WizardLoggingExtensions_RollingFileLogger()
         {
@@ -431,52 +338,6 @@ namespace NWrath.Logging.Test.ApiTests
             Assert.AreEqual(encoding, logger2.Encoding);
             Assert.AreEqual(defaultMinLevel, logger2.RecordVerifier.CastTo<MinimumLogLevelVerifier>().MinimumLevel);
             Assert.AreEqual(folder, logger2.FileProvider.FolderPath);
-
-            #endregion Assert
-        }
-
-        [Test]
-        public void WizardLoggingExtensions_StreamLogger()
-        {
-            #region Arrange
-
-            var defaultMinLevel = LogLevel.Debug;
-            var defaultEncoding = Encoding.UTF8;
-            var defaultOutputTemplate = StringLogSerializer.DefaultOutputTemplate;
-            var defaultNeedFlush = true;
-            var defaultLeaveOpen = false;
-            var minLevel = LogLevel.Warning;
-            var levelVerifier = new RangeLogLevelVerifier(LogLevel.Debug, LogLevel.Warning);
-            var outputTemplate = "{Message}";
-            var serializer = new StringLogSerializer { OutputTemplate = outputTemplate };
-            var serializerApply = new Action<StringLogSerializer>(s => { s.OutputTemplate = outputTemplate; });
-            var encoding = Encoding.ASCII;
-            var stream = Stream.Null;
-            var autoFlush = false;
-            var leaveOpen = true;
-
-            #endregion Arrange
-
-            #region Act
-
-            var logger1 = LoggingWizard.Spell.StreamLogger(stream);
-            var logger2 = LoggingWizard.Spell.StreamLogger(stream, serializer, encoding);
-            var logger3 = LoggingWizard.Spell.StreamLogger(stream, serializerApply, encoding);
-            var logger4 = LoggingWizard.Spell.StreamLogger(stream, minLevel, serializer, encoding);
-            var logger5 = LoggingWizard.Spell.StreamLogger(stream, levelVerifier, serializer, encoding);
-            var logger6 = LoggingWizard.Spell.StreamLogger(stream, minLevel, serializerApply, encoding);
-            var logger7 = LoggingWizard.Spell.StreamLogger(stream, levelVerifier, serializerApply, encoding);
-            var logger8 = LoggingWizard.Spell.StreamLogger(stream, serializer, encoding, autoFlush, leaveOpen);
-            var logger9 = LoggingWizard.Spell.StreamLogger(stream, serializerApply, encoding, autoFlush, leaveOpen);
-            var logger10 = LoggingWizard.Spell.StreamLogger(stream, minLevel, serializer, encoding, autoFlush, leaveOpen);
-            var logger11 = LoggingWizard.Spell.StreamLogger(stream, levelVerifier, serializer, encoding, autoFlush, leaveOpen);
-            var logger12 = LoggingWizard.Spell.StreamLogger(stream, minLevel, serializerApply, encoding, autoFlush, leaveOpen);
-            var logger13 = LoggingWizard.Spell.StreamLogger(stream, levelVerifier, serializerApply, encoding, autoFlush, leaveOpen);
-            var logger14 = LoggingWizard.Spell.StreamLogger(stream, autoFlush: autoFlush, leaveOpen: leaveOpen);
-
-            #endregion Act
-
-            #region Assert
 
             #endregion Assert
         }

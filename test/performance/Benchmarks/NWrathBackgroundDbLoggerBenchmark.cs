@@ -4,10 +4,10 @@ using System.Threading;
 
 namespace NWrath.Logging.Performance.Test
 {
-    internal class NWrathDbLoggerBenchmark
+    internal class NWrathBackgroundDbLoggerBenchmark
         : LoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NWrath db";
+        public override string LoggerInfo { get; set; } = "NWrath background db";
 
         public bool NeedWarmingUp { get; set; } = true;
 
@@ -15,13 +15,13 @@ namespace NWrath.Logging.Performance.Test
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.DbLogger(
-                        "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True",
-                         s =>
-                         {
-                             s.TableName = "DbLog";
-                             s.Columns = new[] { SqlLogTableSchema.IdColumn, SqlLogTableSchema.MessageColumn };
-                         }
+            _logger = LoggingWizard.Spell.BackgroundLogger(f => f.DbLogger(
+                          "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True",
+                          s =>
+                          {
+                              s.TableName = "BackgroundDbLog";
+                              s.Columns = new[] { SqlLogTableSchema.IdColumn, SqlLogTableSchema.MessageColumn };
+                          })
                       );
         }
 

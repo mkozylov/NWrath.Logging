@@ -51,7 +51,7 @@ namespace NWrath.Logging
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord[] batch)
         {
-            if (!IsEnabled)
+            if (!IsEnabled || batch.Length == 0)
             {
                 return;
             }

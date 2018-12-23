@@ -5,34 +5,28 @@ using System.Text;
 using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Common;
 using NWrath.Synergy.Pipeline;
+using System.Runtime.CompilerServices;
 
 namespace NWrath.Logging
 {
     public class RollingFileLogger
-         : LoggerBase
+         : LoggerBase, IRollingFileLoggerInternal
     {
         public static IPipe<RollingFileContext> LogWriterPipe => new LambdaPipe<RollingFileContext>(
             (ctx, next) =>
             {
                 next(ctx);
 
-                if (ctx.Logger.IsEnabled)
+                if (ctx.IsLoggerEnabled)
                 {
-                    ctx.Logger.Writer.Value.Log(ctx.LogRecord);
+                    ctx.LogFile.Write(ctx.LogRecord);
                 }
             }
         );
 
-        public Lazy<IFileLogger> Writer
+        IFileLogger IRollingFileLoggerInternal.Writer
         {
             get => _writer;
-
-            set
-            {
-                Dispose();
-
-                _writer = value;
-            }
         }
 
         public PipeCollection<RollingFileContext> Pipes
@@ -42,16 +36,14 @@ namespace NWrath.Logging
             set { _pipes = value ?? new PipeCollection<RollingFileContext> { LogWriterPipe }; }
         }
 
-        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
+        public IStringLogSerializer Serializer { get => _writer.Serializer; set { _writer.Serializer = value ?? new StringLogSerializer(); } }
 
-        public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
+        public Encoding Encoding { get => _writer.Encoding; set { _writer.Encoding = value ?? new UTF8Encoding(false); } }
 
         public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw Errors.NO_FILE_PROVIDER; } }
 
-        private Lazy<IFileLogger> _writer;
+        private FileLogger _writer;
         private IRollingFileProvider _fileProvider;
-        private IStringLogSerializer _serializer = new StringLogSerializer();
-        private Encoding _encoding = new UTF8Encoding(false);
         private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext> { LogWriterPipe };
 
         #region Ctor
@@ -78,7 +70,7 @@ namespace NWrath.Logging
 
             SetDefaultPipes();
 
-            SetDefaultWriter();
+            _writer = new FileLogger(string.Empty, FileMode.Append);
         }
 
         ~RollingFileLogger()
@@ -90,9 +82,20 @@ namespace NWrath.Logging
 
         public override void Dispose()
         {
-            if (_writer.IsValueCreated)
+            _writer?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public override void Log(LogRecord record)
+        {
+            if (IsEnabled && VerifyRecord(record))
             {
-                _writer.Value.Dispose();
+                if (_writer.FilePath == string.Empty)
+                {
+                    SetDefaultWriter();
+                }
+
+                WriteRecord(record);
             }
         }
 
@@ -100,28 +103,20 @@ namespace NWrath.Logging
         {
             var ctx = ProduceContext(record);
 
-            var pipes = Pipes;
-
-            if (pipes.Count > 0)
-            {
-                pipes.Pipeline.Perform(ctx);
-            }
+            Pipes.Pipeline?.Perform(ctx);
         }
 
         private void SetDefaultWriter()
         {
-            _writer = new Lazy<IFileLogger>(() =>
+            var fileName = FileProvider.TryResolveLastFile();
+
+            if (fileName.IsEmpty()
+                || new FileInfo(fileName).CreationTime.Date != Clock.Today)
             {
-                var fileName = FileProvider.TryResolveLastFile();
+                fileName = FileProvider.ProduceNewFile();
+            }
 
-                if (fileName.IsEmpty()
-                    || new FileInfo(fileName).CreationTime.Date != Clock.Today)
-                {
-                    fileName = FileProvider.ProduceNewFile();
-                }
-
-                return new FileLogger(fileName) { FileMode = FileMode.Append };
-            });
+            _writer.SetFile(fileName, FileMode.Append);
         }
 
         private void SetDefaultPipes()

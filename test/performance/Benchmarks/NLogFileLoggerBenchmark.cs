@@ -9,7 +9,7 @@ namespace NWrath.Logging.Performance.Test
     internal class NLogFileLoggerBenchmark
          : FileLoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NLog async file target";
+        public override string LoggerInfo { get; set; } = "NLog async file";
 
         public bool NeedWarmingUp { get; set; } = true;
 

@@ -182,11 +182,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiTests\BackgroundLoggerTests.cs" />
-    <Compile Include="ApiTests\StreamLoggerTests.cs" />
-    <Compile Include="ApiTests\WizardLoggingExtensionsTests.cs" />
     <Compile Include="ApiTests\LoggerJsonLoaderTests.cs" />
     <Compile Include="ApiTests\SqlLogTableSchemaTests.cs" />
-    <Compile Include="ApiTests\PipeLoggerTests.cs" />
     <Compile Include="ApiTests\DebugLoggerTests.cs" />
     <Compile Include="ApiTests\DbLoggerTests.cs" />
     <Compile Include="ApiTests\RollingFileLoggerTests.cs" />

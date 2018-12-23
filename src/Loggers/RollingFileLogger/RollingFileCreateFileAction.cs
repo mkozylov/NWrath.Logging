@@ -25,10 +25,10 @@ namespace NWrath.Logging
             var needUseToday = (!_tryUseTodayLastFile.IsValueCreated && _tryUseTodayLastFile.Value);
 
             var newFile = needUseToday
-                          ? GetTodayLastFileOrCreateNew(ctx.Logger.FileProvider)
-                          : ctx.Logger.FileProvider.ProduceNewFile();
+                          ? GetTodayLastFileOrCreateNew(ctx.FileProvider)
+                          : ctx.FileProvider.ProduceNewFile();
 
-            ctx.Logger.Writer = new Lazy<IFileLogger>(() => new FileLogger(newFile) { FileMode = _fileMode });
+            ctx.LogFile.Change(newFile, _fileMode);
         }
 
         private string GetTodayLastFileOrCreateNew(IRollingFileProvider fileNameProvider)

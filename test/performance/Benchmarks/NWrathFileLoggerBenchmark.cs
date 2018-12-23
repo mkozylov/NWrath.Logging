@@ -7,7 +7,7 @@ namespace NWrath.Logging.Performance.Test
     internal class NWrathFileLoggerBenchmark
         : FileLoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NWrath file logger";
+        public override string LoggerInfo { get; set; } = "NWrath file";
 
         public bool NeedWarmingUp { get; set; } = true;
 

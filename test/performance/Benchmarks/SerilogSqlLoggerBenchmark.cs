@@ -1,13 +1,15 @@
 ﻿using NWrath.Logging.Performance.Test;
 using Serilog;
+using Serilog.Sinks.MSSqlServer;
 using System;
+using System.Linq;
 
 namespace NWrath.Logging.Performance.Test
 {
-    internal class SerilogFileLoggerBenchmark
+    internal class SerilogSqlLoggerBenchmark
         : FileLoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "Serilog file";
+        public override string LoggerInfo { get; set; } = "Serilog sql";
 
         public bool NeedWarmingUp { get; set; } = true;
 
@@ -16,12 +18,13 @@ namespace NWrath.Logging.Performance.Test
         protected override void CreateLogger()
         {
             _logger = new LoggerConfiguration()
-                .WriteTo.File(
-                    tempFile,
-                    buffered: true,
-                    outputTemplate: "{Message}",
-                    flushToDiskInterval: TimeSpan.FromMilliseconds(1000)
-                )
+                .WriteTo.MSSqlServer(
+                    "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True",
+                    "SerilogSqlLog",
+                    autoCreateSqlTable: true,
+                    period: TimeSpan.FromSeconds(1),
+                    columnOptions: new ColumnOptions { Store = new[] { StandardColumn.Message }.ToList() }
+                    )
                 .CreateLogger();
 
             Serilog.Log.Logger = _logger;

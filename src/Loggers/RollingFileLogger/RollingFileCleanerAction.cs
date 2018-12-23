@@ -19,7 +19,7 @@ namespace NWrath.Logging
         {
             var expireTime = Clock.Now - ExpirationTimeSpan;
 
-            var expiredFiles = ctx.Logger.FileProvider.GetFiles()
+            var expiredFiles = ctx.FileProvider.GetFiles()
                                   .Select(x => new FileInfo(x))
                                   .Where(x => x.CreationTime <= expireTime)
                                   .ToArray();
@@ -28,8 +28,7 @@ namespace NWrath.Logging
 
             foreach (var file in expiredFiles)
             {
-                if (ctx.Logger.Writer.IsValueCreated
-                    && file.FullName == ctx.Logger.Writer.Value.FilePath)
+                if (file.FullName == ctx.LogFile.Path)
                 {
                     currentExpiredFile = file.FullName;
                 }
@@ -41,7 +40,7 @@ namespace NWrath.Logging
 
             if (!string.IsNullOrEmpty(currentExpiredFile))
             {
-                ctx.Logger.Writer.Value.FilePath = ctx.Logger.FileProvider.ProduceNewFile();
+                ctx.LogFile.Change(ctx.FileProvider.ProduceNewFile());
                 File.Delete(currentExpiredFile);
             }
         }
