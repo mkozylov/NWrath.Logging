@@ -48,9 +48,9 @@ namespace NWrath.Logging
                 _logger = logger;
             }
 
-            public void Change(string filePath, FileMode fileMode = FileMode.Append)
+            public void Change(string filePath, bool append = true)
             {
-                _logger.SetFile(filePath, fileMode);
+                _logger.SetFile(filePath, append);
             }
 
             public void Write(LogRecord record)

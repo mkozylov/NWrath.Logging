@@ -11,21 +11,23 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var initScript = new StringBuilder($"IF OBJECT_ID(N'{SqlLogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
-                                        .Append($"CREATE TABLE {SqlLogTableSchema.DefaultTableName}(")
-                                            .Append("Id BIGINT NOT NULL PRIMARY KEY IDENTITY,")
-                                            .Append("Timestamp DATETIME NOT NULL,")
-                                            .Append("Message VARCHAR(MAX) NOT NULL,")
-                                            .Append("Level INT NOT NULL")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'[{SqlLogTableSchema.DefaultTableName}]', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE [{SqlLogTableSchema.DefaultTableName}](")
+                                            .Append("[Id] BIGINT NOT NULL PRIMARY KEY IDENTITY,")
+                                            .Append("[Timestamp] DATETIME NOT NULL,")
+                                            .Append("[Message] VARCHAR(MAX) NOT NULL,")
+                                            .Append("[Exception] VARCHAR(MAX) NULL,")
+                                            .Append("[Level] INT NOT NULL")
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO {SqlLogTableSchema.DefaultTableName}(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
+            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES(@Timestamp, @Message, @Exception, @Level)";
 
             var defaultColumns = new[] {
                 SqlLogTableSchema.IdColumn,
                 SqlLogTableSchema.TimestampColumn,
                 SqlLogTableSchema.MessageColumn,
+                SqlLogTableSchema.ExceptionColumn,
                 SqlLogTableSchema.LevelColumn
             };
 
@@ -79,16 +81,17 @@ namespace NWrath.Logging.Test.ApiTests
 
             var newTableName = "CustomLogTable";
 
-            var initScript = new StringBuilder($"IF OBJECT_ID(N'{newTableName}', N'U') IS NULL BEGIN ")
-                                        .Append($"CREATE TABLE {newTableName}(")
-                                            .Append("Id BIGINT NOT NULL PRIMARY KEY IDENTITY,")
-                                            .Append("Timestamp DATETIME NOT NULL,")
-                                            .Append("Message VARCHAR(MAX) NOT NULL,")
-                                            .Append("Level INT NOT NULL")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'[{newTableName}]', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE [{newTableName}](")
+                                            .Append("[Id] BIGINT NOT NULL PRIMARY KEY IDENTITY,")
+                                            .Append("[Timestamp] DATETIME NOT NULL,")
+                                            .Append("[Message] VARCHAR(MAX) NOT NULL,")
+                                            .Append("[Exception] VARCHAR(MAX) NULL,")
+                                            .Append("[Level] INT NOT NULL")
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO {newTableName}(Timestamp, Message, Level) VALUES(@Timestamp, @Message, @Level)";
+            var insertScript = $"INSERT INTO [{newTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES(@Timestamp, @Message, @Exception, @Level)";
 
             #endregion Arrange
 
@@ -117,14 +120,14 @@ namespace NWrath.Logging.Test.ApiTests
                 SqlLogTableSchema.ExceptionColumn
             };
 
-            var initScript = new StringBuilder($"IF OBJECT_ID(N'{SqlLogTableSchema.DefaultTableName}', N'U') IS NULL BEGIN ")
-                                        .Append($"CREATE TABLE {SqlLogTableSchema.DefaultTableName}(")
-                                            .Append("Message VARCHAR(MAX) NOT NULL,")
-                                            .Append("Exception VARCHAR(MAX) NULL")
+            var initScript = new StringBuilder($"IF OBJECT_ID(N'[{SqlLogTableSchema.DefaultTableName}]', N'U') IS NULL BEGIN ")
+                                        .Append($"CREATE TABLE [{SqlLogTableSchema.DefaultTableName}](")
+                                            .Append("[Message] VARCHAR(MAX) NOT NULL,")
+                                            .Append("[Exception] VARCHAR(MAX) NULL")
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO {SqlLogTableSchema.DefaultTableName}(Message, Exception) VALUES(@Message, @Exception)";
+            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Message], [Exception]) VALUES(@Message, @Exception)";
 
             #endregion Arrange
 

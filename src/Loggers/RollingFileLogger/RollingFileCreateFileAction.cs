@@ -8,15 +8,15 @@ namespace NWrath.Logging
     public class RollingFileCreateFileAction
         : IRollingFileAction
     {
-        private FileMode _fileMode;
+        private bool _append;
         private Lazy<bool> _tryUseTodayLastFile;
 
         public RollingFileCreateFileAction(
-            FileMode fileMode,
+            bool append,
             bool tryUseTodayLastFile = true
             )
         {
-            _fileMode = fileMode;
+            _append = append;
             _tryUseTodayLastFile = new Lazy<bool>(() => tryUseTodayLastFile);
         }
 
@@ -28,7 +28,7 @@ namespace NWrath.Logging
                           ? GetTodayLastFileOrCreateNew(ctx.FileProvider)
                           : ctx.FileProvider.ProduceNewFile();
 
-            ctx.LogFile.Change(newFile, _fileMode);
+            ctx.LogFile.Change(newFile, _append);
         }
 
         private string GetTodayLastFileOrCreateNew(IRollingFileProvider fileNameProvider)

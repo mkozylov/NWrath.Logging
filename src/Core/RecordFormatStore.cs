@@ -173,7 +173,7 @@ namespace NWrath.Logging
 
         private string DefaultTimestampFormat(LogRecord record)
         {
-            return ToIsoStringFast(record.Timestamp);
+            return record.Timestamp.ToIsoString();
         }
 
         private string DefaultMessageFormat(LogRecord record)
@@ -196,51 +196,6 @@ namespace NWrath.Logging
             return record.Extra.Count == 0
                 ? string.Empty
                 : record.Extra.AsJson();
-        }
-
-        private static string ToIsoStringFast(DateTime? dateTime)
-        {
-            if (!dateTime.HasValue)
-            {
-                return string.Empty;
-            }
-
-            var dt = dateTime.Value;
-            var chars = new char[22];
-            Write4Chars(chars, 0, dt.Year);
-            chars[4] = '-';
-            Write2Chars(chars, 5, dt.Month);
-            chars[7] = '-';
-            Write2Chars(chars, 8, dt.Day);
-            chars[10] = ' ';
-            Write2Chars(chars, 11, dt.Hour);
-            chars[13] = ':';
-            Write2Chars(chars, 14, dt.Minute);
-            chars[16] = ':';
-            Write2Chars(chars, 17, dt.Second);
-            chars[19] = '.';
-            Write2Chars(chars, 20, dt.Millisecond / 10);
-            //chars[22] = Digit(dt.Millisecond % 10);
-            return new string(chars);
-        }
-
-        private static void Write4Chars(char[] chars, int offset, int value)
-        {
-            chars[offset] = Digit(value / 1000);
-            chars[offset + 1] = Digit(value / 100 % 10);
-            chars[offset + 2] = Digit(value / 10 % 10);
-            chars[offset + 3] = Digit(value % 10);
-        }
-
-        private static void Write2Chars(char[] chars, int offset, int value)
-        {
-            chars[offset] = Digit(value / 10);
-            chars[offset + 1] = Digit(value % 10);
-        }
-
-        private static char Digit(int value)
-        {
-            return (char)(value + '0');
         }
     }
 }

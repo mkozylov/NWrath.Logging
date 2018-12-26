@@ -23,7 +23,11 @@ namespace NWrath.Logging.Performance.Test
                 new NWrathFileLoggerBenchmark(),
                 new NWrathBackgroundFileLoggerBenchmark(),
                 new SerilogFileLoggerBenchmark(),
-                new NLogFileLoggerBenchmark()
+                //new NLogFileLoggerBenchmark(),
+
+                //new SerilogSqlLoggerBenchmark(),
+                //new NWrathDbLoggerBenchmark(),
+                //new NWrathBackgroundDbLoggerBenchmark()
             };
 
             new BenchmarkCaseGroup

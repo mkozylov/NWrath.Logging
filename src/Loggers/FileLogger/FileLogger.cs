@@ -21,7 +21,7 @@ namespace NWrath.Logging
 
                 if (_isEnabled)
                 {
-                    SetFile(_filePath, FileMode.Append);
+                    SetFile(_filePath, true);
                 }
                 else
                 {
@@ -61,12 +61,12 @@ namespace NWrath.Logging
 
         public FileLogger(
             string filePath,
-            FileMode fileMode = FileMode.Append
+            bool append = true
             )
         {
             _filePath = filePath;
 
-            SetFile(filePath, fileMode);
+            SetFile(filePath, append);
         }
 
         ~FileLogger()
@@ -95,7 +95,7 @@ namespace NWrath.Logging
             }
         }
 
-        public void SetFile(string fileName, FileMode fileMode = FileMode.Append)
+        public void SetFile(string fileName, bool append)
         {
             _filePath = fileName;
 
@@ -105,7 +105,7 @@ namespace NWrath.Logging
             {
                 return new FileStream(
                     FilePath,
-                    fileMode,
+                    append ? FileMode.Append : FileMode.Create,
                     FileAccess.Write,
                     FileShare.Read
                     );

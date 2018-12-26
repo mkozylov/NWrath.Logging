@@ -18,11 +18,11 @@ namespace NWrath.Logging
            ILogRecordVerifier recordVerifier,
            IStringLogSerializer serializer = null,
            Encoding encoding = null,
-           FileMode fileMode = FileMode.Append,
+           bool append = true,
            bool autoFlush = true
            )
         {
-            return new FileLogger(filePath, fileMode)
+            return new FileLogger(filePath, append)
             {
                 Serializer = serializer,
                 Encoding = encoding,
@@ -37,11 +37,11 @@ namespace NWrath.Logging
             LogLevel minLevel,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            FileMode fileMode = FileMode.Append,
+            bool append = true,
             bool autoFlush = true
             )
         {
-            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(minLevel), serializer, encoding, fileMode, autoFlush);
+            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(minLevel), serializer, encoding, append, autoFlush);
         }
 
         public static FileLogger FileLogger(
@@ -49,11 +49,11 @@ namespace NWrath.Logging
             string filePath,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            FileMode fileMode = FileMode.Append,
+            bool append = true,
             bool autoFlush = true
             )
         {
-            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, fileMode, autoFlush);
+            return FileLogger(charms, filePath, new MinimumLogLevelVerifier(LogLevel.Debug), serializer, encoding, append, autoFlush);
         }
 
         public static FileLogger FileLogger(
@@ -62,7 +62,7 @@ namespace NWrath.Logging
           ILogRecordVerifier recordVerifier,
           Action<StringLogSerializer> serializerApply,
           Encoding encoding = null,
-          FileMode fileMode = FileMode.Append,
+          bool append = true,
           bool autoFlush = true
           )
         {
@@ -70,7 +70,7 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath, fileMode)
+            return new FileLogger(filePath, append)
             {
                 Serializer = serializer,
                 Encoding = encoding,
@@ -85,7 +85,7 @@ namespace NWrath.Logging
             LogLevel minLevel,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            FileMode fileMode = FileMode.Append,
+            bool append = true,
             bool autoFlush = true
             )
         {
@@ -93,7 +93,7 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath, fileMode)
+            return new FileLogger(filePath, append)
             {
                 Serializer = serializer,
                 Encoding = encoding,
@@ -107,7 +107,7 @@ namespace NWrath.Logging
             string filePath,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            FileMode fileMode = FileMode.Append,
+            bool append = true,
             bool autoFlush = true
             )
         {
@@ -115,7 +115,7 @@ namespace NWrath.Logging
 
             serializerApply?.Invoke(serializer);
 
-            return new FileLogger(filePath, fileMode)
+            return new FileLogger(filePath, append)
             {
                 Serializer = serializer,
                 Encoding = encoding,

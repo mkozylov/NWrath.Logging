@@ -138,7 +138,7 @@ namespace NWrath.Logging.Test.ApiTests
 
         private string SerializeToDefaultOutputTemplate(LogRecord msg)
         {
-            return $"{msg.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.ff")} [{msg.Level}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}";
+            return $"{msg.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff")} [{msg.Level}] {msg.Message}{(msg.Exception != null ? (Environment.NewLine + msg.Exception) : "")}";
         }
 
         #endregion Internal

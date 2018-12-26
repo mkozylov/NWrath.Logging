@@ -48,7 +48,7 @@ namespace NWrath.Logging
             )
         {
             actions = actions ?? new IRollingFileAction[] {
-                 new RollingFileCreateFileAction(fileMode: System.IO.FileMode.Append, tryUseTodayLastFile: true),
+                 new RollingFileCreateFileAction(append: true, tryUseTodayLastFile: true),
                  new RollingFileCleanerAction(expirationTimeSpan: TimeSpan.FromDays(30))
             };
 

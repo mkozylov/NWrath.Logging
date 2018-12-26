@@ -55,19 +55,20 @@ namespace NWrath.Logging
             using (var con = CreateConnection(_self.Value.ConnectionString))
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = TableSchema.InserLogScript;
-                cmd.CommandType = GetCommandType(TableSchema.InserLogScript);
+                cmd.CommandType = System.Data.CommandType.Text;
 
                 con.Open();
 
+                var sb = new StringBuilder();
+
+                sb.Append("insert into [" + TableSchema.TableName + "](");
+
                 foreach (var col in _writeColumns)
                 {
-                    var p = cmd.CreateParameter();
-
-                    p.ParameterName = col.Name;
-
-                    cmd.Parameters.Add(p);
+                    sb.Append("[" + col.Name + "],");
                 }
+
+                sb.Replace(",", ") values", sb.Length - 1, 1);
 
                 foreach (var record in batch)
                 {
@@ -76,13 +77,38 @@ namespace NWrath.Logging
                         continue;
                     }
 
+                    sb.Append("(");
+
                     foreach (var col in _writeColumns)
                     {
-                        cmd.Parameters[col.Name].Value = col.Serializer.Serialize(record);
+                        var val = col.Serializer.Serialize(record);
+
+                        if (val is string)
+                        {
+                            sb.Append("'" + val + "',");
+                        }
+                        else if (val is Enum)
+                        {
+                            sb.Append((int)val + ",");
+                        }
+                        else if (val is bool)
+                        {
+                            sb.Append(Convert.ToInt32(val) + ",");
+                        }
+                        else
+                        {
+                            sb.Append(val + ",");
+                        }
                     }
 
-                    cmd.ExecuteNonQuery();
+                    sb.Replace(",", "),", sb.Length - 1, 1);
                 }
+
+                sb.Replace(',', ';', sb.Length - 1, 1);
+
+                cmd.CommandText = sb.ToString();
+
+                cmd.ExecuteNonQuery();
             }
         }
 
@@ -102,7 +128,7 @@ namespace NWrath.Logging
 
                     p.ParameterName = col.Name;
 
-                    p.Value = col.Serializer.Serialize(record);
+                    p.Value = col.Serializer.Serialize(record) ?? DBNull.Value;
 
                     cmd.Parameters.Add(p);
                 }

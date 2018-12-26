@@ -12,6 +12,6 @@ namespace NWrath.Logging
 
         void Log(byte[] data);
 
-        void SetFile(string filePath, FileMode fileMode = FileMode.Append);
+        void SetFile(string filePath, bool append = true);
     }
 }

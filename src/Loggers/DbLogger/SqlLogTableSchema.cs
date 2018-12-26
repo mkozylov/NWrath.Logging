@@ -21,7 +21,7 @@ namespace NWrath.Logging
             name: "Timestamp",
             typeDefinition: "DATETIME NOT NULL",
             isInternal: false,
-            serializer: new LambdaLogSerializer(m => $"{m.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}")
+            serializer: new LambdaLogSerializer(m => m.Timestamp.ToIsoString('T'))
         );
 
         public static LogTableColumnSchema MessageColumn => new LogTableColumnSchema
@@ -29,7 +29,7 @@ namespace NWrath.Logging
             name: "Message",
             typeDefinition: "VARCHAR(MAX) NOT NULL",
             isInternal: false,
-            serializer: new LambdaLogSerializer(m => $"{m.Message}")
+            serializer: new LambdaLogSerializer(m => m.Message)
         );
 
         public static LogTableColumnSchema ExceptionColumn => new LogTableColumnSchema
@@ -37,7 +37,7 @@ namespace NWrath.Logging
             name: "Exception",
             typeDefinition: "VARCHAR(MAX) NULL",
             isInternal: false,
-            serializer: new LambdaLogSerializer(m => $"{m.Exception}")
+            serializer: new LambdaLogSerializer(m => m.Exception == null ? null : m.Exception.ToString())
         );
 
         public static LogTableColumnSchema LevelColumn => new LogTableColumnSchema
@@ -95,10 +95,10 @@ namespace NWrath.Logging
                                      .Select(x => x.Name)
                                      .ToList();
 
-            var columnsStr = string.Join(", ", columnNames);
-            var valsStr = string.Join(", ", columnNames.Select(x => $"@{x}"));
+            var columnsStr = string.Join(", ", columnNames.Select(x => "[" + x + "]"));
+            var valsStr = string.Join(", ", columnNames.Select(x => "@" + x));
 
-            return $"INSERT INTO {TableName}({columnsStr}) VALUES({valsStr})";
+            return $"INSERT INTO [{TableName}]({columnsStr}) VALUES({valsStr})";
         }
 
         private string BuildDefaultInitScript()
@@ -106,15 +106,15 @@ namespace NWrath.Logging
             var cols = Columns;
 
             var tableBuilder = new StringBuilder()
-                                .Append($"IF OBJECT_ID(N'{TableName}', N'U') IS NULL ")
+                                .Append($"IF OBJECT_ID(N'[{TableName}]', N'U') IS NULL ")
                                 .Append("BEGIN ")
-                                .Append($"CREATE TABLE {TableName}(");
+                                .Append($"CREATE TABLE [{TableName}](");
 
             for (int i = 0; i < cols.Length; i++)
             {
                 var col = cols[i];
 
-                tableBuilder.Append($"{col.Name} {col.TypeDefinition}{(i < cols.Length - 1 ? "," : "")}");
+                tableBuilder.Append($"[{col.Name}] {col.TypeDefinition}{(i < cols.Length - 1 ? "," : "")}");
             }
 
             tableBuilder = tableBuilder.Append(")")
@@ -125,14 +125,12 @@ namespace NWrath.Logging
 
         private static LogTableColumnSchema[] GetDefaultColumns()
         {
-            var newMessageColumn = MessageColumn;
-            newMessageColumn.Serializer = new LambdaLogSerializer(m => $"{m.Message}{(m.Exception == null ? "" : Environment.NewLine)}{m.Exception}");
-
             return new LogTableColumnSchema[]
             {
                 IdColumn,
                 TimestampColumn,
-                newMessageColumn,
+                MessageColumn,
+                ExceptionColumn,
                 LevelColumn,
             };
         }

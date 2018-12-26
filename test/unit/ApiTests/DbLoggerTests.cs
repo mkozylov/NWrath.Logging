@@ -2,6 +2,7 @@
 using Moq.Protected;
 using NUnit.Framework;
 using NWrath.Logging.Test.Structs;
+using System;
 using System.Data.Common;
 
 namespace NWrath.Logging.Test.ApiTests
@@ -55,18 +56,21 @@ namespace NWrath.Logging.Test.ApiTests
 
         private void AssertDefaultSchemaDbCommand(DbCommand cmd, LogRecord log)
         {
-            Assert.AreEqual(3, cmd.Parameters.Count);
+            Assert.AreEqual(4, cmd.Parameters.Count);
 
             var t = cmd.Parameters[0];
             var m = cmd.Parameters[1];
-            var l = cmd.Parameters[2];
+            var ex = cmd.Parameters[2];
+            var l = cmd.Parameters[3];
 
             Assert.AreEqual("Timestamp", t.ParameterName);
             Assert.AreEqual("Message", m.ParameterName);
+            Assert.AreEqual("Exception", ex.ParameterName);
             Assert.AreEqual("Level", l.ParameterName);
 
             Assert.AreEqual($"{log.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}", t.Value.ToString());
             Assert.AreEqual(log.Message, m.Value);
+            Assert.AreEqual(log.Exception == null ? DBNull.Value : (object)log.Exception, ex.Value);
             Assert.AreEqual(log.Level, l.Value);
         }
 

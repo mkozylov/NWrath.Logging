@@ -70,7 +70,7 @@ namespace NWrath.Logging
 
             SetDefaultPipes();
 
-            _writer = new FileLogger(string.Empty, FileMode.Append);
+            _writer = new FileLogger(string.Empty, true);
         }
 
         ~RollingFileLogger()
@@ -116,7 +116,7 @@ namespace NWrath.Logging
                 fileName = FileProvider.ProduceNewFile();
             }
 
-            _writer.SetFile(fileName, FileMode.Append);
+            _writer.SetFile(fileName, true);
         }
 
         private void SetDefaultPipes()

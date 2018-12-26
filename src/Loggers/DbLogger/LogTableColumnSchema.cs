@@ -34,5 +34,12 @@ namespace NWrath.Logging
             : this(name, typeDefinition, isInternal, new LambdaLogSerializer(serializerLambda))
         {
         }
+
+        public LogTableColumnSchema UseSerializer(Func<LogRecord, object> serializerLambda)
+        {
+            Serializer = new LambdaLogSerializer(serializerLambda);
+
+            return this;
+        }
     }
 }
