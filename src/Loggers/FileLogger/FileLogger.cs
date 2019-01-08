@@ -140,7 +140,7 @@ namespace NWrath.Logging
 
             foreach (var record in batch)
             {
-                if (VerifyRecord(record))
+                if (RecordVerifier.Verify(record))
                 {
                     sb.AppendLine(Serializer.Serialize(record));
                 }
@@ -158,7 +158,7 @@ namespace NWrath.Logging
 
         public override void Log(LogRecord record)
         {
-            if (IsEnabled && _writer.Value.CanWrite && VerifyRecord(record))
+            if (IsEnabled && _writer.Value.CanWrite && RecordVerifier.Verify(record))
             {
                 WriteRecord(record);
             }

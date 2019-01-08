@@ -56,7 +56,7 @@ namespace NWrath.Logging
                 return;
             }
 
-            var verifiedBatch = batch.Where(r => VerifyRecord(r))
+            var verifiedBatch = batch.Where(r => RecordVerifier.Verify(r))
                                      .ToArray();
 
             if (verifiedBatch.Length == 0)

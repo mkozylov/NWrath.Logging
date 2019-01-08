@@ -12,26 +12,33 @@ namespace NWrath.Logging
 
         public ILogSerializer Serializer { get; set; }
 
+        public Type Type { get; set; }
+
         public LogTableColumnSchema(
-            string name,
-            string typeDefinition,
-            bool isInternal,
-            ILogSerializer serializer = null
-            )
+             string name,
+             string typeDefinition,
+             bool isInternal,
+             Type type,
+             ILogSerializer serializer = null
+             )
         {
             Name = name;
             TypeDefinition = typeDefinition;
             IsInternal = isInternal;
+            Type = type;
             Serializer = serializer;
+
+            if (!isInternal && serializer == null) throw new ArgumentNullException(nameof(serializer));
         }
 
         public LogTableColumnSchema(
             string name,
             string typeDefinition,
             bool isInternal,
+            Type type,
             Func<LogRecord, object> serializerLambda
             )
-            : this(name, typeDefinition, isInternal, new LambdaLogSerializer(serializerLambda))
+            : this(name, typeDefinition, isInternal, type, new LambdaLogSerializer(serializerLambda))
         {
         }
 

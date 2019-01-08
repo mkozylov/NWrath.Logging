@@ -33,7 +33,6 @@ namespace NWrath.Logging
         }
 
         private Lazy<DbLogger> _self;
-        private LogTableColumnSchema[] _writeColumns;
         private ILogTableSchema _tableSchema = new SqlLogTableSchema();
         private string _connectionString;
 
@@ -55,58 +54,9 @@ namespace NWrath.Logging
             using (var con = CreateConnection(_self.Value.ConnectionString))
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandType = System.Data.CommandType.Text;
+                cmd.CommandText = TableSchema.BuildInsertBatchQuery(batch);
 
                 con.Open();
-
-                var sb = new StringBuilder();
-
-                sb.Append("insert into [" + TableSchema.TableName + "](");
-
-                foreach (var col in _writeColumns)
-                {
-                    sb.Append("[" + col.Name + "],");
-                }
-
-                sb.Replace(",", ") values", sb.Length - 1, 1);
-
-                foreach (var record in batch)
-                {
-                    if (!VerifyRecord(record))
-                    {
-                        continue;
-                    }
-
-                    sb.Append("(");
-
-                    foreach (var col in _writeColumns)
-                    {
-                        var val = col.Serializer.Serialize(record);
-
-                        if (val is string)
-                        {
-                            sb.Append("'" + val + "',");
-                        }
-                        else if (val is Enum)
-                        {
-                            sb.Append((int)val + ",");
-                        }
-                        else if (val is bool)
-                        {
-                            sb.Append(Convert.ToInt32(val) + ",");
-                        }
-                        else
-                        {
-                            sb.Append(val + ",");
-                        }
-                    }
-
-                    sb.Replace(",", "),", sb.Length - 1, 1);
-                }
-
-                sb.Replace(',', ';', sb.Length - 1, 1);
-
-                cmd.CommandText = sb.ToString();
 
                 cmd.ExecuteNonQuery();
             }
@@ -117,21 +67,9 @@ namespace NWrath.Logging
             using (var con = CreateConnection(_self.Value.ConnectionString))
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = TableSchema.InserLogScript;
-                cmd.CommandType = GetCommandType(TableSchema.InserLogScript);
+                cmd.CommandText = TableSchema.BuildInsertQuery(record);
 
                 con.Open();
-
-                foreach (var col in _writeColumns)
-                {
-                    var p = cmd.CreateParameter();
-
-                    p.ParameterName = col.Name;
-
-                    p.Value = col.Serializer.Serialize(record) ?? DBNull.Value;
-
-                    cmd.Parameters.Add(p);
-                }
 
                 cmd.ExecuteNonQuery();
             }
@@ -163,15 +101,6 @@ namespace NWrath.Logging
                 if (!string.IsNullOrEmpty(TableSchema.InitScript))
                 {
                     ExecuteInitScript(ConnectionString);
-                }
-
-                _writeColumns = TableSchema.Columns
-                                           .Where(x => !x.IsInternal)
-                                           .ToArray();
-
-                if (_writeColumns.Length == 0)
-                {
-                    throw new Exception($"There is no columns for write");
                 }
 
                 return this;

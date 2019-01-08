@@ -1,13 +1,15 @@
-﻿namespace NWrath.Logging
+﻿using System.IO;
+
+namespace NWrath.Logging
 {
     public interface IRollingFileProvider
     {
-        string FolderPath { get; }
+        DirectoryInformation Directory { get; }
 
-        string[] GetFiles();
+        FileInformation[] GetFiles();
 
-        string ProduceNewFile();
+        FileInformation ProduceNewFile();
 
-        string TryResolveLastFile();
+        FileInformation TryResolveLastFile();
     }
 }

@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
+using FastExpressionCompiler;
+using NWrath.Synergy.Common.Extensions;
+using NWrath.Synergy.Reflection.Extensions;
 
 namespace NWrath.Logging
 {
@@ -13,7 +18,8 @@ namespace NWrath.Logging
         (
             name: "Id",
             typeDefinition: "BIGINT NOT NULL PRIMARY KEY IDENTITY",
-            isInternal: true
+            isInternal: true,
+            type: typeof(int)
         );
 
         public static LogTableColumnSchema TimestampColumn => new LogTableColumnSchema
@@ -21,7 +27,8 @@ namespace NWrath.Logging
             name: "Timestamp",
             typeDefinition: "DATETIME NOT NULL",
             isInternal: false,
-            serializer: new LambdaLogSerializer(m => m.Timestamp.ToIsoString('T'))
+            type: typeof(DateTime),
+            serializer: new LambdaLogSerializer(m => m.Timestamp)
         );
 
         public static LogTableColumnSchema MessageColumn => new LogTableColumnSchema
@@ -29,6 +36,7 @@ namespace NWrath.Logging
             name: "Message",
             typeDefinition: "VARCHAR(MAX) NOT NULL",
             isInternal: false,
+            type: typeof(string),
             serializer: new LambdaLogSerializer(m => m.Message)
         );
 
@@ -37,7 +45,8 @@ namespace NWrath.Logging
             name: "Exception",
             typeDefinition: "VARCHAR(MAX) NULL",
             isInternal: false,
-            serializer: new LambdaLogSerializer(m => m.Exception == null ? null : m.Exception.ToString())
+            type: typeof(string),
+            serializer: new LambdaLogSerializer(m => m.Exception?.ToString())
         );
 
         public static LogTableColumnSchema LevelColumn => new LogTableColumnSchema
@@ -45,6 +54,7 @@ namespace NWrath.Logging
             name: "Level",
             typeDefinition: "INT NOT NULL",
             isInternal: false,
+            type: typeof(int),
             serializer: new LambdaLogSerializer(m => m.Level)
         );
 
@@ -53,6 +63,7 @@ namespace NWrath.Logging
             name: "Extra",
             typeDefinition: "VARCHAR(MAX) NULL",
             isInternal: false,
+            type: typeof(string),
             serializer: new LambdaLogSerializer(m => (m.Extra.Count == 0 ? null : m.Extra.AsJson()))
         );
 
@@ -64,41 +75,108 @@ namespace NWrath.Logging
 
         public string TableName { get; private set; }
 
-        public string InserLogScript { get; private set; }
-
         public string InitScript { get; private set; }
 
         public LogTableColumnSchema[] Columns { get; private set; }
 
+        private string _insertLogQueryPrefix;
+        private Func<LogRecord, string> _insertLogQueryBuilder;
+
         public SqlLogTableSchema(
             string tableName = DefaultTableName,
             string initScript = null,
-            string inserLogScript = null,
             LogTableColumnSchema[] columns = null
             )
         {
-            Columns = columns?.Length > 0 ? columns
-                                          : DefaultColumns;
+            Columns = columns?.Length > 0 ? columns : DefaultColumns;
             TableName = tableName ?? DefaultTableName;
             InitScript = initScript ?? BuildDefaultInitScript();
-            InserLogScript = inserLogScript ?? BuildDefaultInserLogScript();
+            _insertLogQueryPrefix = BuildInsertQueryPrefix();
+            _insertLogQueryBuilder = CreateInsertLogQueryBuilder();
         }
 
         public SqlLogTableSchema(LogTableSchemaConfig config)
-            : this(config.TableName, config.InitScript, config.InserLogScript, config.Columns)
+            : this(config.TableName, config.InitScript, config.Columns)
         {
         }
 
-        private string BuildDefaultInserLogScript()
+        public string BuildInsertQuery(LogRecord record)
         {
-            var columnNames = Columns.Where(x => !x.IsInternal)
-                                     .Select(x => x.Name)
+            return _insertLogQueryPrefix + _insertLogQueryBuilder(record);
+        }
+
+        public string BuildInsertBatchQuery(LogRecord[] batch)
+        {
+            var sb = _insertLogQueryPrefix.ToStringBuilder();
+
+            for (int i = 0; i < batch.Length; i++)
+            {
+                sb.Append(_insertLogQueryBuilder(batch[i]));
+
+                if ((i + 1) < batch.Length)
+                {
+                    sb.Append(",");
+                }
+            }
+
+            return sb.ToSqlString();
+        }
+
+        private string BuildInsertQueryPrefix()
+        {
+            return $"INSERT INTO [{TableName}]({string.Join(", ", Columns.Where(x => !x.IsInternal).Select(x => "[" + x.Name + "]"))}) VALUES";
+        }
+
+        private Func<LogRecord, string> CreateInsertLogQueryBuilder()
+        {
+            var sqlExtType = typeof(SqlExtensions);
+
+            var columns = Columns.Where(x => !x.IsInternal)
                                      .ToList();
 
-            var columnsStr = string.Join(", ", columnNames.Select(x => "[" + x + "]"));
-            var valsStr = string.Join(", ", columnNames.Select(x => "@" + x));
+            var arg = Expression.Parameter(typeof(LogRecord));
 
-            return $"INSERT INTO [{TableName}]({columnsStr}) VALUES({valsStr})";
+            var block = new List<Expression> {
+                Expression.Constant("(")
+            };
+
+            var serializeMI = typeof(ILogSerializer).GetMethod(nameof(ILogSerializer.Serialize));
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                var col = columns[i];
+
+                var serializeCall = Expression.Call(
+                    Expression.Constant(col.Serializer),
+                    serializeMI,
+                    arg
+                    );
+
+                var toSqlStringMI = sqlExtType.GetMethod(nameof(SqlExtensions.ToSqlString), new[] { col.Type });
+
+                toSqlStringMI = toSqlStringMI ?? sqlExtType.GetStaticGenericMethod(nameof(SqlExtensions.ToSqlString), 1, 1).MakeGenericMethod(col.Type);
+
+                var val = Expression.Call(toSqlStringMI, Expression.Convert(serializeCall, col.Type));
+
+                block.Add(val);
+
+                if ((i + 1) < columns.Count)
+                {
+                    block.Add(
+                        Expression.Constant(",")
+                        );
+                }
+            }
+
+            block.Add(
+                Expression.Constant(")")
+                );
+
+            var concatExpr = BuildStringConcat(block);
+
+            var lambda = Expression.Lambda<Func<LogRecord, string>>(concatExpr, arg);
+
+            return lambda.CompileFast();
         }
 
         private string BuildDefaultInitScript()
@@ -121,6 +199,56 @@ namespace NWrath.Logging
                                        .Append(" END");
 
             return tableBuilder.ToString();
+        }
+
+        private Expression BuildStringConcat(List<Expression> strExprs)
+        {
+            Expression body;
+
+            if (strExprs.Count == 1)
+            {
+                body = strExprs[0];
+            }
+            else if (strExprs.Count == 2)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1]
+                    );
+            }
+            else if (strExprs.Count == 3)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1],
+                    strExprs[2]
+                    );
+            }
+            else if (strExprs.Count == 4)
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string), typeof(string), typeof(string), typeof(string) }),
+                    strExprs[0],
+                    strExprs[1],
+                    strExprs[2],
+                    strExprs[3]
+                    );
+            }
+            else
+            {
+                body = Expression.Call(
+                    typeof(string).GetMethod(nameof(string.Concat),
+                    new[] { typeof(string[]) }),
+                    Expression.NewArrayInit(typeof(string), strExprs)
+                    );
+            }
+
+            return body;
         }
 
         private static LogTableColumnSchema[] GetDefaultColumns()

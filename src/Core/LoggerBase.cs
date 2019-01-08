@@ -20,7 +20,7 @@ namespace NWrath.Logging
         [MethodImpl(MethodImplOptions.Synchronized)]
         public virtual void Log(LogRecord record)
         {
-            if (IsEnabled && VerifyRecord(record))
+            if (IsEnabled && RecordVerifier.Verify(record))
             {
                 WriteRecord(record);
             }
@@ -36,7 +36,7 @@ namespace NWrath.Logging
 
             foreach (var record in batch)
             {
-                if (VerifyRecord(record))
+                if (RecordVerifier.Verify(record))
                 {
                     WriteRecord(record);
                 }
@@ -125,11 +125,6 @@ namespace NWrath.Logging
 
         public virtual void Dispose()
         {
-        }
-
-        protected virtual bool VerifyRecord(LogRecord record)
-        {
-            return RecordVerifier.Verify(record);
         }
 
         protected abstract void WriteRecord(LogRecord record);

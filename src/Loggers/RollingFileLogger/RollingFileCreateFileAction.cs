@@ -28,20 +28,21 @@ namespace NWrath.Logging
                           ? GetTodayLastFileOrCreateNew(ctx.FileProvider)
                           : ctx.FileProvider.ProduceNewFile();
 
-            ctx.LogFile.Change(newFile, _append);
+            ctx.LogFile.Change(newFile.FullName, _append);
         }
 
-        private string GetTodayLastFileOrCreateNew(IRollingFileProvider fileNameProvider)
+        private FileInformation GetTodayLastFileOrCreateNew(IRollingFileProvider fileNameProvider)
         {
-            var fileName = fileNameProvider.TryResolveLastFile();
+            var file = fileNameProvider.TryResolveLastFile();
 
-            if (fileName.IsEmpty()
-                || new FileInfo(fileName).CreationTime.Date != Clock.Today)
+            if (file == null
+                || !file.Exists
+                || file.CreationTime.Date != Clock.Today)
             {
-                fileName = fileNameProvider.ProduceNewFile();
+                file = fileNameProvider.ProduceNewFile();
             }
 
-            return fileName;
+            return file;
         }
     }
 }

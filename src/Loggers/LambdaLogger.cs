@@ -47,7 +47,7 @@ namespace NWrath.Logging
 
             foreach (var record in batch)
             {
-                if (VerifyRecord(record))
+                if (RecordVerifier.Verify(record))
                 {
                     WriteRecord(record);
                 }

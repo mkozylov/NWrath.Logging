@@ -20,14 +20,14 @@ namespace NWrath.Logging.Performance.Test
 
             var benchmarks = new LoggerBenchmarkBase[]
             {
-                new NWrathFileLoggerBenchmark(),
-                new NWrathBackgroundFileLoggerBenchmark(),
-                new SerilogFileLoggerBenchmark(),
+                //new NWrathFileLoggerBenchmark(),
+                //new NWrathBackgroundFileLoggerBenchmark(),
+                //new SerilogFileLoggerBenchmark(),
                 //new NLogFileLoggerBenchmark(),
 
                 //new SerilogSqlLoggerBenchmark(),
                 //new NWrathDbLoggerBenchmark(),
-                //new NWrathBackgroundDbLoggerBenchmark()
+                new NWrathBackgroundDbLoggerBenchmark()
             };
 
             new BenchmarkCaseGroup

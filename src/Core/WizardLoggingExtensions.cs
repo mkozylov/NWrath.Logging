@@ -521,7 +521,7 @@ namespace NWrath.Logging
 
             schemaApply(args);
 
-            var schema = new SqlLogTableSchema(args.TableName, args.InitScript, args.InserLogScript, args.Columns);
+            var schema = new SqlLogTableSchema(args.TableName, args.InitScript, args.Columns);
 
             return new DbLogger(connectionString)
             {

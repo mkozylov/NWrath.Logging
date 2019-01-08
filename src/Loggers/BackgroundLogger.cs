@@ -77,7 +77,7 @@ namespace NWrath.Logging
 
         public override void Log(LogRecord record)
         {
-            if (IsEnabled && VerifyRecord(record))
+            if (IsEnabled && RecordVerifier.Verify(record))
             {
                 WriteRecord(record);
             }
@@ -92,12 +92,10 @@ namespace NWrath.Logging
 
             foreach (var record in batch)
             {
-                if (!VerifyRecord(record))
+                if (RecordVerifier.Verify(record))
                 {
-                    continue;
+                    _queue.Value.Post(record);
                 }
-
-                _queue.Value.Post(record);
             }
         }
 

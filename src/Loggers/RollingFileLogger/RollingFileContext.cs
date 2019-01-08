@@ -15,16 +15,17 @@ namespace NWrath.Logging
 
         public IRollingFileProvider FileProvider { get => _logger.FileProvider; set { _logger.FileProvider = value; } }
 
-        public FileContext LogFile { get; private set; }
+        public FileContext LogFile { get; protected set; }
 
         public LogRecord LogRecord { get; set; }
 
-        public Set Properties { get; private set; }
+        public Set Properties { get; protected set; }
 
         private RollingFileLogger _logger;
 
         public RollingFileContext(
             RollingFileLogger logger,
+            IFileLogger writer,
             LogRecord logRecord,
             Set properties = null
             )
@@ -32,7 +33,7 @@ namespace NWrath.Logging
             _logger = logger;
             LogRecord = logRecord;
             Properties = properties ?? new Set();
-            LogFile = new FileContext(((IRollingFileLoggerInternal)_logger).Writer);
+            LogFile = new FileContext(writer);
         }
 
         public class FileContext

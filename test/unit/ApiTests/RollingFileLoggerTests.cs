@@ -1,6 +1,7 @@
 ﻿using Moq;
 using NUnit.Framework;
 using NWrath.Synergy.Common.Extensions;
+using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Pipeline;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,8 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var currentFolder = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolderPath = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolder = new DirectoryInfo(currentFolderPath);
 
             var log = new LogRecord
             {
@@ -26,20 +28,32 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
 
-            var file = $"{currentFolder}\\log.txt";
-            var files = new List<string> { file };
-            var fileBeforeWriteLogExists = false;
+            var filePathTemplate = $"{currentFolderPath}\\log.txt";
+            var lastFileMock = new Mock<FileInformation>(filePathTemplate);
+            lastFileMock.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+            lastFileMock.SetupGet(x => x.FullName).Returns(filePathTemplate);
+            lastFileMock.SetupGet(x => x.Exists).Returns(true);
 
-            new FileInfo(file).If(x => x.Exists, t => t.Delete());
+            var files = new List<FileInformation> { lastFileMock.Object };
+
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             var fileProviderMock = new Mock<IRollingFileProvider>();
             fileProviderMock.Setup(x => x.GetFiles()).Returns(() => files.ToArray());
-            fileProviderMock.Setup(x => x.FolderPath).Returns(currentFolder);
-            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(file);
+            fileProviderMock.Setup(x => x.Directory).Returns(currentFolder);
+            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(lastFileMock.Object);
             fileProviderMock.Setup(x => x.ProduceNewFile()).Returns(() =>
             {
-                files.Add(file);
-                return file;
+                var newFilePath = filePathTemplate.Replace(".txt", (files.Count + 1) + ".txt");
+
+                var fm = new Mock<FileInformation>(newFilePath);
+                fm.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+                fm.SetupGet(x => x.FullName).Returns(newFilePath);
+                fm.SetupGet(x => x.Exists).Returns(false);
+
+                files.Add(fm.Object);
+
+                return fm.Object;
             });
 
             var logger = new RollingFileLogger(fileProviderMock.Object);
@@ -48,10 +62,6 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            new FileInfo(file)
-                .If(f => f.Exists, t => t.Delete());
-
-            fileBeforeWriteLogExists = new FileInfo(file).Exists;
             logger.Log(log);
             logger.Dispose();
 
@@ -59,19 +69,19 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Assert
 
-            var logFile = new FileInfo(file);
+            var logFile = new FileInfo(lastFileMock.Object.FullName);
             var expectedStr = logger.Serializer.Serialize(log) + Environment.NewLine;
 
-            Assert.IsFalse(fileBeforeWriteLogExists);
             Assert.IsTrue(logFile.Exists);
-            Assert.AreEqual(expectedStr, File.ReadAllText(file));
+            Assert.AreEqual(expectedStr, File.ReadAllText(logFile.FullName));
 
-            //1 default writer; 1 create file action; 1 clear action
-            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Exactly(3));
+            //because last file exists
+            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Never);
+
             //1 default writer; 1 create file action
             fileProviderMock.Verify(x => x.TryResolveLastFile(), Times.Exactly(2));
 
-            logFile.Delete();
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             #endregion Assert
         }
@@ -81,7 +91,8 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var currentFolder = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolderPath = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolder = new DirectoryInfo(currentFolderPath);
 
             var log = new LogRecord
             {
@@ -91,23 +102,38 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
 
-            var file = $"{currentFolder}\\log.txt";
-            var files = new List<string> { file };
-            var fileBeforeWriteLogExists = false;
+            var filePathTemplate = $"{currentFolderPath}\\log.txt";
+            var lastFileMock = new Mock<FileInformation>(filePathTemplate);
+            lastFileMock.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+            lastFileMock.SetupGet(x => x.FullName).Returns(filePathTemplate);
+            lastFileMock.SetupGet(x => x.Exists).Returns(true);
+
+            var files = new List<FileInformation> { lastFileMock.Object };
+
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             var fileProviderMock = new Mock<IRollingFileProvider>();
             fileProviderMock.Setup(x => x.GetFiles()).Returns(() => files.ToArray());
-            fileProviderMock.Setup(x => x.FolderPath).Returns(currentFolder);
-            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(file);
+            fileProviderMock.Setup(x => x.Directory).Returns(currentFolder);
+            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(lastFileMock.Object);
             fileProviderMock.Setup(x => x.ProduceNewFile()).Returns(() =>
             {
-                files.Add(file);
-                return file;
+                var newFilePath = filePathTemplate.Replace(".txt", (files.Count + 1) + ".txt");
+
+                var fm = new Mock<FileInformation>(newFilePath);
+                fm.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+                fm.SetupGet(x => x.FullName).Returns(newFilePath);
+                fm.SetupGet(x => x.Exists).Returns(false);
+
+                files.Add(fm.Object);
+
+                return fm.Object;
             });
 
             var logs = new List<LogRecord>();
 
             var pipes = new PipeCollection<RollingFileContext>()
+                        .Add(RollingFileLogger.LogWriterPipe)
                         .Add((c, n) =>
                         {
                             n(c);
@@ -119,18 +145,12 @@ namespace NWrath.Logging.Test.ApiTests
                             n(c);
                         });
 
-            pipes.Insert(0, RollingFileLogger.LogWriterPipe);
-
             var logger = new RollingFileLogger(fileProviderMock.Object) { Pipes = pipes };
 
             #endregion Arrange
 
             #region Act
 
-            new FileInfo(file)
-                .If(f => f.Exists, t => t.Delete());
-
-            fileBeforeWriteLogExists = new FileInfo(file).Exists;
             logger.Log(log);
             logger.Dispose();
 
@@ -138,24 +158,28 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Assert
 
-            Assert.IsFalse(fileBeforeWriteLogExists);
-            Assert.IsTrue(new FileInfo(file).Exists);
+            var logFile = new FileInfo(lastFileMock.Object.FullName);
+
+            Assert.IsTrue(logFile.Exists);
             Assert.AreEqual(1, logs.Count);
             Assert.AreSame(logs[0], log);
             Assert.AreEqual(logs[0].Message, log.Message.ToUpper());
-            //one call by default writer initializer, because file does not exists
-            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Once());
+            //because last file exists
+            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Never());
             fileProviderMock.Verify(x => x.TryResolveLastFile(), Times.Once());
+
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             #endregion Assert
         }
 
         [Test]
-        public void RollingFileLogger_Log2()
+        public void RollingFileLogger_LogWithCustomFormat()
         {
             #region Arrange
 
-            var currentFolder = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolderPath = Path.GetDirectoryName(GetType().Assembly.Location);
+            var currentFolder = new DirectoryInfo(currentFolderPath);
 
             var log = new LogRecord
             {
@@ -165,20 +189,32 @@ namespace NWrath.Logging.Test.ApiTests
                 Exception = new Exception("Ex")
             };
 
-            var file = $"{currentFolder}\\log.txt";
-            var files = new List<string> { file };
-            var fileBeforeWriteLogExists = false;
+            var filePathTemplate = $"{currentFolderPath}\\log.txt";
+            var lastFileMock = new Mock<FileInformation>(filePathTemplate);
+            lastFileMock.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+            lastFileMock.SetupGet(x => x.FullName).Returns(filePathTemplate);
+            lastFileMock.SetupGet(x => x.Exists).Returns(true);
 
-            new FileInfo(file).If(x => x.Exists, t => t.Delete());
+            var files = new List<FileInformation> { lastFileMock.Object };
+
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             var fileProviderMock = new Mock<IRollingFileProvider>();
             fileProviderMock.Setup(x => x.GetFiles()).Returns(() => files.ToArray());
-            fileProviderMock.Setup(x => x.FolderPath).Returns(currentFolder);
-            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(file);
+            fileProviderMock.Setup(x => x.Directory).Returns(currentFolder);
+            fileProviderMock.Setup(x => x.TryResolveLastFile()).Returns(lastFileMock.Object);
             fileProviderMock.Setup(x => x.ProduceNewFile()).Returns(() =>
             {
-                files.Add(file);
-                return file;
+                var newFilePath = filePathTemplate.Replace(".txt", (files.Count + 1) + ".txt");
+
+                var fm = new Mock<FileInformation>(newFilePath);
+                fm.SetupGet(x => x.CreationTime).Returns(DateTime.Now);
+                fm.SetupGet(x => x.FullName).Returns(newFilePath);
+                fm.SetupGet(x => x.Exists).Returns(false);
+
+                files.Add(fm.Object);
+
+                return fm.Object;
             });
 
             var logger = LoggingWizard.Spell.RollingFileLogger(fileProviderMock.Object, serializerApply: s =>
@@ -191,10 +227,6 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Act
 
-            new FileInfo(file)
-                .If(f => f.Exists, t => t.Delete());
-
-            fileBeforeWriteLogExists = new FileInfo(file).Exists;
             logger.Log(log);
             logger.Dispose();
 
@@ -202,18 +234,16 @@ namespace NWrath.Logging.Test.ApiTests
 
             #region Assert
 
-            var logFile = new FileInfo(file);
+            var logFile = new FileInfo(lastFileMock.Object.FullName);
             var expectedStr = logger.Serializer.Serialize(log) + Environment.NewLine;
 
-            Assert.IsFalse(fileBeforeWriteLogExists);
             Assert.IsTrue(logFile.Exists);
-            var str = File.ReadAllText(file);
-            Assert.AreEqual(expectedStr, str);
+            Assert.AreEqual(expectedStr, File.ReadAllText(logFile.FullName));
 
-            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Exactly(3));
+            fileProviderMock.Verify(x => x.ProduceNewFile(), Times.Never());
             fileProviderMock.Verify(x => x.TryResolveLastFile(), Times.Exactly(2));
 
-            logFile.Delete();
+            new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             #endregion Assert
         }

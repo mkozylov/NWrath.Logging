@@ -63,9 +63,9 @@ namespace NWrath.Logging
         {
             FileProvider = fileNameProvider;
 
-            if (!Directory.Exists(FileProvider.FolderPath))
+            if (!FileProvider.Directory.Exists)
             {
-                Directory.CreateDirectory(FileProvider.FolderPath);
+                FileProvider.Directory.Create();
             }
 
             SetDefaultPipes();
@@ -82,13 +82,13 @@ namespace NWrath.Logging
 
         public override void Dispose()
         {
-            _writer?.Dispose();
+            _writer.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord record)
         {
-            if (IsEnabled && VerifyRecord(record))
+            if (IsEnabled && RecordVerifier.Verify(record))
             {
                 if (_writer.FilePath == string.Empty)
                 {
@@ -108,15 +108,16 @@ namespace NWrath.Logging
 
         private void SetDefaultWriter()
         {
-            var fileName = FileProvider.TryResolveLastFile();
+            var file = FileProvider.TryResolveLastFile();
 
-            if (fileName.IsEmpty()
-                || new FileInfo(fileName).CreationTime.Date != Clock.Today)
+            if (file == null
+                || !file.Exists
+                || file.CreationTime.Date != Clock.Today)
             {
-                fileName = FileProvider.ProduceNewFile();
+                file = FileProvider.ProduceNewFile();
             }
 
-            _writer.SetFile(fileName, true);
+            _writer.SetFile(file.FullName, true);
         }
 
         private void SetDefaultPipes()
@@ -126,7 +127,7 @@ namespace NWrath.Logging
 
         private RollingFileContext ProduceContext(LogRecord record)
         {
-            return new RollingFileContext(this, record);
+            return new RollingFileContext(this, _writer, record);
         }
     }
 }

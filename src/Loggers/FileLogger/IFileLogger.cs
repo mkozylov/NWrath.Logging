@@ -12,6 +12,8 @@ namespace NWrath.Logging
 
         void Log(byte[] data);
 
+        void Flush();
+
         void SetFile(string filePath, bool append = true);
     }
 }

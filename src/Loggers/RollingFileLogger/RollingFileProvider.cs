@@ -8,7 +8,7 @@ namespace NWrath.Logging
     public class RollingFileProvider
         : IRollingFileProvider
     {
-        public string FolderPath { get; set; }
+        public DirectoryInformation Directory { get; set; }
 
         public Regex FileMatcher { get; set; }
 
@@ -16,34 +16,34 @@ namespace NWrath.Logging
             string folderPath
             )
         {
-            FolderPath = folderPath;
+            Directory = new DirectoryInformation(folderPath);
             FileMatcher = new Regex(@"\d{8}-\d{5}\.log", RegexOptions.Compiled | RegexOptions.Singleline);
         }
 
-        public string[] GetFiles()
+        public FileInformation[] GetFiles()
         {
-            return Directory.GetFiles(FolderPath)
-                            .Where(x => FileMatcher.IsMatch(x))
+            return Directory.EnumerateFiles()
+                            .Where(x => FileMatcher.IsMatch(x.FullName))
                             .ToArray();
         }
 
-        public string ProduceNewFile()
+        public FileInformation ProduceNewFile()
         {
             var today = Clock.Today;
 
-            var todayFilesCount = GetFiles().Select(x => new FileInfo(x))
-                                            .Count(x => x.CreationTime.Date == today);
+            var todayFilesCount = GetFiles().Count(x => x.CreationTime.Date == today);
 
-            return Path.Combine(FolderPath, $"{today:yyyyMMdd}-{(todayFilesCount + 1):D5}.log");
+            return new FileInformation(
+                Path.Combine(Directory.FullName, $"{today:yyyyMMdd}-{(todayFilesCount + 1):D5}.log")
+                );
         }
 
-        public string TryResolveLastFile()
+        public FileInformation TryResolveLastFile()
         {
-            var lastFile = GetFiles().Select(x => new FileInfo(x))
-                                     .OrderByDescending(x => x.CreationTime)
+            var lastFile = GetFiles().OrderByDescending(x => x.CreationTime)
                                      .FirstOrDefault();
 
-            return lastFile?.FullName;
+            return lastFile;
         }
     }
 }
