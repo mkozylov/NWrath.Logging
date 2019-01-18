@@ -24,7 +24,7 @@ namespace NWrath.Logging
             }
         );
 
-        IFileLogger IRollingFileLoggerInternal.Writer
+        FileLogger IRollingFileLoggerInternal.Writer
         {
             get => _writer;
         }

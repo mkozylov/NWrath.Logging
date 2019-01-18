@@ -172,7 +172,7 @@ namespace NWrath.Logging
                 Expression.Constant(")")
                 );
 
-            var concatExpr = BuildStringConcat(block);
+            var concatExpr = ExpressionsHelper.BuildStringConcat(block.ToArray());
 
             var lambda = Expression.Lambda<Func<LogRecord, string>>(concatExpr, arg);
 
@@ -199,56 +199,6 @@ namespace NWrath.Logging
                                        .Append(" END");
 
             return tableBuilder.ToString();
-        }
-
-        private Expression BuildStringConcat(List<Expression> strExprs)
-        {
-            Expression body;
-
-            if (strExprs.Count == 1)
-            {
-                body = strExprs[0];
-            }
-            else if (strExprs.Count == 2)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1]
-                    );
-            }
-            else if (strExprs.Count == 3)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1],
-                    strExprs[2]
-                    );
-            }
-            else if (strExprs.Count == 4)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string), typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1],
-                    strExprs[2],
-                    strExprs[3]
-                    );
-            }
-            else
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string[]) }),
-                    Expression.NewArrayInit(typeof(string), strExprs)
-                    );
-            }
-
-            return body;
         }
 
         private static LogTableColumnSchema[] GetDefaultColumns()

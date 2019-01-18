@@ -152,7 +152,7 @@ namespace NWrath.Logging
                 );
 
             blocks.Add(
-                BuildStringConcat(tokens, strVars)
+                ExpressionsHelper.BuildStringConcat(strVars.ToArray())
                 );
 
             var body = Expression.Block(strVars, blocks);
@@ -160,56 +160,6 @@ namespace NWrath.Logging
             var writerLambda = Expression.Lambda<Func<LogRecord, string>>(body, logExpr);
 
             return new LambdaLogSerializer(writerLambda.CompileFast());
-        }
-
-        private Expression BuildStringConcat(Token[] tokens, List<ParameterExpression> strExprs)
-        {
-            Expression body;
-
-            if (tokens.Length == 1)
-            {
-                body = strExprs[0];
-            }
-            else if (tokens.Length == 2)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1]
-                    );
-            }
-            else if (tokens.Length == 3)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1],
-                    strExprs[2]
-                    );
-            }
-            else if (tokens.Length == 4)
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string), typeof(string), typeof(string), typeof(string) }),
-                    strExprs[0],
-                    strExprs[1],
-                    strExprs[2],
-                    strExprs[3]
-                    );
-            }
-            else
-            {
-                body = Expression.Call(
-                    typeof(string).GetMethod(nameof(string.Concat),
-                    new[] { typeof(string[]) }),
-                    Expression.NewArrayInit(typeof(string), strExprs)
-                    );
-            }
-
-            return body;
         }
 
         private string SetNewOutputTemplate(string newOutputFormat)

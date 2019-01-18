@@ -25,7 +25,7 @@ namespace NWrath.Logging
 
         public RollingFileContext(
             RollingFileLogger logger,
-            IFileLogger writer,
+            FileLogger writer,
             LogRecord logRecord,
             Set properties = null
             )
@@ -42,9 +42,9 @@ namespace NWrath.Logging
 
             public string Path { get => _logger.FilePath; }
 
-            private IFileLogger _logger;
+            private FileLogger _logger;
 
-            public FileContext(IFileLogger logger)
+            public FileContext(FileLogger logger)
             {
                 _logger = logger;
             }

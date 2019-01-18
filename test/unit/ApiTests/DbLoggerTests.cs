@@ -54,24 +54,12 @@ namespace NWrath.Logging.Test.ApiTests
 
         #region Internal
 
-        private void AssertDefaultSchemaDbCommand(DbCommand cmd, LogRecord log)
+        private void AssertDefaultSchemaDbCommand(DbCommand cmd, LogRecord record)
         {
-            Assert.AreEqual(4, cmd.Parameters.Count);
+            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES("
+                         + $"'{record.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}','{record.Message}',{(record.Exception == null ? "NULL" : record.Exception.ToString())},{(int)record.Level})";
 
-            var t = cmd.Parameters[0];
-            var m = cmd.Parameters[1];
-            var ex = cmd.Parameters[2];
-            var l = cmd.Parameters[3];
-
-            Assert.AreEqual("Timestamp", t.ParameterName);
-            Assert.AreEqual("Message", m.ParameterName);
-            Assert.AreEqual("Exception", ex.ParameterName);
-            Assert.AreEqual("Level", l.ParameterName);
-
-            Assert.AreEqual($"{log.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}", t.Value.ToString());
-            Assert.AreEqual(log.Message, m.Value);
-            Assert.AreEqual(log.Exception == null ? DBNull.Value : (object)log.Exception, ex.Value);
-            Assert.AreEqual(log.Level, l.Value);
+            Assert.AreEqual(insertScript, cmd.CommandText);
         }
 
         #endregion Internal

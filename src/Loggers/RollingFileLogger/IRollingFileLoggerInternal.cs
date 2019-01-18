@@ -1,7 +1,11 @@
-﻿namespace NWrath.Logging
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace NWrath.Logging
 {
     public interface IRollingFileLoggerInternal
     {
-        IFileLogger Writer { get; }
+        FileLogger Writer { get; }
     }
 }

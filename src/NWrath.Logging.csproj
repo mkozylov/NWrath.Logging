@@ -10,8 +10,8 @@
     <PackageLicenseUrl>https://github.com/mkozylov/NWrath.Logging/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mkozylov/NWrath.Logging/wiki</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mkozylov/NWrath.Logging/</RepositoryUrl>
-    <Version>1.0.8</Version>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Version>1.0.7</Version>
+    <AssemblyVersion>1.0.7.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
   </PropertyGroup>
 

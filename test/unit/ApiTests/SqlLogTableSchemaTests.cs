@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Text;
 
 namespace NWrath.Logging.Test.ApiTests
@@ -21,7 +22,15 @@ namespace NWrath.Logging.Test.ApiTests
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES(@Timestamp, @Message, @Exception, @Level)";
+            var record = new LogRecord(
+                "msg",
+                new System.DateTime(2000, 1, 2, 3, 4, 5),
+                LogLevel.Info,
+                new NotImplementedException()
+                );
+
+            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES("
+                             + $"'{record.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}','{record.Message}','{record.Exception.ToString()}',{(int)record.Level})";
 
             var defaultColumns = new[] {
                 SqlLogTableSchema.IdColumn,
@@ -36,6 +45,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Act
 
             var ts = new SqlLogTableSchema();
+            var insertQuery = ts.BuildInsertQuery(record);
 
             #endregion Act
 
@@ -44,32 +54,29 @@ namespace NWrath.Logging.Test.ApiTests
             Assert.AreEqual(SqlLogTableSchema.DefaultTableName, ts.TableName);
             Assert.AreEqual(defaultColumns.Length, ts.Columns.Length);
             Assert.AreEqual(initScript, ts.InitScript);
-            Assert.AreEqual(insertScript, ts.InserLogScript);
+            Assert.AreEqual(insertScript, insertQuery);
 
             #endregion Assert
         }
 
         [Test]
-        public void LogTableSchema_CustomScripts()
+        public void LogTableSchema_CustomInitScript()
         {
             #region Arrange
 
             var initScript = "INIT SCRIPT";
 
-            var insertScript = "INSERT SCRIPT";
-
             #endregion Arrange
 
             #region Act
 
-            var ts = new SqlLogTableSchema(initScript: initScript, inserLogScript: insertScript);
+            var ts = new SqlLogTableSchema(initScript: initScript);
 
             #endregion Act
 
             #region Assert
 
             Assert.AreEqual(initScript, ts.InitScript);
-            Assert.AreEqual(insertScript, ts.InserLogScript);
 
             #endregion Assert
         }
@@ -91,13 +98,22 @@ namespace NWrath.Logging.Test.ApiTests
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO [{newTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES(@Timestamp, @Message, @Exception, @Level)";
+            var record = new LogRecord(
+                "msg",
+                new System.DateTime(2000, 1, 2, 3, 4, 5),
+                LogLevel.Info,
+                new NotImplementedException()
+                );
+
+            var insertScript = $"INSERT INTO [{newTableName}]([Timestamp], [Message], [Exception], [Level]) VALUES("
+                             + $"'{record.Timestamp:yyyy-MM-ddTHH:mm:ss.fff}','{record.Message}','{record.Exception.ToString()}',{(int)record.Level})";
 
             #endregion Arrange
 
             #region Act
 
             var ts = new SqlLogTableSchema(newTableName);
+            var insertQuery = ts.BuildInsertQuery(record);
 
             #endregion Act
 
@@ -105,7 +121,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             Assert.AreEqual(newTableName, ts.TableName);
             Assert.AreEqual(initScript, ts.InitScript);
-            Assert.AreEqual(insertScript, ts.InserLogScript);
+            Assert.AreEqual(insertScript, insertQuery);
 
             #endregion Assert
         }
@@ -127,13 +143,22 @@ namespace NWrath.Logging.Test.ApiTests
                                         .Append(") END")
                                         .ToString();
 
-            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Message], [Exception]) VALUES(@Message, @Exception)";
+            var record = new LogRecord(
+                "msg",
+                new System.DateTime(2000, 1, 2, 3, 4, 5),
+                LogLevel.Info,
+                new NotImplementedException()
+                );
+
+            var insertScript = $"INSERT INTO [{SqlLogTableSchema.DefaultTableName}]([Message], [Exception]) VALUES("
+                             + $"'{record.Message}','{record.Exception.ToString()}')";
 
             #endregion Arrange
 
             #region Act
 
             var ts = new SqlLogTableSchema(columns: newColumns);
+            var insertQuery = ts.BuildInsertQuery(record);
 
             #endregion Act
 
@@ -141,7 +166,7 @@ namespace NWrath.Logging.Test.ApiTests
 
             Assert.AreEqual(newColumns.Length, ts.Columns.Length);
             Assert.AreEqual(initScript, ts.InitScript);
-            Assert.AreEqual(insertScript, ts.InserLogScript);
+            Assert.AreEqual(insertScript, insertQuery);
 
             #endregion Assert
         }

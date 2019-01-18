@@ -7,7 +7,7 @@ using System.Threading;
 namespace NWrath.Logging
 {
     public class FileLogger
-         : LoggerBase, IFileLogger
+         : LoggerBase
     {
         public override bool IsEnabled
         {
@@ -107,7 +107,7 @@ namespace NWrath.Logging
                     FilePath,
                     append ? FileMode.Append : FileMode.Create,
                     FileAccess.Write,
-                    FileShare.Read
+                    FileShare.ReadWrite
                     );
             });
         }
@@ -120,12 +120,7 @@ namespace NWrath.Logging
                 return;
             }
 
-            _writer.Value.Write(data, 0, data.Length);
-
-            if (AutoFlush)
-            {
-                _writer.Value.Flush();
-            }
+            WriteBytes(data);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -148,14 +143,10 @@ namespace NWrath.Logging
 
             var data = _encoding.GetBytes(sb.ToString());
 
-            _writer.Value.Write(data, 0, data.Length);
-
-            if (AutoFlush)
-            {
-                _writer.Value.Flush();
-            }
+            WriteBytes(data);
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord record)
         {
             if (IsEnabled && _writer.Value.CanWrite && RecordVerifier.Verify(record))
@@ -170,6 +161,11 @@ namespace NWrath.Logging
 
             var data = Encoding.GetBytes(msg);
 
+            WriteBytes(data);
+        }
+
+        private void WriteBytes(byte[] data)
+        {
             _writer.Value.Write(data, 0, data.Length);
 
             if (AutoFlush)
