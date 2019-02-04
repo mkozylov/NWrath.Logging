@@ -117,7 +117,7 @@ namespace NWrath.Logging
                 file = FileProvider.ProduceNewFile();
             }
 
-            _writer.SetFile(file.FullName, true);
+            _writer.SetFile(file.FullName, append: true);
         }
 
         private void SetDefaultPipes()

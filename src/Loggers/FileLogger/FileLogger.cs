@@ -21,7 +21,7 @@ namespace NWrath.Logging
 
                 if (_isEnabled)
                 {
-                    SetFile(_filePath, true);
+                    SetFile(FilePath, true);
                 }
                 else
                 {
@@ -30,7 +30,7 @@ namespace NWrath.Logging
             }
         }
 
-        public string FilePath { get => _filePath; }
+        public string FilePath { get; protected set; }
 
         public long FileSize
         {
@@ -41,7 +41,7 @@ namespace NWrath.Logging
                     return _writer.Value.Length;
                 }
 
-                var file = new FileInfo(_filePath);
+                var file = new FileInfo(FilePath);
 
                 return file.Exists ? file.Length : -1;
             }
@@ -51,20 +51,22 @@ namespace NWrath.Logging
 
         public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
 
-        public bool AutoFlush { get; set; } = true;
+        public bool AutoFlush { get => _autoFlush; set { _autoFlush = value; _writeBytesAction = value ? AllWriteBytes : (Action<byte[]>)WriteBytes; } }
 
         private Lazy<FileStream> _writer;
         private bool _isEnabled = true;
-        private string _filePath;
         private Encoding _encoding = new UTF8Encoding(false);
         private IStringLogSerializer _serializer = new StringLogSerializer();
+        private bool _autoFlush;
+        private Action<byte[]> _writeBytesAction;
 
         public FileLogger(
             string filePath,
             bool append = true
             )
         {
-            _filePath = filePath;
+            FilePath = filePath;
+            AutoFlush = true;
 
             SetFile(filePath, append);
         }
@@ -97,7 +99,7 @@ namespace NWrath.Logging
 
         public void SetFile(string fileName, bool append)
         {
-            _filePath = fileName;
+            FilePath = fileName;
 
             Dispose();
 
@@ -120,7 +122,7 @@ namespace NWrath.Logging
                 return;
             }
 
-            WriteBytes(data);
+            _writeBytesAction(data);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -143,7 +145,7 @@ namespace NWrath.Logging
 
             var data = _encoding.GetBytes(sb.ToString());
 
-            WriteBytes(data);
+            _writeBytesAction(data);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -161,17 +163,21 @@ namespace NWrath.Logging
 
             var data = Encoding.GetBytes(msg);
 
-            WriteBytes(data);
+            _writeBytesAction(data);
         }
 
         private void WriteBytes(byte[] data)
         {
             _writer.Value.Write(data, 0, data.Length);
+        }
 
-            if (AutoFlush)
-            {
-                _writer.Value.Flush();
-            }
+        private void AllWriteBytes(byte[] data)
+        {
+            _writer.Value.Write(data, 0, data.Length);
+
+            _writer.Value.Flush();
+
+            SetFile(FilePath, true);
         }
     }
 }
