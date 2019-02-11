@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -9,8 +11,8 @@ using NWrath.Synergy.Reflection.Extensions;
 
 namespace NWrath.Logging
 {
-    public class SqlLogTableSchema
-        : ILogTableSchema
+    public class SqlLogSchema
+        : IDbLogSchema
     {
         #region DefaultColumns
 
@@ -69,6 +71,16 @@ namespace NWrath.Logging
 
         #endregion DefaultColumns
 
+        public string ConnectionString
+        {
+            get => _connectionString;
+
+            set
+            {
+                _connectionString = value ?? throw Errors.NO_CONNECTION_STRING;
+            }
+        }
+
         public const string DefaultTableName = "ServerLog";
 
         public static LogTableColumnSchema[] DefaultColumns => GetDefaultColumns();
@@ -79,15 +91,18 @@ namespace NWrath.Logging
 
         public LogTableColumnSchema[] Columns { get; private set; }
 
+        private string _connectionString;
         private string _insertLogQueryPrefix;
         private Func<LogRecord, string> _insertLogQueryBuilder;
 
-        public SqlLogTableSchema(
+        public SqlLogSchema(
+            string connectionString,
             string tableName = DefaultTableName,
             string initScript = null,
             LogTableColumnSchema[] columns = null
             )
         {
+            ConnectionString = connectionString;
             Columns = columns?.Length > 0 ? columns : DefaultColumns;
             TableName = tableName ?? DefaultTableName;
             InitScript = initScript ?? BuildDefaultInitScript();
@@ -95,9 +110,14 @@ namespace NWrath.Logging
             _insertLogQueryBuilder = CreateInsertLogQueryBuilder();
         }
 
-        public SqlLogTableSchema(LogTableSchemaConfig config)
-            : this(config.TableName, config.InitScript, config.Columns)
+        public SqlLogSchema(DbLogSchemaConfig config)
+            : this(config.ConnectionString, config.TableName, config.InitScript, config.Columns)
         {
+        }
+
+        public virtual DbConnection CreateConnection()
+        {
+            return new SqlConnection(_connectionString);
         }
 
         public string BuildInsertQuery(LogRecord record)

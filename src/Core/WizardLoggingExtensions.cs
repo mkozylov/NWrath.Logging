@@ -487,15 +487,13 @@ namespace NWrath.Logging
         #region Db
 
         public static DbLogger DbLogger(
-           this ILoggingWizardCharms charms,
-           string connectionString,
-           ILogRecordVerifier recordVerifier,
-           ILogTableSchema tableSchema = null
-           )
+            this ILoggingWizardCharms charms,
+            IDbLogSchema schema,
+            ILogRecordVerifier recordVerifier
+            )
         {
-            return new DbLogger(connectionString)
+            return new DbLogger(schema)
             {
-                TableSchema = tableSchema ?? new SqlLogTableSchema(),
                 RecordVerifier = recordVerifier
             };
         }
@@ -503,59 +501,74 @@ namespace NWrath.Logging
         public static DbLogger DbLogger(
            this ILoggingWizardCharms charms,
            string connectionString,
-           LogLevel minLevel = LogLevel.Debug,
-           ILogTableSchema tableSchema = null
+           ILogRecordVerifier recordVerifier
            )
         {
-            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel), tableSchema);
+            return new DbLogger(connectionString)
+            {
+                RecordVerifier = recordVerifier
+            };
         }
 
         public static DbLogger DbLogger(
             this ILoggingWizardCharms charms,
-            string connectionString,
-            ILogRecordVerifier recordVerifier,
-            Action<LogTableSchemaConfig> schemaApply
+            IDbLogSchema schema,
+            LogLevel minLevel = LogLevel.Debug
             )
         {
-            var args = new LogTableSchemaConfig();
+            return DbLogger(charms, schema, new MinimumLogLevelVerifier(minLevel));
+        }
+
+        public static DbLogger DbLogger(
+           this ILoggingWizardCharms charms,
+           string connectionString,
+           LogLevel minLevel = LogLevel.Debug
+           )
+        {
+            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel));
+        }
+
+        public static DbLogger DbLogger(
+            this ILoggingWizardCharms charms,
+            ILogRecordVerifier recordVerifier,
+            Action<DbLogSchemaConfig> schemaApply
+            )
+        {
+            var args = new DbLogSchemaConfig();
 
             schemaApply(args);
 
-            var schema = new SqlLogTableSchema(args.TableName, args.InitScript, args.Columns);
+            var schema = new SqlLogSchema(args.ConnectionString, args.TableName, args.InitScript, args.Columns);
 
-            return new DbLogger(connectionString)
+            return new DbLogger(schema)
             {
-                TableSchema = schema,
                 RecordVerifier = recordVerifier
             };
         }
 
         public static DbLogger DbLogger(
             this ILoggingWizardCharms charms,
-            string connectionString,
             LogLevel minLevel,
-            Action<LogTableSchemaConfig> schemaApply
+            Action<DbLogSchemaConfig> schemaApply
             )
         {
-            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel), schemaApply);
+            return DbLogger(charms, new MinimumLogLevelVerifier(minLevel), schemaApply);
         }
 
         public static DbLogger DbLogger(
             this ILoggingWizardCharms charms,
-            string connectionString,
-            Action<LogTableSchemaConfig> schemaApply
+            Action<DbLogSchemaConfig> schemaApply
             )
         {
-            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(LogLevel.Debug), schemaApply);
+            return DbLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), schemaApply);
         }
 
         public static DbLogger DbLogger(
            this ILoggingWizardCharms charms,
-           string connectionString,
-           ILogTableSchema tableSchema
+           IDbLogSchema schema
            )
         {
-            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(LogLevel.Debug), tableSchema);
+            return DbLogger(charms, schema, new MinimumLogLevelVerifier(LogLevel.Debug));
         }
 
         #endregion Db

@@ -35,11 +35,8 @@ logger.Critical("CRITICAL MESSAGE", new ApplicationException("err"));
 5. Debug(visual studio output) logger
 6. Lambda logger
 7. Empty logger
-
-And logger wrappers:
-1. Composite logger
-2. Thread safe logger
-3. Pipe logger
+8. Composite logger
+9. Background logger
 
 ##### Customizable output template and formats:
 Log message model look like:
@@ -51,7 +48,7 @@ Log message model look like:
 
 For most loggers used string log serializer, and any part of log message can have own format.
 Default output template for string log serializer: *`"{Timestamp} [{Level}] {Message}{ExNewLine}{Exception}"`*, 
-and default timestamp format: *"yyyy-MM-dd HH:mm:ss.ff"*
+and default timestamp format: *"yyyy-MM-dd HH:mm:ss.fff"*
 But we can easily change it and even extend.
 ```csharp
 var logger = LoggingWizard.Spell.ConsoleLogger(s =>
@@ -80,7 +77,7 @@ logger.Debug("DEBUG MESSAGE");
 **Log level verification** 
 
 Log level verifier determine can we write log message or not.
-The are five log levels: Debug, Info, Warning, Error, Critical and three type of verifiers: minimum level verifier, range level verifier, multiple level verifier.
+The are five log levels: Debug, Info, Warning, Error, Critical and three type of implemented verifiers: minimum level verifier, range level verifier, multiple level verifier.
 By default used minimum log level verifier. Code below not write debug message in output.
 ```csharp
 var logger = LoggingWizard.Spell.ConsoleLogger(LogLevel.Info)
@@ -90,25 +87,16 @@ logger.Warning("WARNING MESSAGE");
 ```
 >Output: 
 >
->*`"2018-08-25 19:33:57.28 [Info] INFO MESSAGE"`*
+>*`"2018-08-25 19:33:57.280 [Info] INFO MESSAGE"`*
 >
->*`"2018-08-25 19:33:57.31 [Warning] WARNING MESSAGE"`*
+>*`"2018-08-25 19:33:57.310 [Warning] WARNING MESSAGE"`*
 
 Also log level verifier can be a custom class that implement ILogLevelVerifier.
 
 **Loggers composition**
 
-We can combine loggers by using logger wrappers or lambda logger.
-In basic scenario expected that loggers work in single thread and does not use lock.
-
-But if we need thread safe logger, just use wrapper:
-```csharp
-//use existed logger
-var logger = LoggingWizard.Spell.ThreadSafeLogger(new ConsoleLogger());
-//use factory
-var logger = LoggingWizard.Spell.ThreadSafeLogger(f => f.ConsoleLogger())
-```
-We can write to multiple loggers at once by using composite logger:
+We can combine loggers by using composite or lambda logger.
+Use composite logger for write to multiple loggers at once:
 ```csharp
 //use existed loggers
 var logger = LoggingWizard.Spell.CompositeLogger(
@@ -121,7 +109,7 @@ var logger = LoggingWizard.Spell.CompositeLogger(
                 f => f.DebugLogger()
                 );
 ```
-We can write log by lambda, combine loggers and use specific predicates etc.:
+Lambda logger is used for combine loggers or using specific predicates etc.:
 ```csharp
 //use debug logger for ApplicationException and console logger for other messages
 var debugLogger = LoggingWizard.Spell.DebugLogger();

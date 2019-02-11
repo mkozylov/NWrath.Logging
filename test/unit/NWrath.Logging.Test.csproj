@@ -194,7 +194,7 @@
   <ItemGroup>
     <Compile Include="ApiTests\BackgroundLoggerTests.cs" />
     <Compile Include="ApiTests\LoggerJsonLoaderTests.cs" />
-    <Compile Include="ApiTests\SqlLogTableSchemaTests.cs" />
+    <Compile Include="ApiTests\SqlLogSchemaTests.cs" />
     <Compile Include="ApiTests\DebugLoggerTests.cs" />
     <Compile Include="ApiTests\DbLoggerTests.cs" />
     <Compile Include="ApiTests\RollingFileLoggerTests.cs" />

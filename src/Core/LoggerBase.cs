@@ -29,10 +29,7 @@ namespace NWrath.Logging
         [MethodImpl(MethodImplOptions.Synchronized)]
         public virtual void Log(LogRecord[] batch)
         {
-            if (!IsEnabled || batch.Length == 0)
-            {
-                return;
-            }
+            if (!IsEnabled || batch.Length == 0) return;
 
             foreach (var record in batch)
             {
@@ -65,62 +62,54 @@ namespace NWrath.Logging
             Log(new LogRecord(message, timestamp, level, exception, (extra as StringSet) ?? StringSet.FromObject(extra)));
         }
 
-        public virtual void Debug(string msg)
+        public virtual void Debug(string msg, StringSet extra = null)
         {
-            var logMsg = new LogRecord
-            {
-                Message = msg,
-                Level = LogLevel.Debug
-            };
-
-            Log(logMsg);
+            Log(msg, level: LogLevel.Debug, extra: extra);
         }
 
-        public virtual void Info(string msg)
+        public virtual void Debug<TExtra>(string msg, TExtra extra = default(TExtra))
         {
-            var logMsg = new LogRecord
-            {
-                Message = msg,
-                Level = LogLevel.Info
-            };
-
-            Log(logMsg);
+            Log(msg, level: LogLevel.Debug, extra: extra);
         }
 
-        public virtual void Warning(string msg, Exception exception = null)
+        public virtual void Info(string msg, StringSet extra = null)
         {
-            var logMsg = new LogRecord
-            {
-                Message = msg,
-                Level = LogLevel.Warning,
-                Exception = exception
-            };
-
-            Log(logMsg);
+            Log(msg, level: LogLevel.Info, extra: extra);
         }
 
-        public virtual void Error(string msg, Exception exception = null)
+        public virtual void Info<TExtra>(string msg, TExtra extra = default(TExtra))
         {
-            var logMsg = new LogRecord
-            {
-                Message = msg,
-                Level = LogLevel.Error,
-                Exception = exception
-            };
-
-            Log(logMsg);
+            Log(msg, level: LogLevel.Info, extra: extra);
         }
 
-        public virtual void Critical(string msg, Exception exception = null)
+        public virtual void Warning(string msg, Exception exception = null, StringSet extra = null)
         {
-            var logMsg = new LogRecord
-            {
-                Message = msg,
-                Level = LogLevel.Critical,
-                Exception = exception
-            };
+            Log(msg, level: LogLevel.Warning, exception: exception, extra: extra);
+        }
 
-            Log(logMsg);
+        public virtual void Warning<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra))
+        {
+            Log(msg, level: LogLevel.Warning, exception: exception, extra: extra);
+        }
+
+        public virtual void Error(string msg, Exception exception = null, StringSet extra = null)
+        {
+            Log(msg, level: LogLevel.Error, exception: exception, extra: extra);
+        }
+
+        public virtual void Error<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra))
+        {
+            Log(msg, level: LogLevel.Error, exception: exception, extra: extra);
+        }
+
+        public virtual void Critical(string msg, Exception exception = null, StringSet extra = null)
+        {
+            Log(msg, level: LogLevel.Critical, exception: exception, extra: extra);
+        }
+
+        public virtual void Critical<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra))
+        {
+            Log(msg, level: LogLevel.Critical, exception: exception, extra: extra);
         }
 
         public virtual void Dispose()

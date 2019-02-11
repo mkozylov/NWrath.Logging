@@ -10,17 +10,7 @@ namespace NWrath.Logging
     public class DbLogger
          : LoggerBase
     {
-        public string ConnectionString
-        {
-            get => _connectionString;
-
-            set
-            {
-                _connectionString = value ?? throw Errors.NO_CONNECTION_STRING;
-            }
-        }
-
-        public ILogTableSchema TableSchema
+        public IDbLogSchema Schema
         {
             get => _tableSchema;
 
@@ -33,14 +23,18 @@ namespace NWrath.Logging
         }
 
         private Lazy<DbLogger> _self;
-        private ILogTableSchema _tableSchema = new SqlLogTableSchema();
-        private string _connectionString;
+        private IDbLogSchema _tableSchema;
 
-        public DbLogger(string connectionString)
+        public DbLogger(IDbLogSchema schema)
         {
-            ConnectionString = connectionString;
+            Schema = schema;
 
             SelfInit();
+        }
+
+        public DbLogger(string connectionString)
+            : this(new SqlLogSchema(connectionString))
+        {
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -51,10 +45,12 @@ namespace NWrath.Logging
                 return;
             }
 
-            using (var con = CreateConnection(_self.Value.ConnectionString))
+            var s = _self.Value.Schema;
+
+            using (var con = s.CreateConnection())
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = TableSchema.BuildInsertBatchQuery(batch);
+                cmd.CommandText = s.BuildInsertBatchQuery(batch);
 
                 con.Open();
 
@@ -64,10 +60,12 @@ namespace NWrath.Logging
 
         protected override void WriteRecord(LogRecord record)
         {
-            using (var con = CreateConnection(_self.Value.ConnectionString))
+            var s = _self.Value.Schema;
+
+            using (var con = s.CreateConnection())
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = TableSchema.BuildInsertQuery(record);
+                cmd.CommandText = s.BuildInsertQuery(record);
 
                 con.Open();
 
@@ -75,18 +73,13 @@ namespace NWrath.Logging
             }
         }
 
-        protected virtual DbConnection CreateConnection(string connectionString)
+        protected virtual void ExecuteInitScript()
         {
-            return new SqlConnection(connectionString);
-        }
-
-        protected virtual void ExecuteInitScript(string connectionString)
-        {
-            using (var con = CreateConnection(connectionString))
+            using (var con = Schema.CreateConnection())
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = TableSchema.InitScript;
-                cmd.CommandType = GetCommandType(TableSchema.InitScript);
+                cmd.CommandText = Schema.InitScript;
+                cmd.CommandType = System.Data.CommandType.Text;
 
                 con.Open();
 
@@ -98,20 +91,13 @@ namespace NWrath.Logging
         {
             _self = new Lazy<DbLogger>(() =>
             {
-                if (!string.IsNullOrEmpty(TableSchema.InitScript))
+                if (!string.IsNullOrEmpty(Schema.InitScript))
                 {
-                    ExecuteInitScript(ConnectionString);
+                    ExecuteInitScript();
                 }
 
                 return this;
             });
-        }
-
-        private System.Data.CommandType GetCommandType(string cmdText)
-        {
-            return cmdText.Contains(' ')
-                ? System.Data.CommandType.Text
-                : System.Data.CommandType.StoredProcedure;
         }
     }
 }

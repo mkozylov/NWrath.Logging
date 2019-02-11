@@ -16,11 +16,11 @@ namespace NWrath.Logging.Performance.Test
         protected override void CreateLogger()
         {
             _logger = LoggingWizard.Spell.BackgroundLogger(f => f.DbLogger(
-                          "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True",
                           s =>
                           {
+                              s.ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True";
                               s.TableName = "BackgroundDbLog";
-                              s.Columns = new[] { SqlLogTableSchema.IdColumn, SqlLogTableSchema.MessageColumn };
+                              s.Columns = new[] { SqlLogSchema.IdColumn, SqlLogSchema.MessageColumn };
                           })
                       );
         }

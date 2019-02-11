@@ -1,7 +1,9 @@
 ﻿namespace NWrath.Logging
 {
-    public class LogTableSchemaConfig
+    public class DbLogSchemaConfig
     {
+        public string ConnectionString { get; set; }
+
         public string TableName { get; set; }
 
         public string InitScript { get; set; }

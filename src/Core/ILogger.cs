@@ -10,15 +10,25 @@ namespace NWrath.Logging
 
         bool IsEnabled { get; set; }
 
-        void Debug(string msg);
+        void Debug(string msg, StringSet extra = null);
 
-        void Info(string msg);
+        void Debug<TExtra>(string msg, TExtra extra = default(TExtra));
 
-        void Warning(string msg, Exception exception = null);
+        void Info(string msg, StringSet extra = null);
 
-        void Error(string msg, Exception exception = null);
+        void Info<TExtra>(string msg, TExtra extra = default(TExtra));
 
-        void Critical(string msg, Exception exception = null);
+        void Warning(string msg, Exception exception = null, StringSet extra = null);
+
+        void Warning<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
+
+        void Error(string msg, Exception exception = null, StringSet extra = null);
+
+        void Error<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
+
+        void Critical(string msg, Exception exception = null, StringSet extra = null);
+
+        void Critical<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
 
         void Log(LogRecord record);
 
