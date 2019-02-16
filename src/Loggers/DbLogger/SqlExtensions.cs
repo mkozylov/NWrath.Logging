@@ -33,7 +33,7 @@ namespace NWrath.Logging
 
         public static string ToSqlString(this string val)
         {
-            return val == null ? "NULL" : ("'" + val.ToString() + "'");
+            return val == null ? "NULL" : ("'" + val.Replace("'", "''") + "'");
         }
 
         public static string ToSqlString(this int val)
