@@ -21,7 +21,7 @@ namespace NWrath.Logging
             name: "Id",
             typeDefinition: "BIGINT NOT NULL PRIMARY KEY IDENTITY",
             isInternal: true,
-            type: typeof(int)
+            type: typeof(long)
         );
 
         public static LogTableColumnSchema TimestampColumn => new LogTableColumnSchema
@@ -139,7 +139,7 @@ namespace NWrath.Logging
                 }
             }
 
-            return sb.ToSqlString();
+            return sb.ToString();
         }
 
         private string BuildInsertQueryPrefix()

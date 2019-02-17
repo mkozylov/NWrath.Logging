@@ -101,8 +101,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NWrath.Logging.csproj">
-      <Project>{46c41e52-127e-4d88-9eb4-61212edccb39}</Project>
+    <ProjectReference Include="..\..\src\NWrath.Logging\NWrath.Logging.csproj">
+      <Project>{52040ec5-e53c-47e8-9f60-71ebf5f87f53}</Project>
       <Name>NWrath.Logging</Name>
     </ProjectReference>
   </ItemGroup>

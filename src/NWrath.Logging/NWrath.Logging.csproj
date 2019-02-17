@@ -27,8 +27,11 @@
 
   <ItemGroup>
     <Compile Remove="Loggers\PipeLogger\**" />
+    <Compile Remove="NWrath.Logging.AspNetCore\**" />
     <EmbeddedResource Remove="Loggers\PipeLogger\**" />
+    <EmbeddedResource Remove="NWrath.Logging.AspNetCore\**" />
     <None Remove="Loggers\PipeLogger\**" />
+    <None Remove="NWrath.Logging.AspNetCore\**" />
   </ItemGroup>
 
   <ItemGroup>

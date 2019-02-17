@@ -44,9 +44,13 @@ namespace NWrath.Logging
             set { _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER; }
         }
 
+        public ILogger SelfLogger { get; set; }
+
         public TimeSpan FlushPeriod { get; private set; }
 
         public int BatchSize { get; private set; }
+
+        public Exception LastError { get; private set; }
 
         private ILogger _baseLogger;
         private Task _watchTask;
@@ -145,7 +149,7 @@ namespace NWrath.Logging
                     });
 
                 _writeBlock = new ActionBlock<LogRecord[]>(
-                    batch => _baseLogger.Log(batch),
+                    (Action<LogRecord[]>)BaseLoggerWriteAction,
                     new ExecutionDataflowBlockOptions
                     {
                         EnsureOrdered = true
@@ -157,6 +161,19 @@ namespace NWrath.Logging
 
                 return buffer;
             });
+        }
+
+        private void BaseLoggerWriteAction(LogRecord[] batch)
+        {
+            try
+            {
+                _baseLogger.Log(batch);
+            }
+            catch (Exception ex)
+            {
+                LastError = ex;
+                SelfLogger?.Error($"Base logger error", ex);
+            }
         }
 
         private async Task WatchBufferLoopAsync()

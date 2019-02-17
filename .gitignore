@@ -14,3 +14,9 @@
 /test/performance/obj
 /test/unit/bin
 /test/unit/obj
+/src/NWrath.Logging/bin
+/src/NWrath.Logging/obj
+/test/NWrath.Logging.Performance.Test/bin
+/test/NWrath.Logging.Performance.Test/obj
+/test/NWrath.Logging.Test/bin
+/test/NWrath.Logging.Test/obj

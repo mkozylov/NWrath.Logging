@@ -46,6 +46,16 @@ namespace NWrath.Logging
             return val == null ? "NULL" : val.Value.ToString();
         }
 
+        public static string ToSqlString(this long val)
+        {
+            return val.ToString();
+        }
+
+        public static string ToSqlString(this long? val)
+        {
+            return val == null ? "NULL" : val.Value.ToString();
+        }
+
         public static string ToSqlString(this double val)
         {
             return val.ToString();
@@ -58,7 +68,7 @@ namespace NWrath.Logging
 
         public static string ToSqlString<TObj>(this TObj val)
         {
-            return val?.ToString() ?? "NULL";
+            return val == null ? "NULL" : val.ToString();
         }
     }
 }
