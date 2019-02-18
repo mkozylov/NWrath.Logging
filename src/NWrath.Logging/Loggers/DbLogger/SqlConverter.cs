@@ -4,69 +4,69 @@ using System.Text;
 
 namespace NWrath.Logging
 {
-    public static class SqlExtensions
+    public static class SqlConverter
     {
-        public static string ToSqlString(this DateTime val)
+        public static string ToSqlString(DateTime val)
         {
             return "'" + val.ToIsoString('T') + "'";
         }
 
-        public static string ToSqlString(this DateTime? val)
+        public static string ToSqlString(DateTime? val)
         {
             return val == null ? "NULL" : ("'" + val.Value.ToIsoString('T') + "'");
         }
 
-        public static string ToSqlString(this bool val)
+        public static string ToSqlString(bool val)
         {
             return Convert.ToInt32(val).ToString();
         }
 
-        public static string ToSqlString(this bool? val)
+        public static string ToSqlString(bool? val)
         {
             return val == null ? "NULL" : Convert.ToInt32(val.Value).ToString();
         }
 
-        public static string ToSqlString(this Enum val)
+        public static string ToSqlString(Enum val)
         {
             return val == null ? "NULL" : (Convert.ToInt32(val)).ToString();
         }
 
-        public static string ToSqlString(this string val)
+        public static string ToSqlString(string val)
         {
             return val == null ? "NULL" : ("'" + val.Replace("'", "''") + "'");
         }
 
-        public static string ToSqlString(this int val)
+        public static string ToSqlString(int val)
         {
             return val.ToString();
         }
 
-        public static string ToSqlString(this int? val)
+        public static string ToSqlString(int? val)
         {
             return val == null ? "NULL" : val.Value.ToString();
         }
 
-        public static string ToSqlString(this long val)
+        public static string ToSqlString(long val)
         {
             return val.ToString();
         }
 
-        public static string ToSqlString(this long? val)
+        public static string ToSqlString(long? val)
         {
             return val == null ? "NULL" : val.Value.ToString();
         }
 
-        public static string ToSqlString(this double val)
+        public static string ToSqlString(double val)
         {
             return val.ToString();
         }
 
-        public static string ToSqlString(this double? val)
+        public static string ToSqlString(double? val)
         {
             return val == null ? "NULL" : val.Value.ToString();
         }
 
-        public static string ToSqlString<TObj>(this TObj val)
+        public static string ToSqlString<TObj>(TObj val)
         {
             return val == null ? "NULL" : val.ToString();
         }

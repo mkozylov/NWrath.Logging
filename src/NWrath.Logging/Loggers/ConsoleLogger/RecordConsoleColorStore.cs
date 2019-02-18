@@ -110,7 +110,7 @@ namespace NWrath.Logging
                     break;
 
                 case LogLevel.Info:
-                    color = ConsoleColor.White;
+                    color = ConsoleColor.Green;
                     break;
 
                 case LogLevel.Warning:

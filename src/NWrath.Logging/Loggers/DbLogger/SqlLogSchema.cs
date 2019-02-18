@@ -149,7 +149,7 @@ namespace NWrath.Logging
 
         private Func<LogRecord, string> CreateInsertLogQueryBuilder()
         {
-            var sqlExtType = typeof(SqlExtensions);
+            var sqlExtType = typeof(SqlConverter);
 
             var columns = Columns.Where(x => !x.IsInternal)
                                      .ToList();
@@ -172,9 +172,9 @@ namespace NWrath.Logging
                     arg
                     );
 
-                var toSqlStringMI = sqlExtType.GetMethod(nameof(SqlExtensions.ToSqlString), new[] { col.Type });
+                var toSqlStringMI = sqlExtType.GetMethod(nameof(SqlConverter.ToSqlString), new[] { col.Type });
 
-                toSqlStringMI = toSqlStringMI ?? sqlExtType.GetStaticGenericMethod(nameof(SqlExtensions.ToSqlString), 1, 1).MakeGenericMethod(col.Type);
+                toSqlStringMI = toSqlStringMI ?? sqlExtType.GetStaticGenericMethod(nameof(SqlConverter.ToSqlString), 1, 1).MakeGenericMethod(col.Type);
 
                 var val = Expression.Call(toSqlStringMI, Expression.Convert(serializeCall, col.Type));
 
