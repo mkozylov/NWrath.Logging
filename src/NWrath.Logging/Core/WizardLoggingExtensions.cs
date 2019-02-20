@@ -729,10 +729,10 @@ namespace NWrath.Logging
             TimeSpan? flushPeriod = null,
             int? batchSize = null,
             bool leaveOpen = false,
-            ILogger selfLogger = null
+            ILogger emergencyLogger = null
             )
         {
-            return new BackgroundLogger(logger, flushPeriod, batchSize, leaveOpen) { SelfLogger = selfLogger };
+            return new BackgroundLogger(logger, flushPeriod, batchSize, leaveOpen) { EmergencyLogger = emergencyLogger };
         }
 
         public static BackgroundLogger BackgroundLogger(
@@ -742,12 +742,12 @@ namespace NWrath.Logging
             TimeSpan? flushPeriod = null,
             int? batchSize = null,
             bool leaveOpen = false,
-            ILogger selfLogger = null
+            ILogger emergencyLogger = null
             )
         {
             var baseLogger = loggerFactory(charms);
 
-            return BackgroundLogger(charms, baseLogger, recordVerifier, flushPeriod, batchSize, leaveOpen, selfLogger);
+            return BackgroundLogger(charms, baseLogger, recordVerifier, flushPeriod, batchSize, leaveOpen, emergencyLogger);
         }
 
         public static BackgroundLogger BackgroundLogger(
@@ -757,10 +757,10 @@ namespace NWrath.Logging
            TimeSpan? flushPeriod = null,
            int? batchSize = null,
            bool leaveOpen = false,
-           ILogger selfLogger = null
+           ILogger emergencyLogger = null
            )
         {
-            return BackgroundLogger(charms, logger, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, selfLogger);
+            return BackgroundLogger(charms, logger, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, emergencyLogger);
         }
 
         public static BackgroundLogger BackgroundLogger(
@@ -770,12 +770,12 @@ namespace NWrath.Logging
             TimeSpan? flushPeriod = null,
             int? batchSize = null,
             bool leaveOpen = false,
-            ILogger selfLogger = null
+            ILogger emergencyLogger = null
             )
         {
             var baseLogger = loggerFactory(charms);
 
-            return BackgroundLogger(charms, baseLogger, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, selfLogger);
+            return BackgroundLogger(charms, baseLogger, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, emergencyLogger);
         }
 
         #endregion Background

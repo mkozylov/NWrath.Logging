@@ -44,7 +44,7 @@ namespace NWrath.Logging
             set { _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER; }
         }
 
-        public ILogger SelfLogger { get; set; }
+        public ILogger EmergencyLogger { get; set; }
 
         public TimeSpan FlushPeriod { get; private set; }
 
@@ -172,7 +172,12 @@ namespace NWrath.Logging
             catch (Exception ex)
             {
                 LastError = ex;
-                SelfLogger?.Error($"Base logger error", ex);
+
+                if (EmergencyLogger != null)
+                {
+                    EmergencyLogger.Log(batch);
+                    EmergencyLogger.Error($"Base logger error", ex);
+                }
             }
         }
 
