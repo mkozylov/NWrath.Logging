@@ -1,10 +1,8 @@
-﻿using System;
-using System.Text;
+﻿using Newtonsoft.Json.Linq;
 using NWrath.Synergy.Pipeline;
+using System;
 using System.Linq;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using NWrath.Synergy.Common.Structs;
+using System.Text;
 
 namespace NWrath.Logging
 {
@@ -704,18 +702,20 @@ namespace NWrath.Logging
         public static ILogger LoadFromJson(
            this ILoggingWizardCharms charms,
            string filePath,
-           string sectionPath
+           string sectionPath,
+           IServiceProvider serviceProvider = null
            )
         {
-            return new LoggerJsonLoader().Load(filePath, sectionPath);
+            return new LoggerJsonLoader { Injector = serviceProvider }.Load(filePath, sectionPath);
         }
 
         public static ILogger LoadFromJson(
            this ILoggingWizardCharms charms,
-           JToken loggingSection
+           JToken loggingSection,
+           IServiceProvider serviceProvider = null
            )
         {
-            return new LoggerJsonLoader().Load(loggingSection);
+            return new LoggerJsonLoader { Injector = serviceProvider }.Load(loggingSection);
         }
 
         #endregion LoadFromJson
@@ -732,7 +732,52 @@ namespace NWrath.Logging
             ILogger emergencyLogger = null
             )
         {
-            return new BackgroundLogger(logger, flushPeriod, batchSize, leaveOpen) { EmergencyLogger = emergencyLogger };
+            return new BackgroundLogger(logger, flushPeriod, batchSize, leaveOpen)
+            {
+                RecordVerifier = recordVerifier,
+                EmergencyLogger = emergencyLogger
+            };
+        }
+
+        public static BackgroundLogger BackgroundLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogRecord[]> batchAction,
+            ILogRecordVerifier recordVerifier,
+            TimeSpan? flushPeriod = null,
+            int? batchSize = null,
+            bool leaveOpen = false,
+            ILogger emergencyLogger = null
+            )
+        {
+            var lambdaLogger = LambdaLogger(charms, r => batchAction(new[] { r }), batchAction);
+
+            return BackgroundLogger(charms, lambdaLogger, recordVerifier, flushPeriod, batchSize, leaveOpen, emergencyLogger);
+        }
+
+        public static BackgroundLogger BackgroundLogger(
+            this ILoggingWizardCharms charms,
+            Func<ILoggingWizardCharms, ILogger[]> loggerFactories,
+            ILogRecordVerifier recordVerifier,
+            TimeSpan? flushPeriod = null,
+            int? batchSize = null,
+            bool leaveOpen = false,
+            ILogger emergencyLogger = null
+           )
+        {
+            return BackgroundLogger(charms, CompositeLogger(charms, loggerFactories(charms)), recordVerifier, flushPeriod, batchSize, leaveOpen, emergencyLogger);
+        }
+
+        public static BackgroundLogger BackgroundLogger(
+            this ILoggingWizardCharms charms,
+            Func<ILoggingWizardCharms, ILogger[]> loggerFactories,
+            LogLevel minLevel = LogLevel.Debug,
+            TimeSpan? flushPeriod = null,
+            int? batchSize = null,
+            bool leaveOpen = false,
+            ILogger emergencyLogger = null
+            )
+        {
+            return BackgroundLogger(charms, CompositeLogger(charms, loggerFactories(charms)), new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, emergencyLogger);
         }
 
         public static BackgroundLogger BackgroundLogger(
@@ -776,6 +821,19 @@ namespace NWrath.Logging
             var baseLogger = loggerFactory(charms);
 
             return BackgroundLogger(charms, baseLogger, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, emergencyLogger);
+        }
+
+        public static BackgroundLogger BackgroundLogger(
+            this ILoggingWizardCharms charms,
+            Action<LogRecord[]> batchAction,
+            LogLevel minLevel = LogLevel.Debug,
+            TimeSpan? flushPeriod = null,
+            int? batchSize = null,
+            bool leaveOpen = false,
+            ILogger emergencyLogger = null
+            )
+        {
+            return BackgroundLogger(charms, batchAction, new MinimumLogLevelVerifier(minLevel), flushPeriod, batchSize, leaveOpen, emergencyLogger);
         }
 
         #endregion Background

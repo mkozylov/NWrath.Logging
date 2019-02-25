@@ -10,9 +10,9 @@
     <PackageLicenseUrl>https://github.com/mkozylov/NWrath.Logging/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mkozylov/NWrath.Logging/wiki</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mkozylov/NWrath.Logging/</RepositoryUrl>
-    <Version>1.0.12</Version>
-    <AssemblyVersion>1.0.12.0</AssemblyVersion>
-    <FileVersion>1.0.12.0</FileVersion>
+    <Version>1.0.13</Version>
+    <AssemblyVersion>1.0.13.0</AssemblyVersion>
+    <FileVersion>1.0.13.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
