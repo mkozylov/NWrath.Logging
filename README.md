@@ -126,3 +126,14 @@ var logger = LoggingWizard.Spell.LambdaLogger(m => {
     }
 });
 ```
+BackgroundLogger is a wrapper for another loggers and used for write log in new thread. It contains log records queue, that flush to base logger on queue batch is full or the timer fire. All of this allow write log very fast, queue just make bundle and then all bundle writes by logger at once in new task. Especially that true for loggers that support bundle log, like FileLogger or DbLogger.
+```csharp
+//set up file logger as background by Wizard or BackgroundLogger class name
+var logger = LoggingWizard.Spell.BackgroundLogger(
+                 s => s.FileLogger("log.txt")
+                 );
+//now we can use it like regular logger
+logger.Info("INFO MESSAGE");
+//don`t forget dispose when logger no need more
+logger.Dispose();
+```
