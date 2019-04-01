@@ -1,5 +1,4 @@
-﻿using NWrath.Logging.Performance.Test;
-using Serilog;
+﻿using Serilog;
 using System;
 
 namespace NWrath.Logging.Performance.Test

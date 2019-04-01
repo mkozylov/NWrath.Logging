@@ -1,5 +1,4 @@
 ﻿using System;
-using NWrath.Synergy.Common.Structs;
 
 namespace NWrath.Logging
 {

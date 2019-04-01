@@ -9,13 +9,13 @@ namespace NWrath.Logging
         public Action<LogRecord> WriteAction
         {
             get => _writeAction;
-            set { _writeAction = value ?? throw Errors.NULL_LAMBDA; }
+            set => _writeAction = value ?? throw Errors.NULL_LAMBDA;
         }
 
         public Action<LogRecord[]> BatchAction
         {
             get => _batchAction;
-            set { _batchAction = value ?? throw Errors.NULL_LAMBDA; }
+            set => _batchAction = value ?? throw Errors.NULL_LAMBDA;
         }
 
         private Action<LogRecord> _writeAction;

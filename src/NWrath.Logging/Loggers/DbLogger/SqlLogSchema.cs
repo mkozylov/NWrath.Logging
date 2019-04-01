@@ -1,13 +1,13 @@
-﻿using System;
+﻿using FastExpressionCompiler;
+using NWrath.Synergy.Common.Extensions;
+using NWrath.Synergy.Reflection.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
-using FastExpressionCompiler;
-using NWrath.Synergy.Common.Extensions;
-using NWrath.Synergy.Reflection.Extensions;
 
 namespace NWrath.Logging
 {
@@ -75,10 +75,7 @@ namespace NWrath.Logging
         {
             get => _connectionString;
 
-            set
-            {
-                _connectionString = value ?? throw Errors.NO_CONNECTION_STRING;
-            }
+            set => _connectionString = value ?? throw Errors.NO_CONNECTION_STRING;
         }
 
         public const string DefaultTableName = "ServerLog";

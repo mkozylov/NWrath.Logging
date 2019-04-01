@@ -1,24 +1,21 @@
-﻿namespace NWrath.Logging.Performance.Test
+﻿using System;
+using System.IO;
+
+namespace NWrath.Logging.Performance.Test
 {
-    internal class NWrathDbLoggerBenchmark
+    internal class NWrathRollingFileLoggerBenchmark
         : LoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NWrath db";
+        public override string LoggerInfo { get; set; } = "NWrath rolling file";
 
         public bool NeedWarmingUp { get; set; } = true;
 
         private ILogger _logger;
+        private string _folderPath;
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.DbLogger(
-                         s =>
-                         {
-                             s.ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True";
-                             s.TableName = "DbLog";
-                             s.Columns = new[] { SqlLogSchema.IdColumn, SqlLogSchema.MessageColumn };
-                         }
-                      );
+            _logger = LoggingWizard.Spell.RollingFileLogger(_folderPath);
         }
 
         protected override void Log(string msg)
@@ -41,10 +38,17 @@
 
         protected override void SetUp()
         {
+            var dir = Path.GetDirectoryName(typeof(FileLoggerBenchmarkBase).Assembly.Location);
+
+            _folderPath = Path.Combine(dir, $"Logs_{Guid.NewGuid()}");
         }
 
         protected override void TierDown()
         {
+            if (!string.IsNullOrEmpty(_folderPath) && Directory.Exists(_folderPath))
+            {
+                Directory.Delete(_folderPath, true);
+            }
         }
     }
 }

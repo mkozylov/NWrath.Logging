@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Linq;
-using System.Data.SqlClient;
-using System.Data.Common;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace NWrath.Logging
 {

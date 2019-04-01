@@ -10,7 +10,7 @@ namespace NWrath.Logging
         public virtual ILogRecordVerifier RecordVerifier
         {
             get => _recordVerifier;
-            set { _recordVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug); }
+            set => _recordVerifier = value ?? new MinimumLogLevelVerifier(LogLevel.Debug);
         }
 
         public virtual bool IsEnabled { get; set; } = true;
@@ -29,7 +29,10 @@ namespace NWrath.Logging
         [MethodImpl(MethodImplOptions.Synchronized)]
         public virtual void Log(LogRecord[] batch)
         {
-            if (!IsEnabled || batch.Length == 0) return;
+            if (!IsEnabled || batch.Length == 0)
+            {
+                return;
+            }
 
             foreach (var record in batch)
             {

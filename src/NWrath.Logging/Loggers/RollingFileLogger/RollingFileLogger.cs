@@ -1,11 +1,8 @@
-﻿using NWrath.Synergy.Common.Extensions;
-using System;
-using System.IO;
-using System.Text;
-using NWrath.Synergy.Common.Extensions.Collections;
-using NWrath.Synergy.Common;
+﻿using NWrath.Synergy.Common;
 using NWrath.Synergy.Pipeline;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace NWrath.Logging
 {
@@ -19,28 +16,36 @@ namespace NWrath.Logging
 
                 if (ctx.IsLoggerEnabled)
                 {
-                    ctx.LogFile.Write(ctx.LogRecord);
+                    ctx.LogFile.Write(ctx.Batch);
                 }
             }
         );
 
-        FileLogger IRollingFileLoggerInternal.Writer
-        {
-            get => _writer;
-        }
+        FileLogger IRollingFileLoggerInternal.Writer => _writer;
 
         public PipeCollection<RollingFileContext> Pipes
         {
             get => _pipes;
-
-            set { _pipes = value ?? new PipeCollection<RollingFileContext> { LogWriterPipe }; }
+            set => _pipes = value ?? new PipeCollection<RollingFileContext> { LogWriterPipe };
         }
 
-        public IStringLogSerializer Serializer { get => _writer.Serializer; set { _writer.Serializer = value ?? new StringLogSerializer(); } }
+        public IStringLogSerializer Serializer
+        {
+            get => _writer.Serializer;
+            set => _writer.Serializer = value ?? new StringLogSerializer();
+        }
 
-        public Encoding Encoding { get => _writer.Encoding; set { _writer.Encoding = value ?? new UTF8Encoding(false); } }
+        public Encoding Encoding
+        {
+            get => _writer.Encoding;
+            set => _writer.Encoding = value ?? new UTF8Encoding(false);
+        }
 
-        public IRollingFileProvider FileProvider { get => _fileProvider; set { _fileProvider = value ?? throw Errors.NO_FILE_PROVIDER; } }
+        public IRollingFileProvider FileProvider
+        {
+            get => _fileProvider;
+            set => _fileProvider = value ?? throw Errors.NO_FILE_PROVIDER;
+        }
 
         private FileLogger _writer;
         private IRollingFileProvider _fileProvider;
@@ -70,7 +75,7 @@ namespace NWrath.Logging
 
             SetDefaultPipes();
 
-            _writer = new FileLogger(string.Empty, true);
+            _writer = new FileLogger(string.Empty, true){ AutoFlush = true };
         }
 
         ~RollingFileLogger()
@@ -83,6 +88,27 @@ namespace NWrath.Logging
         public override void Dispose()
         {
             _writer.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public override void Log(LogRecord[] batch)
+        {
+            if (!IsEnabled || batch.Length == 0)
+            {
+                return;
+            }
+
+            var verifiedBatch = batch.Where(r => RecordVerifier.Verify(r))
+                                     .ToArray();
+
+            if (verifiedBatch.Length == 0)
+            {
+                return;
+            }
+
+            var ctx = ProduceContext(verifiedBatch);
+
+            Pipes.Pipeline?.Perform(ctx);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -101,7 +127,7 @@ namespace NWrath.Logging
 
         protected override void WriteRecord(LogRecord record)
         {
-            var ctx = ProduceContext(record);
+            var ctx = ProduceContext(new []{ record });
 
             Pipes.Pipeline?.Perform(ctx);
         }
@@ -125,9 +151,9 @@ namespace NWrath.Logging
             this.AddDailyRollerPipe();
         }
 
-        private RollingFileContext ProduceContext(LogRecord record)
+        private RollingFileContext ProduceContext(LogRecord[] batch)
         {
-            return new RollingFileContext(this, _writer, record);
+            return new RollingFileContext(this, _writer, batch);
         }
     }
 }

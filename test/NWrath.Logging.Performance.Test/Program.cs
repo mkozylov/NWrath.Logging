@@ -1,12 +1,6 @@
-﻿using NWrath.Logging.Performance.Test;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ConsoleTables;
-using System.Data;
+﻿using System;
 using System.Threading;
 using System.Globalization;
-using NWrath.Synergy.Common.Structs;
 
 namespace NWrath.Logging.Performance.Test
 {
@@ -27,7 +21,10 @@ namespace NWrath.Logging.Performance.Test
 
                 //new SerilogSqlLoggerBenchmark(),
                 //new NWrathDbLoggerBenchmark(),
-                new NWrathBackgroundDbLoggerBenchmark()
+                //new NWrathBackgroundDbLoggerBenchmark()
+
+                new NWrathRollingFileLoggerBenchmark(), 
+                new NWrathBackgroundRollingFileLoggerBenchmark()
             };
 
             new BenchmarkCaseGroup

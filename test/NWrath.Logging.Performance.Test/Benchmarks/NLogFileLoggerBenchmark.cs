@@ -2,7 +2,6 @@
 using NLog.Config;
 using NLog.Targets;
 using NLog.Targets.Wrappers;
-using NWrath.Logging.Performance.Test;
 
 namespace NWrath.Logging.Performance.Test
 {
@@ -40,7 +39,7 @@ namespace NWrath.Logging.Performance.Test
             config.AddRuleForAllLevels(asyncFileTarget);
             LogManager.Configuration = config;
             LogManager.ReconfigExistingLoggers();
-
+            
             _logger = LogManager.GetCurrentClassLogger();
         }
 
@@ -51,6 +50,8 @@ namespace NWrath.Logging.Performance.Test
 
         public override void DisposeLogger()
         {
+            LogManager.Flush();
+            LogManager.Shutdown();
         }
 
         protected override void WarmingUp()

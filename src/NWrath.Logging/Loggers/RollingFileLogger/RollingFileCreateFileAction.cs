@@ -1,7 +1,5 @@
 ﻿using NWrath.Synergy.Common;
-using NWrath.Synergy.Common.Extensions;
 using System;
-using System.IO;
 
 namespace NWrath.Logging
 {

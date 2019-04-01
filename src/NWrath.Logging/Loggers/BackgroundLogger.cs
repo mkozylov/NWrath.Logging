@@ -1,9 +1,4 @@
-﻿using NWrath.Synergy.Common.Extensions;
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -41,7 +36,7 @@ namespace NWrath.Logging
         public ILogger BaseLogger
         {
             get => _baseLogger;
-            set { _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER; }
+            set => _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER;
         }
 
         public ILogger EmergencyLogger { get; set; }

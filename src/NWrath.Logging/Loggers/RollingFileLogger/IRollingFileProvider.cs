@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace NWrath.Logging
+﻿namespace NWrath.Logging
 {
     public interface IRollingFileProvider
     {

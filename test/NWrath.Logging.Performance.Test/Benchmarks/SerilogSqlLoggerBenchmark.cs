@@ -1,5 +1,4 @@
-﻿using NWrath.Logging.Performance.Test;
-using Serilog;
+﻿using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using System;
 using System.Linq;

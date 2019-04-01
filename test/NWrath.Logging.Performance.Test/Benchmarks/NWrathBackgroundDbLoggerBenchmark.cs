@@ -1,8 +1,4 @@
-﻿using NWrath.Logging.Performance.Test;
-using System;
-using System.Threading;
-
-namespace NWrath.Logging.Performance.Test
+﻿namespace NWrath.Logging.Performance.Test
 {
     internal class NWrathBackgroundDbLoggerBenchmark
         : LoggerBenchmarkBase

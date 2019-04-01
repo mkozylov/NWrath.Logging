@@ -1,7 +1,4 @@
-﻿using NWrath.Synergy.Common.Extensions;
-using System;
-
-namespace NWrath.Logging
+﻿namespace NWrath.Logging
 {
     public class RangeLogLevelVerifier
         : ILogRecordVerifier

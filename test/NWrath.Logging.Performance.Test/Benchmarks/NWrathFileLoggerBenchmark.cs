@@ -1,6 +1,4 @@
-﻿using NWrath.Logging.Performance.Test;
-using System;
-using System.Threading;
+﻿using System.Threading;
 
 namespace NWrath.Logging.Performance.Test
 {

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using FastExpressionCompiler;
+using NWrath.Synergy.Common.Extensions.Collections;
+using NWrath.Synergy.Reflection.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using NWrath.Synergy.Reflection.Extensions;
-using NWrath.Synergy.Common.Extensions.Collections;
-using FastExpressionCompiler;
 
 namespace NWrath.Logging
 {
@@ -16,14 +16,14 @@ namespace NWrath.Logging
 
         public string OutputTemplate
         {
-            get { return _outputTemplate; }
-            set { _outputTemplate = SetNewOutputTemplate(value ?? DefaultOutputTemplate); }
+            get => _outputTemplate;
+            set => _outputTemplate = SetNewOutputTemplate(value ?? DefaultOutputTemplate);
         }
 
         public RecordFormatStore Formats
         {
-            get { return _formats; }
-            set { _formats = SetNewFormats(value ?? new RecordFormatStore()); }
+            get => _formats;
+            set => _formats = SetNewFormats(value ?? new RecordFormatStore());
         }
 
         private string _outputTemplate = DefaultOutputTemplate;

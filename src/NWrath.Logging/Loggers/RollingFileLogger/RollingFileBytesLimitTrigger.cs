@@ -1,4 +1,6 @@
-﻿using NWrath.Synergy.Pipeline;
+﻿using System.Linq;
+using System.Text;
+using NWrath.Synergy.Pipeline;
 
 namespace NWrath.Logging
 {
@@ -31,7 +33,9 @@ namespace NWrath.Logging
 
         public bool Predicate(RollingFileContext ctx)
         {
-            var str = ctx.Serializer.Serialize(ctx.LogRecord);
+            var str = ctx.Batch
+                         .Aggregate(new StringBuilder(), (a, i) => a.AppendLine(ctx.Serializer.Serialize(i)))
+                         .ToString();
 
             var bytes = ctx.Encoding.GetBytes(str);
 

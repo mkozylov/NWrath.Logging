@@ -2,7 +2,6 @@
 using Moq.Protected;
 using NUnit.Framework;
 using NWrath.Logging.Test.Structs;
-using System;
 using System.Data.Common;
 
 namespace NWrath.Logging.Test.ApiTests

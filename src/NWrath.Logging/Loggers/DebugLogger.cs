@@ -3,7 +3,10 @@
     public class DebugLogger
          : LoggerBase
     {
-        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
+        public IStringLogSerializer Serializer
+        {
+            get => _serializer; set => _serializer = value ?? new StringLogSerializer();
+        }
 
         private IStringLogSerializer _serializer = new StringLogSerializer();
 

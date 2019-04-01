@@ -1,7 +1,4 @@
-﻿using NWrath.Logging.Performance.Test;
-using System;
-
-namespace NWrath.Logging.Performance.Test
+﻿namespace NWrath.Logging.Performance.Test
 {
     internal class NWrathBackgroundFileLoggerBenchmark
        : FileLoggerBenchmarkBase

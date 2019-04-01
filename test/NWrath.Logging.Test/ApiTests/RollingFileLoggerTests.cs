@@ -1,6 +1,5 @@
 ﻿using Moq;
 using NUnit.Framework;
-using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Pipeline;
 using System;
@@ -137,11 +136,11 @@ namespace NWrath.Logging.Test.ApiTests
                         .Add((c, n) =>
                         {
                             n(c);
-                            logs.Add(c.LogRecord);
+                            logs.AddRange(c.Batch);
                         })
                         .Add((c, n) =>
                         {
-                            c.LogRecord.Message = c.LogRecord.Message.ToUpper();
+                            c.Batch.Each(x => x.Message = x.Message.ToUpper());
                             n(c);
                         });
 

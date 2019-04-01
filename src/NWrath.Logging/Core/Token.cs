@@ -6,7 +6,7 @@
 
         public string Key { get; set; }
 
-        public bool IsLiteral { get => Key == null; }
+        public bool IsLiteral => Key == null;
 
         public Token(string val, string key = null)
         {

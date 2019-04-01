@@ -2,7 +2,6 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 
 namespace NWrath.Logging
 {
@@ -47,11 +46,23 @@ namespace NWrath.Logging
             }
         }
 
-        public IStringLogSerializer Serializer { get => _serializer; set { _serializer = value ?? new StringLogSerializer(); } }
+        public IStringLogSerializer Serializer
+        {
+            get => _serializer;
+            set => _serializer = value ?? new StringLogSerializer();
+        }
 
-        public Encoding Encoding { get => _encoding; set { _encoding = value ?? new UTF8Encoding(false); } }
+        public Encoding Encoding
+        {
+            get => _encoding;
+            set => _encoding = value ?? new UTF8Encoding(false);
+        }
 
-        public bool AutoFlush { get => _autoFlush; set { _autoFlush = value; _writeBytesAction = value ? AllWriteBytes : (Action<byte[]>)WriteBytes; } }
+        public bool AutoFlush
+        {
+            get => _autoFlush;
+            set { _autoFlush = value; _writeBytesAction = value ? AllWriteBytes : (Action<byte[]>)WriteBytes; }
+        }
 
         private Lazy<FileStream> _writer;
         private bool _isEnabled = true;

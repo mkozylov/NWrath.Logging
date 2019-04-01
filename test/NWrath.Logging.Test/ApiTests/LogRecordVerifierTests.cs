@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
 using System;
 using System.Linq;
