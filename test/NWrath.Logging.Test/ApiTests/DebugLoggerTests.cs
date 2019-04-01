@@ -1,4 +1,6 @@
 ﻿using NUnit.Framework;
+using System.Diagnostics;
+using System.IO;
 
 namespace NWrath.Logging.Test.ApiTests
 {

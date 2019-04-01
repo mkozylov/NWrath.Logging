@@ -1,5 +1,6 @@
 ﻿using NWrath.Synergy.Common.Structs;
 using System;
+using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace NWrath.Logging
@@ -95,6 +96,26 @@ namespace NWrath.Logging
             Log(msg, level: LogLevel.Warning, exception: exception, extra: extra);
         }
 
+        public void Warning(
+            Exception exception, 
+            [CallerMemberName] string callerMemberName = null, 
+            [CallerFilePath] string callerFilePath = null, 
+            StringSet extra = null
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Warning, exception: exception, extra: extra);
+        }
+
+        public void Warning<TExtra>(
+            Exception exception,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerFilePath] string callerFilePath = null,
+            TExtra extra = default(TExtra)
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Warning, exception: exception, extra: extra);
+        }
+
         public virtual void Error(string msg, Exception exception = null, StringSet extra = null)
         {
             Log(msg, level: LogLevel.Error, exception: exception, extra: extra);
@@ -103,6 +124,26 @@ namespace NWrath.Logging
         public virtual void Error<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra))
         {
             Log(msg, level: LogLevel.Error, exception: exception, extra: extra);
+        }
+
+        public void Error(
+            Exception exception,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerFilePath] string callerFilePath = null, 
+            StringSet extra = null
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Error, exception: exception, extra: extra);
+        }
+
+        public void Error<TExtra>(
+            Exception exception,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerFilePath] string callerFilePath = null,
+            TExtra extra = default(TExtra)
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Error, exception: exception, extra: extra);
         }
 
         public virtual void Critical(string msg, Exception exception = null, StringSet extra = null)
@@ -115,10 +156,39 @@ namespace NWrath.Logging
             Log(msg, level: LogLevel.Critical, exception: exception, extra: extra);
         }
 
+        public void Critical(
+            Exception exception,
+            [CallerMemberName] string callerMemberName = null,
+            [CallerFilePath] string callerFilePath = null,
+            StringSet extra = null
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Critical, exception: exception, extra: extra);
+        }
+
+        public void Critical<TExtra>(
+            Exception exception, 
+            [CallerMemberName] string callerMemberName = null,
+            [CallerFilePath] string callerFilePath = null,
+            TExtra extra = default(TExtra)
+            )
+        {
+            Log(ExtractCaller(callerMemberName, callerFilePath), level: LogLevel.Critical, exception: exception, extra: extra);
+        }
+
         public virtual void Dispose()
         {
         }
 
         protected abstract void WriteRecord(LogRecord record);
+
+        #region private
+
+        private static string ExtractCaller(string callerMemberName, string callerFilePath)
+        {
+            return $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{callerMemberName}";
+        } 
+
+        #endregion
     }
 }

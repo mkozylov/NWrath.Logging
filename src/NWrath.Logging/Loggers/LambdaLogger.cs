@@ -27,6 +27,12 @@ namespace NWrath.Logging
             BatchAction = batchAction ?? DefaultBatchLog;
         }
 
+        public LambdaLogger(Action<LogRecord[]> batchAction)
+        {
+            BatchAction = batchAction;
+            WriteAction = m => batchAction(new[] { m });
+        }
+
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord[] batch)
         {

@@ -1,5 +1,6 @@
 ﻿using NWrath.Synergy.Common.Structs;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace NWrath.Logging
 {
@@ -22,13 +23,55 @@ namespace NWrath.Logging
 
         void Warning<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
 
+        void Warning(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            StringSet extra = null
+            );
+
+        void Warning<TExtra>(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            TExtra extra = default(TExtra)
+            );
+
         void Error(string msg, Exception exception = null, StringSet extra = null);
 
         void Error<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
 
+        void Error(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            StringSet extra = null
+            );
+
+        void Error<TExtra>(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            TExtra extra = default(TExtra)
+            );
+
         void Critical(string msg, Exception exception = null, StringSet extra = null);
 
         void Critical<TExtra>(string msg, Exception exception = null, TExtra extra = default(TExtra));
+
+        void Critical(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            StringSet extra = null
+            );
+
+        void Critical<TExtra>(
+            Exception exception, 
+            [CallerMemberName]string callerMemberName = null, 
+            [CallerFilePath]string callerFilePath = null, 
+            TExtra extra = default(TExtra)
+            );
 
         void Log(LogRecord record);
 
