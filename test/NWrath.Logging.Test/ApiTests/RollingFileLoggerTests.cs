@@ -1,5 +1,6 @@
 ﻿using Moq;
 using NUnit.Framework;
+using NWrath.Synergy.Common.Extensions;
 using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Pipeline;
 using System;
@@ -216,11 +217,14 @@ namespace NWrath.Logging.Test.ApiTests
                 return fm.Object;
             });
 
-            var logger = LoggingWizard.Spell.RollingFileLogger(fileProviderMock.Object, serializerApply: s =>
+            var logger = new RollingFileLogger(fileProviderMock.Object)
             {
-                s.OutputTemplate += "{Ul}";
-                s.Formats["Ul"] = r => "\n" + new string('-', 50);
-            });
+                Serializer = new StringLogSerializer().Apply(s =>
+                {
+                    s.OutputTemplate += "{Ul}";
+                    s.Formats["Ul"] = r => "\n" + new string('-', 50);
+                })
+            };
 
             #endregion Arrange
 

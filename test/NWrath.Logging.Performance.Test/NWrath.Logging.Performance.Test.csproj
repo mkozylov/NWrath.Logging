@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmarks\NWrathConsoleLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathRollingFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathBackgroundRollingFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathBackgroundDbLoggerBenchmark.cs" />

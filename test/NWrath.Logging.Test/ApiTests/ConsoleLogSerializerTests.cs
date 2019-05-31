@@ -43,6 +43,8 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void ConsoleLogSerializer_Serialize_CheckTokenColors()
         {
+            if (!System.Diagnostics.Debugger.IsAttached) return;
+
             #region Arrange
 
             var msg = new LogRecord
@@ -71,10 +73,15 @@ namespace NWrath.Logging.Test.ApiTests
             #region Act
 
             logger.Log(msg);
-
+            logger.Dispose();
             #endregion Act
 
             #region Assert
+
+            foreach (var item in consoleColors)
+            {
+                Console.WriteLine($"{item.Key} = {item.Value}");
+            }
 
             Assert.AreEqual(
                 serializer.Colors.Timestamp(msg),

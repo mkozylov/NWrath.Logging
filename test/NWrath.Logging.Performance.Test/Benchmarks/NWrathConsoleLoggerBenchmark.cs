@@ -1,9 +1,9 @@
 ﻿namespace NWrath.Logging.Performance.Test
 {
-    internal class NWrathBackgroundFileLoggerBenchmark
-       : FileLoggerBenchmarkBase
+    internal class NWrathConsoleLoggerBenchmark
+       : LoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NWrath background file";
+        public override string LoggerInfo { get; set; } = "NWrath console";
 
         public bool NeedWarmingUp { get; set; } = true;
 
@@ -11,8 +11,7 @@
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.FileLogger(
-                tempFile,
+            _logger = LoggingWizard.Spell.ConsoleLogger(
                 serializerApply: s => s.OutputTemplate = "{Message}"
             );
         }
@@ -33,6 +32,14 @@
             {
                 Log("WarmingUp");
             }
+        }
+
+        protected override void TierDown()
+        {
+        }
+
+        protected override void SetUp()
+        {
         }
     }
 }
