@@ -18,16 +18,21 @@ namespace NWrath.Logging
            ILogRecordVerifier recordVerifier,
            IStringLogSerializer serializer = null,
            Encoding encoding = null,
-           bool append = true
+           bool append = true,
+           bool background = true
            )
         {
-            return BackgroundLogger(charms, new FileLogger(filePath, append)
+            ILogger baseLogger = new FileLogger(filePath, append)
             {
                 Serializer = serializer,
                 Encoding = encoding,
                 RecordVerifier = recordVerifier,
-                AutoFlush = false
-            });
+                AutoFlush = !background
+            };
+
+            return background
+                ? BackgroundLogger(charms, baseLogger)
+                : baseLogger;
         }
 
         //2
@@ -37,16 +42,18 @@ namespace NWrath.Logging
             LogLevel minLevel,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            bool append = true
+            bool append = true,
+            bool background = true
             )
         {
             return FileLogger(
-                charms, 
-                filePath, 
-                new MinimumLogLevelVerifier(minLevel), 
-                serializer, 
-                encoding, 
-                append
+                charms,
+                filePath,
+                new MinimumLogLevelVerifier(minLevel),
+                serializer,
+                encoding,
+                append,
+                background
                 );
         }
 
@@ -56,16 +63,18 @@ namespace NWrath.Logging
             string filePath,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            bool append = true
+            bool append = true,
+            bool background = true
             )
         {
             return FileLogger(
-                charms, 
-                filePath, 
-                new MinimumLogLevelVerifier(LogLevel.Debug), 
-                serializer, 
-                encoding, 
-                append
+                charms,
+                filePath,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializer,
+                encoding,
+                append,
+                background
                 );
         }
 
@@ -76,20 +85,23 @@ namespace NWrath.Logging
           ILogRecordVerifier recordVerifier,
           Action<StringLogSerializer> serializerApply,
           Encoding encoding = null,
-          bool append = true
+          bool append = true,
+          bool background = true
           )
         {
             var serializer = new StringLogSerializer();
 
             serializerApply?.Invoke(serializer);
 
-            return BackgroundLogger(charms, new FileLogger(filePath, append)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = recordVerifier,
-                AutoFlush = false
-            });
+            return FileLogger(
+               charms,
+               filePath,
+               recordVerifier,
+               serializer,
+               encoding,
+               append,
+               background
+               );
         }
 
         //5
@@ -99,20 +111,23 @@ namespace NWrath.Logging
             LogLevel minLevel,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            bool append = true
+            bool append = true,
+            bool background = true
             )
         {
             var serializer = new StringLogSerializer();
 
             serializerApply?.Invoke(serializer);
 
-            return BackgroundLogger(charms, new FileLogger(filePath, append)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = new MinimumLogLevelVerifier(minLevel),
-                AutoFlush = false
-            });
+            return FileLogger(
+              charms,
+              filePath,
+              new MinimumLogLevelVerifier(minLevel),
+              serializer,
+              encoding,
+              append,
+              background
+              );
         }
 
         //6
@@ -121,20 +136,23 @@ namespace NWrath.Logging
             string filePath,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            bool append = true
+            bool append = true,
+            bool background = true
             )
         {
             var serializer = new StringLogSerializer();
 
             serializerApply?.Invoke(serializer);
 
-            return BackgroundLogger(charms, new FileLogger(filePath, append)
-            {
-                Serializer = serializer,
-                Encoding = encoding,
-                RecordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug),
-                AutoFlush = false
-            });
+            return FileLogger(
+                charms,
+                filePath,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializer,
+                encoding,
+                append,
+                background
+                );
         }
 
         #endregion File
@@ -145,70 +163,101 @@ namespace NWrath.Logging
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
-            IStringLogSerializer serializer = null
+            IStringLogSerializer serializer = null,
+            bool background = true
             )
         {
-            return BackgroundLogger(charms, new ConsoleLogger()
+            ILogger baseLogger = new ConsoleLogger()
             {
                 Serializer = serializer,
                 RecordVerifier = recordVerifier
-            });
+            };
+
+            return background
+                ? BackgroundLogger(charms, baseLogger)
+                : baseLogger;
         }
 
         //2
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel = LogLevel.Debug,
-            IStringLogSerializer serializer = null
+            IStringLogSerializer serializer = null,
+            bool background = true
             )
         {
-            return ConsoleLogger(charms, new MinimumLogLevelVerifier(minLevel), serializer);
+            return ConsoleLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                serializer, 
+                background
+                );
         }
 
         //3
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
-            Action<ConsoleLogSerializer> serializerApply
+            Action<ConsoleLogSerializer> serializerApply,
+            bool background = true
             )
         {
             var serializer = new ConsoleLogSerializer();
 
             serializerApply(serializer);
 
-            return BackgroundLogger(charms, new ConsoleLogger()
-            {
-                Serializer = serializer,
-                RecordVerifier = recordVerifier
-            });
+            return ConsoleLogger(
+                charms,
+                recordVerifier,
+                serializer,
+                background
+                );
         }
 
         //4
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
-            Action<ConsoleLogSerializer> serializerApply
+            Action<ConsoleLogSerializer> serializerApply,
+            bool background = true
             )
         {
-            return ConsoleLogger(charms, new MinimumLogLevelVerifier(minLevel), serializerApply);
+            return ConsoleLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                serializerApply, 
+                background
+                );
         }
 
         //5
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
-            IStringLogSerializer serializer
+            IStringLogSerializer serializer,
+            bool background = true
             )
         {
-            return ConsoleLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializer);
+            return ConsoleLogger(
+                charms, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                serializer,
+                background
+                );
         }
 
         //6
         public static ILogger ConsoleLogger(
             this ILoggingWizardCharms charms,
-            Action<ConsoleLogSerializer> serializerApply
+            Action<ConsoleLogSerializer> serializerApply,
+            bool background = true
             )
         {
-            return ConsoleLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply);
+            return ConsoleLogger(
+                charms, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                serializerApply,
+                background
+                );
         }
 
         #endregion Console
@@ -222,19 +271,19 @@ namespace NWrath.Logging
             ILogRecordVerifier recordVerifier,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
-            var logger = new RollingFileLogger(folderPath)
-            {
-                RecordVerifier = recordVerifier
-            };
-
-            logger.Serializer = serializer ?? logger.Serializer;
-            logger.Encoding = encoding ?? logger.Encoding;
-            logger.Pipes = pipes ?? logger.Pipes;
-
-            return BackgroundLogger(charms, logger);
+            return RollingFileLogger(
+                charms,
+                new RollingFileProvider(folderPath),
+                recordVerifier,
+                serializer,
+                encoding,
+                pipes,
+                background
+                );
         }
 
         //2
@@ -244,16 +293,18 @@ namespace NWrath.Logging
             LogLevel minLevel,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                folderPath, 
-                new MinimumLogLevelVerifier(minLevel), 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                folderPath,
+                new MinimumLogLevelVerifier(minLevel),
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -263,16 +314,18 @@ namespace NWrath.Logging
             string folderPath,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                folderPath, 
-                new MinimumLogLevelVerifier(LogLevel.Debug), 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                folderPath,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -283,7 +336,8 @@ namespace NWrath.Logging
            ILogRecordVerifier recordVerifier,
            Action<StringLogSerializer> serializerApply,
            Encoding encoding = null,
-           PipeCollection<RollingFileContext> pipes = null
+           PipeCollection<RollingFileContext> pipes = null,
+           bool background = true
            )
         {
             var serializer = new StringLogSerializer();
@@ -291,12 +345,13 @@ namespace NWrath.Logging
             serializerApply?.Invoke(serializer);
 
             return RollingFileLogger(
-                charms, 
-                folderPath, 
-                recordVerifier, 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                folderPath,
+                recordVerifier,
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -307,16 +362,18 @@ namespace NWrath.Logging
             LogLevel minLevel,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                folderPath, 
-                new MinimumLogLevelVerifier(minLevel), 
-                serializerApply, 
-                encoding, 
-                pipes
+                charms,
+                folderPath,
+                new MinimumLogLevelVerifier(minLevel),
+                serializerApply,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -326,16 +383,18 @@ namespace NWrath.Logging
             string folderPath,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                folderPath, 
-                new MinimumLogLevelVerifier(LogLevel.Debug), 
-                serializerApply, 
-                encoding, 
-                pipes
+                charms,
+                folderPath,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializerApply,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -346,19 +405,22 @@ namespace NWrath.Logging
             ILogRecordVerifier recordVerifier,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
-            var logger = new RollingFileLogger(fileProvider)
+            var baseLogger = new RollingFileLogger(fileProvider)
             {
                 RecordVerifier = recordVerifier
             };
 
-            logger.Serializer = serializer ?? logger.Serializer;
-            logger.Encoding = encoding ?? logger.Encoding;
-            logger.Pipes = pipes ?? logger.Pipes;
+            baseLogger.Serializer = serializer ?? baseLogger.Serializer;
+            baseLogger.Encoding = encoding ?? baseLogger.Encoding;
+            baseLogger.Pipes = pipes ?? baseLogger.Pipes;
 
-            return BackgroundLogger(charms, logger);
+            return background
+                ? BackgroundLogger(charms, baseLogger)
+                : (ILogger)baseLogger;
         }
 
         //8
@@ -368,16 +430,18 @@ namespace NWrath.Logging
             LogLevel minLevel,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                fileProvider, 
-                new MinimumLogLevelVerifier(minLevel), 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                fileProvider,
+                new MinimumLogLevelVerifier(minLevel),
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -387,16 +451,18 @@ namespace NWrath.Logging
             IRollingFileProvider fileProvider,
             IStringLogSerializer serializer = null,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                fileProvider, 
-                new MinimumLogLevelVerifier(LogLevel.Debug), 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                fileProvider,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -407,7 +473,8 @@ namespace NWrath.Logging
            ILogRecordVerifier recordVerifier,
            Action<StringLogSerializer> serializerApply,
            Encoding encoding = null,
-           PipeCollection<RollingFileContext> pipes = null
+           PipeCollection<RollingFileContext> pipes = null,
+           bool background = true
            )
         {
             var serializer = new StringLogSerializer();
@@ -415,12 +482,13 @@ namespace NWrath.Logging
             serializerApply?.Invoke(serializer);
 
             return RollingFileLogger(
-                charms, 
-                fileProvider, 
-                recordVerifier, 
-                serializer, 
-                encoding, 
-                pipes
+                charms,
+                fileProvider,
+                recordVerifier,
+                serializer,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -431,16 +499,18 @@ namespace NWrath.Logging
             LogLevel minLevel,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                fileProvider, 
-                new MinimumLogLevelVerifier(minLevel), 
-                serializerApply, 
-                encoding, 
-                pipes
+                charms,
+                fileProvider,
+                new MinimumLogLevelVerifier(minLevel),
+                serializerApply,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -450,16 +520,18 @@ namespace NWrath.Logging
             IRollingFileProvider fileProvider,
             Action<StringLogSerializer> serializerApply,
             Encoding encoding = null,
-            PipeCollection<RollingFileContext> pipes = null
+            PipeCollection<RollingFileContext> pipes = null,
+            bool background = true
             )
         {
             return RollingFileLogger(
-                charms, 
-                fileProvider, 
-                new MinimumLogLevelVerifier(LogLevel.Debug), 
-                serializerApply, 
-                encoding, 
-                pipes
+                charms,
+                fileProvider,
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                serializerApply,
+                encoding,
+                pipes,
+                background
                 );
         }
 
@@ -472,22 +544,35 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
             bool leaveOpen,
+            bool background = true,
             params ILogger[] loggers
             )
         {
-            return BackgroundLogger(charms, new CompositeLogger(loggers, leaveOpen) {
+            ILogger baseLogger = new CompositeLogger(loggers, leaveOpen)
+            {
                 RecordVerifier = recordVerifier
-            });
+            };
+
+            return background 
+                ? BackgroundLogger(charms, baseLogger) 
+                : baseLogger;
         }
 
         //2
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
+           bool background = true,
            params ILogger[] loggers
            )
         {
-            return CompositeLogger(charms, recordVerifier, false, loggers);
+            return CompositeLogger(
+                charms, 
+                recordVerifier, 
+                false, 
+                background, 
+                loggers
+                );
         }
 
         //3
@@ -495,20 +580,34 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
             bool leaveOpen,
+            bool background = true,
             params ILogger[] loggers
             )
         {
-            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), leaveOpen, loggers);
+            return CompositeLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                leaveOpen, 
+                background,
+                loggers
+                );
         }
 
         //4
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            LogLevel minLevel,
+           bool background = true,
            params ILogger[] loggers
            )
         {
-            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), false, loggers);
+            return CompositeLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                false, 
+                background, 
+                loggers
+                );
         }
 
         //5
@@ -516,20 +615,34 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
             bool leaveOpen,
+            bool background = true,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
-            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), leaveOpen, loggerFactories);
+            return CompositeLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                leaveOpen,
+                background,
+                loggerFactories
+                );
         }
 
         //6
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
+            bool background = true,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
-            return CompositeLogger(charms, new MinimumLogLevelVerifier(minLevel), false, loggerFactories);
+            return CompositeLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                false, 
+                background,
+                loggerFactories
+                );
         }
 
         //7
@@ -537,6 +650,7 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
             bool leaveOpen,
+            bool background = true,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
@@ -544,13 +658,20 @@ namespace NWrath.Logging
                                          .Select(l => l.CastAs<BackgroundLogger>()?.BaseLogger ?? l)
                                          .ToArray();
 
-            return CompositeLogger(charms, recordVerifier, leaveOpen, loggers);
+            return CompositeLogger(
+                charms, 
+                recordVerifier, 
+                leaveOpen, 
+                background, 
+                loggers
+                );
         }
 
         //8
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
+           bool background = true,
            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
            )
         {
@@ -558,45 +679,79 @@ namespace NWrath.Logging
                                          .Select(l => l.CastAs<BackgroundLogger>()?.BaseLogger ?? l)
                                          .ToArray();
 
-            return CompositeLogger(charms, recordVerifier, false, loggers);
+            return CompositeLogger(
+                charms, 
+                recordVerifier, 
+                false, 
+                background, 
+                loggers
+                );
         }
 
         //9
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            bool leaveOpen,
+           bool background = true,
            params ILogger[] loggers
            )
         {
-            return CompositeLogger(charms, LogLevel.Debug, leaveOpen, loggers);
+            return CompositeLogger(
+                charms, 
+                LogLevel.Debug, 
+                leaveOpen, 
+                background, 
+                loggers
+                );
         }
 
         //10
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
+            bool background = true,
             params ILogger[] loggers
             )
         {
-            return CompositeLogger(charms, LogLevel.Debug, false, loggers);
+            return CompositeLogger(
+                charms, 
+                LogLevel.Debug, 
+                false, 
+                background, 
+                loggers
+                );
         }
 
         //11
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             bool leaveOpen,
+            bool background = true,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
-            return CompositeLogger(charms, LogLevel.Debug, leaveOpen, loggerFactories);
+            return CompositeLogger(
+                charms, 
+                LogLevel.Debug, 
+                leaveOpen, 
+                background, 
+                loggerFactories
+                );
         }
 
         //12
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
+            bool background = true,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
-            return CompositeLogger(charms, LogLevel.Debug, false, loggerFactories);
+            return CompositeLogger(
+                charms, 
+                LogLevel.Debug, 
+                false, 
+                background, 
+                loggerFactories
+                );
         }
 
         #endregion Composite
@@ -607,53 +762,73 @@ namespace NWrath.Logging
         public static ILogger DbLogger(
             this ILoggingWizardCharms charms,
             IDbLogSchema schema,
-            ILogRecordVerifier recordVerifier
+            ILogRecordVerifier recordVerifier,
+            bool background = true
             )
         {
-            return BackgroundLogger(charms, new DbLogger(schema)
+            ILogger baseLogger = new DbLogger(schema)
             {
                 RecordVerifier = recordVerifier
-            });
+            };
+
+            return background 
+                ? BackgroundLogger(charms, baseLogger) 
+                : baseLogger;
         }
 
         //2
         public static ILogger DbLogger(
            this ILoggingWizardCharms charms,
            string connectionString,
-           ILogRecordVerifier recordVerifier
+           ILogRecordVerifier recordVerifier,
+           bool background = true
            )
         {
-            return BackgroundLogger(charms, new DbLogger(connectionString)
-            {
-                RecordVerifier = recordVerifier
-            });
+            return DbLogger(charms,
+                new SqlLogSchema(connectionString),
+                recordVerifier,
+                background
+                );
         }
 
         //3
         public static ILogger DbLogger(
             this ILoggingWizardCharms charms,
             IDbLogSchema schema,
-            LogLevel minLevel = LogLevel.Debug
+            LogLevel minLevel = LogLevel.Debug,
+            bool background = true
             )
         {
-            return DbLogger(charms, schema, new MinimumLogLevelVerifier(minLevel));
+            return DbLogger(
+                charms, 
+                schema, 
+                new MinimumLogLevelVerifier(minLevel), 
+                background
+                );
         }
 
         //4
         public static ILogger DbLogger(
            this ILoggingWizardCharms charms,
            string connectionString,
-           LogLevel minLevel = LogLevel.Debug
+           LogLevel minLevel = LogLevel.Debug,
+           bool background = true
            )
         {
-            return DbLogger(charms, connectionString, new MinimumLogLevelVerifier(minLevel));
+            return DbLogger(
+                charms, 
+                connectionString, 
+                new MinimumLogLevelVerifier(minLevel),
+                background
+                );
         }
 
         //5
         public static ILogger DbLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
-            Action<DbLogSchemaConfig> schemaApply
+            Action<DbLogSchemaConfig> schemaApply,
+            bool background = true
             )
         {
             var args = new DbLogSchemaConfig();
@@ -662,38 +837,58 @@ namespace NWrath.Logging
 
             var schema = new SqlLogSchema(args.ConnectionString, args.TableName, args.InitScript, args.Columns);
 
-            return BackgroundLogger(charms, new DbLogger(schema)
-            {
-                RecordVerifier = recordVerifier
-            });
+            return DbLogger(
+                charms,
+                schema,
+                recordVerifier,
+                background
+                );
         }
 
         //6
         public static ILogger DbLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
-            Action<DbLogSchemaConfig> schemaApply
+            Action<DbLogSchemaConfig> schemaApply,
+            bool background = true
             )
         {
-            return DbLogger(charms, new MinimumLogLevelVerifier(minLevel), schemaApply);
+            return DbLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                schemaApply, 
+                background
+                );
         }
 
         //7
         public static ILogger DbLogger(
             this ILoggingWizardCharms charms,
-            Action<DbLogSchemaConfig> schemaApply
+            Action<DbLogSchemaConfig> schemaApply,
+            bool background = true
             )
         {
-            return DbLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), schemaApply);
+            return DbLogger(
+                charms, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                schemaApply,
+                background
+                );
         }
 
         //8
         public static ILogger DbLogger(
            this ILoggingWizardCharms charms,
-           IDbLogSchema schema
+           IDbLogSchema schema,
+           bool background = true
            )
         {
-            return DbLogger(charms, schema, new MinimumLogLevelVerifier(LogLevel.Debug));
+            return DbLogger(
+                charms, 
+                schema, 
+                new MinimumLogLevelVerifier(LogLevel.Debug),
+                background
+                );
         }
 
         #endregion Db
@@ -704,57 +899,86 @@ namespace NWrath.Logging
         public static ILogger DebugLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
-            IStringLogSerializer serializer = null
+            IStringLogSerializer serializer = null,
+            bool background = true
             )
         {
-            return BackgroundLogger(charms, new DebugLogger
+            ILogger baseLogger = new DebugLogger
             {
                 Serializer = serializer,
                 RecordVerifier = recordVerifier
-            });
+            };
+
+            return background
+                ? BackgroundLogger(charms, baseLogger) 
+                : baseLogger;
         }
 
         //2
         public static ILogger DebugLogger(
            this ILoggingWizardCharms charms,
            LogLevel minLevel = LogLevel.Debug,
-           IStringLogSerializer serializer = null
+           IStringLogSerializer serializer = null,
+           bool background = true
            )
         {
-            return DebugLogger(charms, new MinimumLogLevelVerifier(minLevel), serializer);
+            return DebugLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                serializer, 
+                background
+                );
         }
 
         //3
         public static ILogger DebugLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
-            Action<StringLogSerializer> serializerApply
+            Action<StringLogSerializer> serializerApply,
+            bool background = true
             )
         {
             var serializer = new StringLogSerializer();
 
             serializerApply(serializer);
 
-            return DebugLogger(charms, recordVerifier, serializer);
+            return DebugLogger(
+                charms, 
+                recordVerifier, 
+                serializer, 
+                background
+                );
         }
 
         //4
         public static ILogger DebugLogger(
            this ILoggingWizardCharms charms,
            LogLevel minLevel,
-           Action<StringLogSerializer> serializerApply
+           Action<StringLogSerializer> serializerApply,
+           bool background = true
            )
         {
-            return DebugLogger(charms, new MinimumLogLevelVerifier(minLevel), serializerApply);
+            return DebugLogger(
+                charms, 
+                new MinimumLogLevelVerifier(minLevel), 
+                serializerApply, 
+                background
+                );
         }
 
         //5
         public static ILogger DebugLogger(
             this ILoggingWizardCharms charms,
-            Action<StringLogSerializer> serializerApply
+            Action<StringLogSerializer> serializerApply,
+            bool background = true
             )
         {
-            return DebugLogger(charms, new MinimumLogLevelVerifier(LogLevel.Debug), serializerApply);
+            return DebugLogger(
+                charms, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                serializerApply, 
+                background
+                );
         }
 
         #endregion Debug
@@ -778,12 +1002,18 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             Action<LogRecord> writeAction,
             Action<LogRecord[]> batchAction,
-            ILogRecordVerifier recordVerifier
+            ILogRecordVerifier recordVerifier,
+            bool background = true
             )
         {
-            return BackgroundLogger(charms, new LambdaLogger(writeAction, batchAction) {
+            ILogger baseLogger = new LambdaLogger(writeAction, batchAction)
+            {
                 RecordVerifier = recordVerifier
-            });
+            };
+
+            return background 
+                ? BackgroundLogger(charms, baseLogger) 
+                : baseLogger;
         }
 
         //2
@@ -791,82 +1021,131 @@ namespace NWrath.Logging
             this ILoggingWizardCharms charms,
             Action<LogRecord> writeAction,
             Action<LogRecord[]> batchAction,
-            LogLevel minLevel
+            LogLevel minLevel,
+            bool background = true
             )
         {
-            return LambdaLogger(charms, writeAction, batchAction, new MinimumLogLevelVerifier(minLevel));
+            return LambdaLogger(
+                charms, 
+                writeAction, 
+                batchAction, 
+                new MinimumLogLevelVerifier(minLevel), 
+                background
+                );
         }
 
         //3
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord[]> batchAction,
-            LogLevel minLevel
+            LogLevel minLevel,
+            bool background = true
         )
         {
-            return LambdaLogger(charms, batchAction, new MinimumLogLevelVerifier(minLevel));
+            return LambdaLogger(
+                charms, 
+                batchAction, 
+                new MinimumLogLevelVerifier(minLevel), 
+                background
+                );
         }
 
         //4
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord[]> batchAction,
-            ILogRecordVerifier recordVerifier
+            ILogRecordVerifier recordVerifier,
+            bool background = true
         )
         {
-            return BackgroundLogger(charms, new LambdaLogger(batchAction) {
-                RecordVerifier = recordVerifier
-            });
+            return LambdaLogger(
+                charms, 
+                m => batchAction(new[] { m }), 
+                batchAction, 
+                recordVerifier, 
+                background
+                );
         }
 
         //5
         public static ILogger LambdaLogger(
            this ILoggingWizardCharms charms,
            Action<LogRecord> writeAction,
-           ILogRecordVerifier recordVerifier
+           ILogRecordVerifier recordVerifier,
+           bool background = true
            )
         {
-            return BackgroundLogger(charms, new LambdaLogger(writeAction) {
-                RecordVerifier = recordVerifier
-            });
+            return LambdaLogger(
+                charms, 
+                writeAction, 
+                (Action<LogRecord[]>)null, 
+                recordVerifier, 
+                background
+                );
         }
 
         //6
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord> writeAction,
-            LogLevel minLevel
+            LogLevel minLevel,
+            bool background = true
             )
         {
-            return LambdaLogger(charms, writeAction, null, minLevel);
+            return LambdaLogger(
+                charms, 
+                writeAction, 
+                (Action<LogRecord[]>)null, 
+                minLevel, 
+                background
+                );
         }
 
         //7
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
-            Action<LogRecord> writeAction
+            Action<LogRecord> writeAction,
+             bool background = true
             )
         {
-            return LambdaLogger(charms, writeAction, (Action<LogRecord[]>)null);
+            return LambdaLogger(
+                charms, 
+                writeAction, 
+                (Action<LogRecord[]>)null, 
+                background
+                );
         }
 
         //8
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord> writeAction,
-            Action<LogRecord[]> batchAction
+            Action<LogRecord[]> batchAction,
+             bool background = true
             )
         {
-            return LambdaLogger(charms, writeAction, batchAction, new MinimumLogLevelVerifier(LogLevel.Debug));
+            return LambdaLogger(
+                charms, 
+                writeAction, 
+                batchAction, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                background
+                );
         }
 
         //9
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
-            Action<LogRecord[]> batchAction
+            Action<LogRecord[]> batchAction,
+             bool background = true
         )
         {
-            return LambdaLogger(charms, batchAction, new MinimumLogLevelVerifier(LogLevel.Debug));
+            return LambdaLogger(
+                charms, 
+                batchAction, 
+                new MinimumLogLevelVerifier(LogLevel.Debug), 
+                background
+                );
         }
 
         #endregion Lambda
@@ -878,24 +1157,36 @@ namespace NWrath.Logging
            this ILoggingWizardCharms charms,
            string filePath,
            string sectionPath,
-           IServiceProvider serviceProvider = null
+           IServiceProvider serviceProvider = null,
+           bool background = true
            )
         {
-            return BackgroundLogger(charms, 
-                new LoggerJsonLoader { Injector = serviceProvider }.Load(filePath, sectionPath)
-                );
+            ILogger baseLogger = new LoggerJsonLoader
+            {
+                Injector = serviceProvider
+            }.Load(filePath, sectionPath);
+
+            return background && !(baseLogger is BackgroundLogger)
+                ? BackgroundLogger(charms, baseLogger) 
+                : baseLogger;
         }
 
         //2
         public static ILogger LoadFromJson(
            this ILoggingWizardCharms charms,
            JToken loggingSection,
-           IServiceProvider serviceProvider = null
+           IServiceProvider serviceProvider = null,
+           bool background = true
            )
         {
-            return BackgroundLogger(charms, 
-                new LoggerJsonLoader { Injector = serviceProvider }.Load(loggingSection)
-                );
+            ILogger baseLogger = new LoggerJsonLoader
+            {
+                Injector = serviceProvider
+            }.Load(loggingSection);
+
+            return background && !(baseLogger is BackgroundLogger)
+                ? BackgroundLogger(charms, baseLogger)
+                : baseLogger;
         }
 
         #endregion LoadFromJson
@@ -934,12 +1225,12 @@ namespace NWrath.Logging
             var lambdaLogger = LambdaLogger(charms, r => batchAction(new[] { r }), batchAction);
 
             return BackgroundLogger(
-                charms, 
-                lambdaLogger, 
-                recordVerifier, 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                lambdaLogger,
+                recordVerifier,
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -956,12 +1247,12 @@ namespace NWrath.Logging
            )
         {
             return BackgroundLogger(
-                charms, 
-                CompositeLogger(charms, loggerFactories(charms)), 
-                recordVerifier, 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                CompositeLogger(charms, background: false, loggerFactories(charms)),
+                recordVerifier,
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -978,12 +1269,12 @@ namespace NWrath.Logging
             )
         {
             return BackgroundLogger(
-                charms, 
-                CompositeLogger(charms, loggerFactories(charms)), 
-                new MinimumLogLevelVerifier(minLevel), 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                CompositeLogger(charms, background: false, loggerFactories(charms)),
+                new MinimumLogLevelVerifier(minLevel),
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -1002,12 +1293,12 @@ namespace NWrath.Logging
             var baseLogger = loggerFactory(charms);
 
             return BackgroundLogger(
-                charms, 
-                baseLogger, 
-                recordVerifier, 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                baseLogger,
+                recordVerifier,
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -1024,12 +1315,12 @@ namespace NWrath.Logging
            )
         {
             return BackgroundLogger(
-                charms, 
-                logger, 
-                new MinimumLogLevelVerifier(minLevel), 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                logger,
+                new MinimumLogLevelVerifier(minLevel),
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -1048,12 +1339,12 @@ namespace NWrath.Logging
             var baseLogger = loggerFactory(charms);
 
             return BackgroundLogger(
-                charms, 
-                baseLogger, 
-                new MinimumLogLevelVerifier(minLevel), 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                baseLogger,
+                new MinimumLogLevelVerifier(minLevel),
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }
@@ -1070,12 +1361,12 @@ namespace NWrath.Logging
             )
         {
             return BackgroundLogger(
-                charms, 
-                batchAction, 
-                new MinimumLogLevelVerifier(minLevel), 
-                flushPeriod, 
-                batchSize, 
-                leaveOpen, 
+                charms,
+                batchAction,
+                new MinimumLogLevelVerifier(minLevel),
+                flushPeriod,
+                batchSize,
+                leaveOpen,
                 emergencyLogger
                 );
         }

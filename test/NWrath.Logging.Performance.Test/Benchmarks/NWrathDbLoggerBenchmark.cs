@@ -11,14 +11,12 @@
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.DbLogger(
-                         s =>
-                         {
-                             s.ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True";
-                             s.TableName = "DbLog";
-                             s.Columns = new[] { SqlLogSchema.IdColumn, SqlLogSchema.MessageColumn };
-                         }
-                      );
+            _logger = LoggingWizard.Spell.DbLogger(s =>
+                      {
+                          s.ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True";
+                          s.TableName = "DbLog";
+                          s.Columns = new[] { SqlLogSchema.IdColumn, SqlLogSchema.MessageColumn };
+                      }, background: false);
         }
 
         protected override void Log(string msg)

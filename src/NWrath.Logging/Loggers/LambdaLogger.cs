@@ -15,7 +15,7 @@ namespace NWrath.Logging
         public Action<LogRecord[]> BatchAction
         {
             get => _batchAction;
-            set => _batchAction = value ?? throw Errors.NULL_LAMBDA;
+            set => _batchAction = value ?? DefaultBatchLog;
         }
 
         private Action<LogRecord> _writeAction;

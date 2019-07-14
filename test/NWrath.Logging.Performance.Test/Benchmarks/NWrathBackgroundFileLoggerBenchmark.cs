@@ -13,7 +13,8 @@
         {
             _logger = LoggingWizard.Spell.FileLogger(
                 tempFile,
-                serializerApply: s => s.OutputTemplate = "{Message}"
+                serializerApply: s => s.OutputTemplate = "{Message}",
+                background: true
             );
         }
 
