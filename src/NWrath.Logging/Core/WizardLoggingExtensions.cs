@@ -562,7 +562,7 @@ namespace NWrath.Logging
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
-           bool background = true,
+           bool background,
            params ILogger[] loggers
            )
         {
@@ -576,6 +576,22 @@ namespace NWrath.Logging
         }
 
         //3
+        public static ILogger CompositeLogger(
+           this ILoggingWizardCharms charms,
+           ILogRecordVerifier recordVerifier,
+           params ILogger[] loggers
+           )
+        {
+            return CompositeLogger(
+                charms,
+                recordVerifier,
+                false,
+                true,
+                loggers
+                );
+        }
+
+        //4
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
@@ -593,11 +609,11 @@ namespace NWrath.Logging
                 );
         }
 
-        //4
+        //5
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            LogLevel minLevel,
-           bool background = true,
+           bool background,
            params ILogger[] loggers
            )
         {
@@ -610,7 +626,23 @@ namespace NWrath.Logging
                 );
         }
 
-        //5
+        //6
+        public static ILogger CompositeLogger(
+           this ILoggingWizardCharms charms,
+           LogLevel minLevel,
+           params ILogger[] loggers
+           )
+        {
+            return CompositeLogger(
+                charms,
+                new MinimumLogLevelVerifier(minLevel),
+                false,
+                true,
+                loggers
+                );
+        }
+
+        //7
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
@@ -628,11 +660,11 @@ namespace NWrath.Logging
                 );
         }
 
-        //6
+        //8
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             LogLevel minLevel,
-            bool background = true,
+            bool background,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
@@ -645,7 +677,22 @@ namespace NWrath.Logging
                 );
         }
 
-        //7
+        //9
+        public static ILogger CompositeLogger(
+            this ILoggingWizardCharms charms,
+            LogLevel minLevel,
+            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
+            )
+        {
+            return CompositeLogger(
+                charms,
+                new MinimumLogLevelVerifier(minLevel),
+                false,
+                loggerFactories
+                );
+        }
+
+        //10
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
@@ -667,11 +714,11 @@ namespace NWrath.Logging
                 );
         }
 
-        //8
+        //11
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
-           bool background = true,
+           bool background,
            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
            )
         {
@@ -688,7 +735,27 @@ namespace NWrath.Logging
                 );
         }
 
-        //9
+        //12
+        public static ILogger CompositeLogger(
+           this ILoggingWizardCharms charms,
+           ILogRecordVerifier recordVerifier,
+           params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
+           )
+        {
+            var loggers = loggerFactories.Select(f => f(charms))
+                                         .Select(l => l.CastAs<BackgroundLogger>()?.BaseLogger ?? l)
+                                         .ToArray();
+
+            return CompositeLogger(
+                charms,
+                recordVerifier,
+                false,
+                true,
+                loggers
+                );
+        }
+
+        //13
         public static ILogger CompositeLogger(
            this ILoggingWizardCharms charms,
            bool leaveOpen,
@@ -705,10 +772,10 @@ namespace NWrath.Logging
                 );
         }
 
-        //10
+        //14
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
-            bool background = true,
+            bool background,
             params ILogger[] loggers
             )
         {
@@ -721,7 +788,22 @@ namespace NWrath.Logging
                 );
         }
 
-        //11
+        //15
+        public static ILogger CompositeLogger(
+            this ILoggingWizardCharms charms,
+            params ILogger[] loggers
+            )
+        {
+            return CompositeLogger(
+                charms,
+                LogLevel.Debug,
+                false,
+                true,
+                loggers
+                );
+        }
+
+        //16
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
             bool leaveOpen,
@@ -738,10 +820,10 @@ namespace NWrath.Logging
                 );
         }
 
-        //12
+        //17
         public static ILogger CompositeLogger(
             this ILoggingWizardCharms charms,
-            bool background = true,
+            bool background,
             params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
@@ -750,6 +832,21 @@ namespace NWrath.Logging
                 LogLevel.Debug, 
                 false, 
                 background, 
+                loggerFactories
+                );
+        }
+
+        //18
+        public static ILogger CompositeLogger(
+            this ILoggingWizardCharms charms,
+            params Func<ILoggingWizardCharms, ILogger>[] loggerFactories
+            )
+        {
+            return CompositeLogger(
+                charms,
+                LogLevel.Debug,
+                false,
+                true,
                 loggerFactories
                 );
         }
@@ -1137,7 +1234,7 @@ namespace NWrath.Logging
         public static ILogger LambdaLogger(
             this ILoggingWizardCharms charms,
             Action<LogRecord[]> batchAction,
-             bool background = true
+            bool background = true
         )
         {
             return LambdaLogger(

@@ -6,6 +6,7 @@ using NWrath.Synergy.Pipeline;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace NWrath.Logging.Test.ApiTests
 {
@@ -249,6 +250,47 @@ namespace NWrath.Logging.Test.ApiTests
             new DirectoryInfo(currentFolderPath).GetFiles("*.txt").Each(x => x.Delete());
 
             #endregion Assert
+        }
+
+        [Test]
+        public void RollingFileLogger_HandleLogFolderRecreate()
+        {
+            var currentFolderPath = Path.GetDirectoryName(GetType().Assembly.Location);
+            var logsFolder = Path.Combine(currentFolderPath, "TestLogs");
+            var logFile = "";
+            var log = new LogRecord
+            {
+                Timestamp = DateTime.Now,
+                Message = "str",
+                Level = LogLevel.Error,
+                Exception = new Exception("Ex")
+            };
+
+            if (Directory.Exists(logsFolder))
+            {
+                Directory.Delete(logsFolder, true);
+                Thread.Sleep(10);
+            }
+
+            Directory.CreateDirectory(logsFolder);
+
+            var logger = new RollingFileLogger(logsFolder);
+
+            logger.Log(log);
+
+            logFile = logger.CastTo<IRollingFileLoggerInternal>().Writer.FilePath;
+
+            Directory.Delete(logsFolder, true);
+            Thread.Sleep(10);
+
+            Assert.Catch(() => logger.Log(log));
+            Thread.Sleep(10);
+
+            Directory.CreateDirectory(logsFolder);
+            Thread.Sleep(10);
+            File.Create(logFile).Dispose();
+
+            Assert.DoesNotThrow(() => logger.Log(log));
         }
     }
 }
