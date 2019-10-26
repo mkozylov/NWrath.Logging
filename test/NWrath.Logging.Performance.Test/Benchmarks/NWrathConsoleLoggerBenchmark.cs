@@ -12,8 +12,7 @@
         protected override void CreateLogger()
         {
             _logger = LoggingWizard.Spell.ConsoleLogger(
-                serializerApply: s => s.OutputTemplate = "{Message}",
-                background: false
+                serializerApply: s => s.OutputTemplate = "{Message}"
             );
         }
 

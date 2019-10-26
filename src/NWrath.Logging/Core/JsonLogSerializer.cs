@@ -3,7 +3,7 @@
 namespace NWrath.Logging
 {
     public class JsonLogSerializer
-        : IStringLogSerializer, ILogSerializer
+        : IStringLogSerializer
     {
         public JsonSerializerSettings Settings { get; private set; }
 
@@ -20,11 +20,6 @@ namespace NWrath.Logging
         public string Serialize(LogRecord record)
         {
             return JsonConvert.SerializeObject(record, Settings);
-        }
-
-        object ILogSerializer.Serialize(LogRecord record)
-        {
-            return Serialize(record);
         }
     }
 }

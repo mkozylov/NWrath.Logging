@@ -1,9 +1,9 @@
 ﻿namespace NWrath.Logging.Performance.Test
 {
-    internal class NWrathDbLoggerBenchmark
+    internal class NWrathBackgroundSqlLoggerBenchmark
         : LoggerBenchmarkBase
     {
-        public override string LoggerInfo { get; set; } = "NWrath db";
+        public override string LoggerInfo { get; set; } = "NWrath background sql";
 
         public bool NeedWarmingUp { get; set; } = true;
 
@@ -11,12 +11,12 @@
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.DbLogger(s =>
+            _logger = LoggingWizard.Spell.BackgroundSqlLogger(s =>
                       {
                           s.ConnectionString = "Data Source=.\\sqlexpress;Initial Catalog=Test;Integrated Security=True;MultipleActiveResultSets=True";
-                          s.TableName = "DbLog";
+                          s.TableName = "BackgroundDbLog";
                           s.Columns = new[] { SqlLogSchema.IdColumn, SqlLogSchema.MessageColumn };
-                      }, background: false);
+                      });
         }
 
         protected override void Log(string msg)

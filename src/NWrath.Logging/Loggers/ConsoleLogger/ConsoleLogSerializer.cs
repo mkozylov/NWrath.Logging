@@ -10,7 +10,7 @@ using System.Reflection;
 namespace NWrath.Logging
 {
     public class ConsoleLogSerializer
-        : IConsoleLogSerializer, ILogSerializer
+        : IConsoleLogSerializer
     {
         public const string DefaultOutputTemplate = "{Timestamp} [{Level}] {Message}{ExNewLine}{Exception}";
 
@@ -54,11 +54,6 @@ namespace NWrath.Logging
         public string Serialize(LogRecord record)
         {
             return _serializeFunc.Value.Serialize(record);
-        }
-
-        object ILogSerializer.Serialize(LogRecord record)
-        {
-            return Serialize(record);
         }
 
         private IStringLogSerializer BuildSerializer()

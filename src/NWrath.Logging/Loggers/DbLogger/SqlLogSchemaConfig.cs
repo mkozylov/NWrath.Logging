@@ -1,6 +1,6 @@
 ﻿namespace NWrath.Logging
 {
-    public class DbLogSchemaConfig
+    public class SqlLogSchemaConfig
     {
         public string ConnectionString { get; set; }
 
@@ -8,6 +8,6 @@
 
         public string InitScript { get; set; }
 
-        public LogTableColumnSchema[] Columns { get; set; }
+        public ISqlLogColumnSchema[] Columns { get; set; }
     }
 }

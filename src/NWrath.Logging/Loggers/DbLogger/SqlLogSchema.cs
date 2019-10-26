@@ -16,57 +16,51 @@ namespace NWrath.Logging
     {
         #region DefaultColumns
 
-        public static LogTableColumnSchema IdColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  IdColumn => new SqlLogColumnSchema<long>
         (
             name: "Id",
             typeDefinition: "BIGINT NOT NULL PRIMARY KEY IDENTITY",
-            isInternal: true,
-            type: typeof(long)
+            isInternal: true
         );
 
-        public static LogTableColumnSchema TimestampColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  TimestampColumn => new SqlLogColumnSchema<DateTime>
         (
             name: "Timestamp",
             typeDefinition: "DATETIME NOT NULL",
             isInternal: false,
-            type: typeof(DateTime),
-            serializer: new LambdaLogSerializer(m => m.Timestamp)
+            serializer: m => m.Timestamp
         );
 
-        public static LogTableColumnSchema MessageColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  MessageColumn => new SqlLogColumnSchema<string>
         (
             name: "Message",
             typeDefinition: "VARCHAR(MAX) NOT NULL",
             isInternal: false,
-            type: typeof(string),
-            serializer: new LambdaLogSerializer(m => m.Message)
+            serializer: m => m.Message
         );
 
-        public static LogTableColumnSchema ExceptionColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  ExceptionColumn => new SqlLogColumnSchema<string>
         (
             name: "Exception",
             typeDefinition: "VARCHAR(MAX) NULL",
             isInternal: false,
-            type: typeof(string),
-            serializer: new LambdaLogSerializer(m => m.Exception?.ToString())
+            serializer: m => m.Exception?.ToString()
         );
 
-        public static LogTableColumnSchema LevelColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  LevelColumn => new SqlLogColumnSchema<int>
         (
             name: "Level",
             typeDefinition: "INT NOT NULL",
             isInternal: false,
-            type: typeof(int),
-            serializer: new LambdaLogSerializer(m => m.Level)
+            serializer: m => (int)m.Level
         );
 
-        public static LogTableColumnSchema ExtraColumn => new LogTableColumnSchema
+        public static ISqlLogColumnSchema  ExtraColumn => new SqlLogColumnSchema<string>
         (
             name: "Extra",
             typeDefinition: "VARCHAR(MAX) NULL",
             isInternal: false,
-            type: typeof(string),
-            serializer: new LambdaLogSerializer(m => (m.Extra.Count == 0 ? null : m.Extra.AsJson()))
+            serializer: m => (m.Extra.Count == 0 ? null : m.Extra.AsJson())
         );
 
         #endregion DefaultColumns
@@ -80,13 +74,15 @@ namespace NWrath.Logging
 
         public const string DefaultTableName = "ServerLog";
 
-        public static LogTableColumnSchema[] DefaultColumns => GetDefaultColumns();
+        public static ISqlLogColumnSchema [] DefaultColumns => GetDefaultColumns();
 
         public string TableName { get; private set; }
 
         public string InitScript { get; private set; }
 
-        public LogTableColumnSchema[] Columns { get; private set; }
+        public ISqlLogColumnSchema [] Columns { get; private set; }
+
+        IDbLogColumnSchema[] IDbLogSchema.Columns => Columns;
 
         private string _connectionString;
         private string _insertLogQueryPrefix;
@@ -96,7 +92,7 @@ namespace NWrath.Logging
             string connectionString,
             string tableName = DefaultTableName,
             string initScript = null,
-            LogTableColumnSchema[] columns = null
+            ISqlLogColumnSchema [] columns = null
             )
         {
             ConnectionString = connectionString;
@@ -105,11 +101,6 @@ namespace NWrath.Logging
             InitScript = initScript ?? BuildDefaultInitScript();
             _insertLogQueryPrefix = BuildInsertQueryPrefix();
             _insertLogQueryBuilder = CreateInsertLogQueryBuilder();
-        }
-
-        public SqlLogSchema(DbLogSchemaConfig config)
-            : this(config.ConnectionString, config.TableName, config.InitScript, config.Columns)
-        {
         }
 
         public virtual DbConnection CreateConnection()
@@ -124,13 +115,18 @@ namespace NWrath.Logging
 
         public string BuildInsertBatchQuery(LogRecord[] batch)
         {
-            var sb = _insertLogQueryPrefix.ToStringBuilder();
+            var sb = new StringBuilder();
 
             for (int i = 0; i < batch.Length; i++)
             {
-                sb.Append(_insertLogQueryBuilder(batch[i]));
+                if (i == 0 || i % 1000 == 0)
+                {
+                    sb.Append("; " + _insertLogQueryPrefix);
+                }
 
-                if ((i + 1) < batch.Length)
+                sb.Append(_insertLogQueryBuilder(batch[i]));
+                
+                if ((i + 1) < batch.Length && (i + 1) % 1000 != 0)
                 {
                     sb.Append(",");
                 }
@@ -146,7 +142,7 @@ namespace NWrath.Logging
 
         private Func<LogRecord, string> CreateInsertLogQueryBuilder()
         {
-            var sqlExtType = typeof(SqlConverter);
+            var sqlExtType = typeof(SqlTypeConverter);
 
             var columns = Columns.Where(x => !x.IsInternal)
                                      .ToList();
@@ -157,7 +153,7 @@ namespace NWrath.Logging
                 Expression.Constant("(")
             };
 
-            var serializeMI = typeof(ILogSerializer).GetMethod(nameof(ILogSerializer.Serialize));
+            var serializeMI = typeof(IStringLogSerializer).GetMethod(nameof(IStringLogSerializer.Serialize));
 
             for (int i = 0; i < columns.Count; i++)
             {
@@ -169,13 +165,7 @@ namespace NWrath.Logging
                     arg
                     );
 
-                var toSqlStringMI = sqlExtType.GetMethod(nameof(SqlConverter.ToSqlString), new[] { col.Type });
-
-                toSqlStringMI = toSqlStringMI ?? sqlExtType.GetStaticGenericMethod(nameof(SqlConverter.ToSqlString), 1, 1).MakeGenericMethod(col.Type);
-
-                var val = Expression.Call(toSqlStringMI, Expression.Convert(serializeCall, col.Type));
-
-                block.Add(val);
+                block.Add(serializeCall);
 
                 if ((i + 1) < columns.Count)
                 {
@@ -218,9 +208,9 @@ namespace NWrath.Logging
             return tableBuilder.ToString();
         }
 
-        private static LogTableColumnSchema[] GetDefaultColumns()
+        private static ISqlLogColumnSchema [] GetDefaultColumns()
         {
-            return new LogTableColumnSchema[]
+            return new ISqlLogColumnSchema []
             {
                 IdColumn,
                 TimestampColumn,

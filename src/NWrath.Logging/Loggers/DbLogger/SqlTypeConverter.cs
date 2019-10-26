@@ -2,7 +2,7 @@
 
 namespace NWrath.Logging
 {
-    public static class SqlConverter
+    public static class SqlTypeConverter
     {
         public static string ToSqlString(DateTime val)
         {
@@ -64,9 +64,9 @@ namespace NWrath.Logging
             return val == null ? "NULL" : val.Value.ToString();
         }
 
-        public static string ToSqlString<TObj>(TObj val)
-        {
-            return val == null ? "NULL" : val.ToString();
-        }
+        //public static string ToSqlString<TObj>(TObj val)
+        //{
+        //    return val == null ? "NULL" : val.ToString();
+        //}
     }
 }

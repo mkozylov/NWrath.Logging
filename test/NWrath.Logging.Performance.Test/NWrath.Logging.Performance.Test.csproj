@@ -80,11 +80,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Benchmarks\NWrathBackgroundSqlLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathConsoleLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathRollingFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathBackgroundRollingFileLoggerBenchmark.cs" />
-    <Compile Include="Benchmarks\NWrathBackgroundDbLoggerBenchmark.cs" />
-    <Compile Include="Benchmarks\NWrathDbLoggerBenchmark.cs" />
+    <Compile Include="Benchmarks\NWrathSqlLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\SerilogSqlLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\SerilogFileLoggerBenchmark.cs" />
     <Compile Include="Benchmarks\NWrathBackgroundFileLoggerBenchmark.cs" />

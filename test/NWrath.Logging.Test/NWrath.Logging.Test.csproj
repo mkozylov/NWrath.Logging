@@ -193,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiTests\BackgroundLoggerTests.cs" />
+    <Compile Include="ApiTests\WizardLoggingExtensionMethodTests.cs" />
     <Compile Include="ApiTests\LoggerJsonLoaderTests.cs" />
     <Compile Include="ApiTests\SqlLogSchemaTests.cs" />
     <Compile Include="ApiTests\DebugLoggerTests.cs" />

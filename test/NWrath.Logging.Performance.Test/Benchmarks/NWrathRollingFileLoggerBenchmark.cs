@@ -15,7 +15,7 @@ namespace NWrath.Logging.Performance.Test
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.RollingFileLogger(_folderPath, background: false);
+            _logger = LoggingWizard.Spell.RollingFileLogger(_folderPath);
         }
 
         protected override void Log(string msg)

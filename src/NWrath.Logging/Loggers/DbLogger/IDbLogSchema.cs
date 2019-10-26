@@ -10,7 +10,7 @@ namespace NWrath.Logging
 
         string TableName { get; }
 
-        LogTableColumnSchema[] Columns { get; }
+        IDbLogColumnSchema[] Columns { get; }
 
         string BuildInsertQuery(LogRecord record);
 

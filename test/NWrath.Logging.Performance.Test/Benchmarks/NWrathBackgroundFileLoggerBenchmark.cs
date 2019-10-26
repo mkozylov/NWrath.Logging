@@ -11,10 +11,9 @@
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.FileLogger(
+            _logger = LoggingWizard.Spell.BackgroundFileLogger(
                 tempFile,
-                serializerApply: s => s.OutputTemplate = "{Message}",
-                background: true
+                serializerApply: s => s.OutputTemplate = "{Message}"
             );
         }
 

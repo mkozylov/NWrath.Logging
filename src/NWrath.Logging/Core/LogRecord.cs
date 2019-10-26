@@ -42,5 +42,29 @@ namespace NWrath.Logging
         {
             return (LogRecord)MemberwiseClone();
         }
+
+      
+        public static LogRecord Random(bool forceError = false)
+        {
+            var record = new LogRecord
+            {
+                Timestamp = DateTime.Now.AddMilliseconds(-new Random().Next(1, 5000)),
+                Message = "Message " + Guid.NewGuid(),
+                Exception = (forceError || new Random().NextDouble() >= 0.5) 
+                            ? (new Random().NextDouble() >= 0.5 
+                                ? new NotImplementedException() 
+                                : (Exception)new ArgumentNullException())
+                            : null
+            };
+            
+            record.Level = (LogLevel)Enum.ToObject(
+                            typeof(LogLevel), 
+                            record.Exception == null 
+                                ? new Random().Next(0, 1) 
+                                : new Random().Next(2, 4)
+                            );
+
+            return record;
+        }
     }
 }
