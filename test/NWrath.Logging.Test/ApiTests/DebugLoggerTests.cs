@@ -15,7 +15,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var msg = new LogRecord();
-            var serializer = new StringLogSerializer();
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
             var logger = new DebugLogger { Serializer = serializer };
             var writer = new StringWriter();
             var trace = new TextWriterTraceListener(writer);

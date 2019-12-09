@@ -59,6 +59,11 @@ namespace NWrath.Logging
                 _logger = logger;
             }
 
+            public void Flush()
+            {
+                _logger.Flush();
+            }
+
             public void Change(string filePath, bool append = true)
             {
                 _logger.SetFile(filePath, append);

@@ -11,7 +11,7 @@ namespace NWrath.Logging
 
             set
             {
-                _serializer = value ?? new ConsoleLogSerializer();
+                _serializer = value ?? ConsoleLogSerializerBuilder.DefaultSerializer;
 
                 if (typeof(IConsoleLogSerializer).IsAssignableFrom(_serializer.GetType()))
                 {
@@ -29,7 +29,7 @@ namespace NWrath.Logging
 
         public ConsoleLogger()
         {
-            Serializer = new ConsoleLogSerializer();
+            Serializer = ConsoleLogSerializerBuilder.DefaultSerializer;
         }
 
         protected override void WriteRecord(LogRecord record)

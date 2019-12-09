@@ -1,5 +1,7 @@
-﻿using System;
+﻿using NWrath.Synergy.Common.Extensions;
+using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace NWrath.Logging.Performance.Test
 {
@@ -15,7 +17,10 @@ namespace NWrath.Logging.Performance.Test
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.BackgroundRollingFileLogger(_folderPath);
+            _logger = LoggingWizard.Spell.BackgroundRollingFileLogger(
+                        _folderPath,
+                        serializerApply: s => s.OutputTemplate = "{Message}"
+                        );
         }
 
         protected override void Log(string msg)
@@ -41,6 +46,8 @@ namespace NWrath.Logging.Performance.Test
             var dir = Path.GetDirectoryName(typeof(FileLoggerBenchmarkBase).Assembly.Location);
 
             _folderPath = Path.Combine(dir, $"Logs_{Guid.NewGuid()}");
+
+            Console.WriteLine(_folderPath);
         }
 
         protected override void TierDown()

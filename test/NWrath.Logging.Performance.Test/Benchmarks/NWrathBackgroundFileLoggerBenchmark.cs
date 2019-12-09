@@ -1,4 +1,6 @@
-﻿namespace NWrath.Logging.Performance.Test
+﻿using NWrath.Synergy.Common.Extensions;
+
+namespace NWrath.Logging.Performance.Test
 {
     internal class NWrathBackgroundFileLoggerBenchmark
        : FileLoggerBenchmarkBase
@@ -11,10 +13,16 @@
 
         protected override void CreateLogger()
         {
-            _logger = LoggingWizard.Spell.BackgroundFileLogger(
+            var logger = LoggingWizard.Spell.BackgroundFileLogger(
                 tempFile,
                 serializerApply: s => s.OutputTemplate = "{Message}"
             );
+
+            logger.BaseLogger
+                  .CastTo<FileLogger>()
+                  .AutoFlush = false;
+
+            _logger = logger;
         }
 
         protected override void Log(string msg)

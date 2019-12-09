@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;net452</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Kozylov Mikhail</Authors>
     <Company>-</Company>
@@ -10,7 +10,7 @@
     <PackageLicenseUrl>https://github.com/mkozylov/NWrath.Logging/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/mkozylov/NWrath.Logging/wiki</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mkozylov/NWrath.Logging/</RepositoryUrl>
-    <Version>1.0.16</Version>
+    <Version>1.0.17</Version>
     <AssemblyVersion>1.0.13.0</AssemblyVersion>
     <FileVersion>1.0.13.0</FileVersion>
   </PropertyGroup>
@@ -35,16 +35,19 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Core\ILoggingWizardCharms.cs" />
+    <Compile Remove="Core\StringLogSerializer.cs" />
+    <Compile Remove="Loggers\ConsoleLogger\ConsoleLogSerializer.cs" />
     <Compile Remove="Loggers\StreamLogger.cs" />
     <Compile Remove="Loggers\ThreadSafeLogger.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FastExpressionCompiler" Version="1.10.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="NWrath.Synergy" Version="1.0.2" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+    <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="NWrath.Synergy" Version="1.0.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.0" />
 	<PackageReference Update="NETStandard.Library" Version="2.0.1" />
   </ItemGroup>
 

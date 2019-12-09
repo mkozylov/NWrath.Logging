@@ -3,8 +3,7 @@
 namespace NWrath.Logging
 {
     public class LoggingWizardCharms
-        : ILoggingWizardCharms
     {
-        public Set Library { get; set; } = Set.Empty;
+        public Set Library { get; set; } = new Set();
     }
 }

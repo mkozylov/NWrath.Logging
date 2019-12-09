@@ -34,9 +34,31 @@ namespace NWrath.Logging
             return source;
         }
 
+        public static RollingFileLogger AddPipes(
+            this RollingFileLogger source, params
+            IPipe<RollingFileContext>[] collection
+            )
+        {
+            source.Pipes.AddRange(collection);
+
+            return source;
+        }
+
+        public static RollingFileLogger AddPipes(
+            this RollingFileLogger source,
+            params Action<RollingFileContext, Action<RollingFileContext>>[] collection
+            )
+        {
+            source.Pipes.AddRange(collection);
+
+            return source;
+        }
+
         public static RollingFileLogger AddDefaultWriterPipe(this RollingFileLogger source)
         {
-            source.Pipes.Add(RollingFileLogger.LogWriterPipe);
+            source.Pipes.Add(
+                new RollingFileWriterPipe()
+                );
 
             return source;
         }

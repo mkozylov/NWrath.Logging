@@ -189,7 +189,7 @@ namespace NWrath.Logging.Test.ApiTests
             #region Arrange
 
             var filePath = "path";
-            var serializer = new StringLogSerializer();
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
 
             var injectorMock = new Mock<IServiceProvider>();
             injectorMock.Setup(x => x.GetService(It.IsAny<Type>()))

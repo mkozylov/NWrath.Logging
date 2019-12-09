@@ -2,6 +2,8 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NWrath.Logging
 {
@@ -40,16 +42,21 @@ namespace NWrath.Logging
                     return _writer.Value.Length;
                 }
 
-                var file = new FileInfo(FilePath);
+                if (_fileInfo != null)
+                {
+                    _fileInfo.Refresh();
 
-                return file.Exists ? file.Length : -1;
+                    return _fileInfo.Exists ? _fileInfo.Length : -1;
+                }
+
+                return -1;
             }
         }
 
         public IStringLogSerializer Serializer
         {
             get => _serializer;
-            set => _serializer = value ?? new StringLogSerializer();
+            set => _serializer = value ?? StringLogSerializerBuilder.DefaultSerializer;
         }
 
         public Encoding Encoding
@@ -58,18 +65,14 @@ namespace NWrath.Logging
             set => _encoding = value ?? new UTF8Encoding(false);
         }
 
-        public bool AutoFlush
-        {
-            get => _autoFlush;
-            set { _autoFlush = value; _writeBytesAction = value ? AllWriteBytes : (Action<byte[]>)WriteBytes; }
-        }
+        public bool AutoFlush { get; set; }
 
         private Lazy<FileStream> _writer;
         private bool _isEnabled = true;
         private Encoding _encoding = new UTF8Encoding(false);
-        private IStringLogSerializer _serializer = new StringLogSerializer();
-        private bool _autoFlush;
-        private Action<byte[]> _writeBytesAction;
+        private IStringLogSerializer _serializer = StringLogSerializerBuilder.DefaultSerializer;
+        private FileInfo _fileInfo;
+        private FileSystemWatcher _fileDeleteWatcher;
 
         public FileLogger(
             string filePath,
@@ -98,6 +101,8 @@ namespace NWrath.Logging
 
                 _writer.Value.Dispose();
             }
+
+            _fileDeleteWatcher?.Dispose();
         }
 
         public void Flush()
@@ -116,30 +121,52 @@ namespace NWrath.Logging
 
             _writer = new Lazy<FileStream>(() =>
             {
-                return new FileStream(
-                    FilePath,
-                    append ? FileMode.Append : FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.ReadWrite
-                    );
+                var fs = new FileStream(
+                            FilePath,
+                            append ? FileMode.Append : FileMode.Create,
+                            FileAccess.Write,
+                            FileShare.ReadWrite | FileShare.Delete
+                            );
+
+                _fileInfo = new FileInfo(fs.Name);
+
+                if (_fileDeleteWatcher != null)
+                {
+                    _fileDeleteWatcher.Dispose();
+                }
+
+                _fileDeleteWatcher = new FileSystemWatcher(_fileInfo.DirectoryName);
+                _fileDeleteWatcher.NotifyFilter = NotifyFilters.FileName;
+                _fileDeleteWatcher.Filter = _fileInfo.Name;
+                _fileDeleteWatcher.Deleted +=(s, e) =>
+                {
+                    if (IsEnabled && _writer.IsValueCreated && _writer.Value.CanWrite)
+                    {
+                        SetFile(fs.Name, true);
+                    }
+                };
+
+                _fileDeleteWatcher.EnableRaisingEvents = true;
+
+                return fs;
             });
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public void Log(byte[] data)
         {
-            if (!IsEnabled || data.Length == 0 || !_writer.Value.CanWrite)
+            if (!IsEnabled || data.Length == 0)
             {
                 return;
             }
 
-            _writeBytesAction(data);
+            WriteBytes(data);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord[] batch)
         {
-            if (!IsEnabled || batch.Length == 0 || !_writer.Value.CanWrite)
+            if (!IsEnabled || batch.Length == 0)
             {
                 return;
             }
@@ -156,13 +183,15 @@ namespace NWrath.Logging
 
             var data = _encoding.GetBytes(sb.ToString());
 
-            _writeBytesAction(data);
+            WriteBytes(data);
         }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public override void Log(LogRecord record)
         {
-            if (IsEnabled && _writer.Value.CanWrite && RecordVerifier.Verify(record))
+            if (IsEnabled
+                && RecordVerifier.Verify(record)
+                )
             {
                 WriteRecord(record);
             }
@@ -174,21 +203,22 @@ namespace NWrath.Logging
 
             var data = Encoding.GetBytes(msg);
 
-            _writeBytesAction(data);
+            WriteBytes(data);
         }
 
         private void WriteBytes(byte[] data)
         {
+            if (!_writer.Value.CanWrite)
+            {
+                throw new ObjectDisposedException("writer");
+            }
+
             _writer.Value.Write(data, 0, data.Length);
-        }
-
-        private void AllWriteBytes(byte[] data)
-        {
-            _writer.Value.Write(data, 0, data.Length);
-
-            _writer.Value.Flush();
-
-            SetFile(FilePath, true);
+          
+            if (AutoFlush)
+            {
+                _writer.Value.Flush();
+            }
         }
     }
 }

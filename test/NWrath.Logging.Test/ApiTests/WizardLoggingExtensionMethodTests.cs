@@ -17,8 +17,8 @@ namespace NWrath.Logging.Test.ApiTests
         public void WizardLoggingExtensionMethods_FileLogger()
         {
             var file = Path.GetTempFileName();
-            var serializer = new StringLogSerializer();
-            var serializerApply = new Action<StringLogSerializer>(s => { });
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
+            var serializerApply = new Action<StringLogSerializerBuilder>(s => { });
             var enc = Encoding.UTF8;
             var append = true;
             var recordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
@@ -65,8 +65,8 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void WizardLoggingExtensionMethods_ConsoleLogger()
         {
-            var serializer = new StringLogSerializer();
-            var serializerApply = new Action<ConsoleLogSerializer>(s => { });
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
+            var serializerApply = new Action<ConsoleLogSerializerBuilder>(s => { });
             var recordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
             var minLevel = LogLevel.Debug;
 
@@ -81,8 +81,8 @@ namespace NWrath.Logging.Test.ApiTests
         [Test]
         public void WizardLoggingExtensionMethods_DebugLogger()
         {
-            var serializer = new StringLogSerializer();
-            var serializerApply = new Action<StringLogSerializer>(s => { });
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
+            var serializerApply = new Action<StringLogSerializerBuilder>(s => { });
             var recordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
             var minLevel = LogLevel.Debug;
 
@@ -107,8 +107,8 @@ namespace NWrath.Logging.Test.ApiTests
             var minLevel = LogLevel.Debug;
             var leaveOpen = false;
             var loggers = new ILogger[]{ new EmptyLogger() };
-            var loggerFactories = new Func<ILoggingWizardCharms, ILogger>[] {
-                new Func<ILoggingWizardCharms, ILogger>(s => new EmptyLogger())
+            var loggerFactories = new Func<LoggingWizardCharms, ILogger>[] {
+                new Func<LoggingWizardCharms, ILogger>(s => new EmptyLogger())
             };
 
             var l1 = LoggingWizard.Spell.CompositeLogger(loggers);
@@ -150,8 +150,8 @@ namespace NWrath.Logging.Test.ApiTests
             var currentFolderPath = Path.GetDirectoryName(GetType().Assembly.Location);
             var folderPath = Path.Combine(currentFolderPath, "TestLogs");
             var fileProvider = new RollingFileProvider(folderPath);
-            var serializer = new StringLogSerializer();
-            var serializerApply = new Action<StringLogSerializer>(s => { });
+            var serializer = StringLogSerializerBuilder.DefaultSerializer;
+            var serializerApply = new Action<StringLogSerializerBuilder>(s => { });
             var recordVerifier = new MinimumLogLevelVerifier(LogLevel.Debug);
             var minLevel = LogLevel.Debug;
             var enc = Encoding.UTF8;
@@ -182,8 +182,8 @@ namespace NWrath.Logging.Test.ApiTests
             var batchAction = new Action<LogRecord[]>(b => { });
             var baseLogger = new EmptyLogger();
             var reserveLogger = new EmptyLogger();
-            var loggerSetFactory = new Func<ILoggingWizardCharms, ILogger[]>(s => new ILogger[] { new EmptyLogger() });
-            var loggerFactory = new Func<ILoggingWizardCharms, ILogger>(s => new EmptyLogger());
+            var loggerSetFactory = new Func<LoggingWizardCharms, ILogger[]>(s => new ILogger[] { new EmptyLogger() });
+            var loggerFactory = new Func<LoggingWizardCharms, ILogger>(s => new EmptyLogger());
 
             var l1 = LoggingWizard.Spell.BackgroundLogger(baseLogger, recordVerifier, flushPeriod, batchSize, leaveOpen, reserveLogger);
             var l2 = LoggingWizard.Spell.BackgroundLogger(baseLogger, minLevel, flushPeriod, batchSize, leaveOpen, reserveLogger);

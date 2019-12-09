@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Globalization;
+using System.Diagnostics;
+using NWrath.Synergy.Common.Extensions;
+using System.IO;
+using NWrath.Synergy.Common.Extensions.Collections;
+using NWrath.Synergy.Common.Structs;
+using System.Collections.Generic;
 
 namespace NWrath.Logging.Performance.Test
 {
@@ -14,16 +20,16 @@ namespace NWrath.Logging.Performance.Test
 
             var benchmarks = new LoggerBenchmarkBase[]
             {
-                //new NWrathFileLoggerBenchmark(),
-                //new NWrathBackgroundFileLoggerBenchmark(),
-                //new SerilogFileLoggerBenchmark(),
-                //new NLogFileLoggerBenchmark(),
+                new NWrathFileLoggerBenchmark(),
+                new NWrathBackgroundFileLoggerBenchmark(),
+                new SerilogFileLoggerBenchmark(),
+                new NLogFileLoggerBenchmark(),
 
                 //new SerilogSqlLoggerBenchmark(),
                 //new NWrathDbLoggerBenchmark(),
                 //new NWrathBackgroundDbLoggerBenchmark()
 
-                new NWrathRollingFileLoggerBenchmark(), 
+                new NWrathRollingFileLoggerBenchmark(),
                 new NWrathBackgroundRollingFileLoggerBenchmark()
             };
 

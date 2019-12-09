@@ -9,30 +9,18 @@ namespace NWrath.Logging
     public class RollingFileLogger
          : LoggerBase, IRollingFileLoggerInternal
     {
-        public static IPipe<RollingFileContext> LogWriterPipe => new LambdaPipe<RollingFileContext>(
-            (ctx, next) =>
-            {
-                next(ctx);
-
-                if (ctx.IsLoggerEnabled)
-                {
-                    ctx.LogFile.Write(ctx.Batch);
-                }
-            }
-        );
-
         FileLogger IRollingFileLoggerInternal.Writer => _writer;
 
         public PipeCollection<RollingFileContext> Pipes
         {
             get => _pipes;
-            set => _pipes = value ?? new PipeCollection<RollingFileContext> { LogWriterPipe };
+            set => _pipes = value ?? new PipeCollection<RollingFileContext>(new[] { new RollingFileWriterPipe() });
         }
 
         public IStringLogSerializer Serializer
         {
             get => _writer.Serializer;
-            set => _writer.Serializer = value ?? new StringLogSerializer();
+            set => _writer.Serializer = value ?? StringLogSerializerBuilder.DefaultSerializer;
         }
 
         public Encoding Encoding
@@ -49,7 +37,7 @@ namespace NWrath.Logging
 
         private FileLogger _writer;
         private IRollingFileProvider _fileProvider;
-        private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext> { LogWriterPipe };
+        private PipeCollection<RollingFileContext> _pipes = new PipeCollection<RollingFileContext>();
 
         #region Ctor
 
@@ -74,8 +62,7 @@ namespace NWrath.Logging
             }
 
             SetDefaultPipes();
-
-            _writer = new FileLogger(string.Empty, true){ AutoFlush = true };
+            SetDefaultWriter();
         }
 
         ~RollingFileLogger()
@@ -116,11 +103,6 @@ namespace NWrath.Logging
         {
             if (IsEnabled && RecordVerifier.Verify(record))
             {
-                if (_writer.FilePath == string.Empty)
-                {
-                    SetDefaultWriter();
-                }
-
                 WriteRecord(record);
             }
         }
@@ -143,11 +125,12 @@ namespace NWrath.Logging
                 file = FileProvider.ProduceNewFile();
             }
 
-            _writer.SetFile(file.FullName, append: true);
+            _writer = new FileLogger(file.FullName, append: true) { AutoFlush = false };
         }
 
         private void SetDefaultPipes()
         {
+            this.AddDefaultWriterPipe();
             this.AddDailyRollerPipe();
         }
 

@@ -5,10 +5,10 @@
     {
         public IStringLogSerializer Serializer
         {
-            get => _serializer; set => _serializer = value ?? new StringLogSerializer();
+            get => _serializer; set => _serializer = value ?? StringLogSerializerBuilder.DefaultSerializer;
         }
 
-        private IStringLogSerializer _serializer = new StringLogSerializer();
+        private IStringLogSerializer _serializer = StringLogSerializerBuilder.DefaultSerializer;
 
         public DebugLogger()
         {

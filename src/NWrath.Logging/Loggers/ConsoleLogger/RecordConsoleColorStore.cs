@@ -36,44 +36,26 @@ namespace NWrath.Logging
             set => this[nameof(Extra)] = value;
         }
 
-        public event EventHandler Updated;
-
         public RecordConsoleColorStore()
             : base(StringComparer.OrdinalIgnoreCase)
         {
             InitColors();
         }
 
-        ~RecordConsoleColorStore()
-        {
-            Updated = null;
-        }
-
         public new RecordConsoleColorStore Add(string key, Func<LogRecord, ConsoleColor> val)
         {
             base.Add(key, val);
 
-            OnUpdated();
-
             return this;
-        }
-
-        public Func<LogRecord, ConsoleColor> this[string key, Func<LogRecord, ConsoleColor> defaultFactory = null]
-        {
-            get => (ContainsKey(key) ? base[key] : (defaultFactory));
-            set { base[key] = value; OnUpdated(); }
         }
 
         public new Func<LogRecord, ConsoleColor> this[string key]
         {
             get => (ContainsKey(key) ? base[key] : (null));
-            set { base[key] = value; OnUpdated(); }
+            set { base[key] = value; }
         }
 
-        public ConsoleColor this[string key, LogRecord record]
-        {
-            get => (ContainsKey(key) ? base[key] : (m => ConsoleColor.White))(record);
-        }
+        #region Internal
 
         private void InitColors()
         {
@@ -82,11 +64,6 @@ namespace NWrath.Logging
             base[nameof(Level)] = DefaultLevelTypeColor;
             base[nameof(Exception)] = DefaultExceptionColor;
             base[nameof(Extra)] = DefaultExtraColor;
-        }
-
-        private void OnUpdated()
-        {
-            Updated?.Invoke(this, EventArgs.Empty);
         }
 
         private ConsoleColor DefaultTimestampColor(LogRecord record)
@@ -137,6 +114,8 @@ namespace NWrath.Logging
         private ConsoleColor DefaultExtraColor(LogRecord record)
         {
             return ConsoleColor.Cyan;
-        }
+        } 
+
+        #endregion
     }
 }

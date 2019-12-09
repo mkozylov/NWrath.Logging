@@ -12,7 +12,7 @@ namespace NWrath.Logging.Test.ApiTests
         {
             #region Arrange
 
-            var serializer = new ConsoleLogSerializer();
+            var serializer = ConsoleLogSerializerBuilder.DefaultSerializer;
             var logger = new ConsoleLogger { Serializer = serializer };
             var msg = new LogRecord
             {

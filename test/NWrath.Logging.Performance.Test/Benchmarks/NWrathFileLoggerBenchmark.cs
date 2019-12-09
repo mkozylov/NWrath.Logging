@@ -15,8 +15,9 @@ namespace NWrath.Logging.Performance.Test
         protected override void CreateLogger()
         {
             _logger = new FileLogger(tempFile) { AutoFlush = false };
-            _logger.Serializer = new StringLogSerializer { OutputTemplate = "{Message}" };
-
+            _logger.Serializer = new StringLogSerializerBuilder()
+                                    .UseOutputTemplate("{Message}")
+                                    .BuildSerializer();
             _flushTask = new Timer(_ => _logger.Flush(), null, 1000, 1000);
         }
 

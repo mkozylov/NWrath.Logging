@@ -1,4 +1,5 @@
-﻿using NWrath.Synergy.Common.Structs;
+﻿using NWrath.Synergy.Common.Extensions.Collections;
+using NWrath.Synergy.Common.Structs;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -14,22 +15,24 @@ namespace NWrath.Logging
             set
             {
                 _instance = value ?? throw new ArgumentNullException();
-
-                _lazyInstance = new Lazy<ILogger>(() => value);
             }
         }
 
-        private static Lazy<ILogger> _lazyInstance = new Lazy<ILogger>(() => throw Errors.NO_LOGGERS);
+        private static ILogger _logger
+        {
+            get => _instance ?? throw Errors.NO_LOGGERS;
+        }
+
         private static ILogger _instance;
 
         public static void Log(LogRecord record)
         {
-            _lazyInstance.Value.Log(record);
+            _logger.Log(record);
         }
 
         public static void Log(LogRecord[] batch)
         {
-            _lazyInstance.Value.Log(batch);
+            _logger.Log(batch);
         }
 
         public static void Log(
@@ -40,7 +43,7 @@ namespace NWrath.Logging
            StringSet extra = null
        )
         {
-            _lazyInstance.Value.Log(new LogRecord(message, timestamp, level, exception, extra));
+            _logger.Log(new LogRecord(message, timestamp, level, exception, extra));
         }
 
         public static void Log<TExtra>(
@@ -51,35 +54,35 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 new LogRecord(
                     message, 
                     timestamp, 
                     level, 
                     exception, 
-                    (extra as StringSet) ?? StringSet.FromObject(extra)
+                    (extra as StringSet) ?? extra.ToStringSet()
                     )
                 );
         }
 
         public static void Debug(string msg, StringSet extra = null)
         {
-            _lazyInstance.Value.Log(msg, level: LogLevel.Debug, extra: extra);
+            _logger.Log(msg, level: LogLevel.Debug, extra: extra);
         }
 
         public static void Debug<TExtra>(string msg, TExtra extra = default(TExtra))
         {
-            _lazyInstance.Value.Log(msg, level: LogLevel.Debug, extra: extra);
+            _logger.Log(msg, level: LogLevel.Debug, extra: extra);
         }
 
         public static void Info(string msg, StringSet extra = null)
         {
-            _lazyInstance.Value.Log(msg, level: LogLevel.Info, extra: extra);
+            _logger.Log(msg, level: LogLevel.Info, extra: extra);
         }
 
         public static void Info<TExtra>(string msg, TExtra extra = default(TExtra))
         {
-            _lazyInstance.Value.Log(msg, level: LogLevel.Info, extra: extra);
+            _logger.Log(msg, level: LogLevel.Info, extra: extra);
         }
 
         public static void Warning(
@@ -88,7 +91,7 @@ namespace NWrath.Logging
             StringSet extra = null
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Warning, 
                 exception: exception, 
@@ -102,7 +105,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Warning, 
                 exception: exception, 
@@ -117,7 +120,7 @@ namespace NWrath.Logging
             StringSet extra = null
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Warning, 
                 exception: exception, 
@@ -132,7 +135,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Warning, 
                 exception: exception, 
@@ -146,7 +149,7 @@ namespace NWrath.Logging
             StringSet extra = null
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Error, 
                 exception: exception, 
@@ -160,7 +163,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Error, 
                 exception: exception, 
@@ -175,7 +178,7 @@ namespace NWrath.Logging
             StringSet extra = null
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Error, 
                 exception: exception, 
@@ -190,7 +193,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Error, 
                 exception: exception, 
@@ -204,7 +207,7 @@ namespace NWrath.Logging
             StringSet extra = null
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Critical, 
                 exception: exception, 
@@ -218,7 +221,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
             )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 msg, 
                 level: LogLevel.Critical, 
                 exception: exception, 
@@ -233,7 +236,7 @@ namespace NWrath.Logging
             StringSet extra = null
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Critical, 
                 exception: 
@@ -249,7 +252,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
         )
         {
-            _lazyInstance.Value.Log(
+            _logger.Log(
                 ExtractCaller(callerMemberName, callerFilePath), 
                 level: LogLevel.Critical, 
                 exception: exception, 
@@ -257,7 +260,7 @@ namespace NWrath.Logging
                 );
         }
 
-        #region private
+        #region Internal
 
         private static string ExtractCaller(string callerMemberName, string callerFilePath)
         {

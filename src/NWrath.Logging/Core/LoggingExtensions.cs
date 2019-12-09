@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using NWrath.Synergy.Common.Structs;
 using System.IO;
+using NWrath.Synergy.Common.Extensions.Collections;
 
 namespace NWrath.Logging
 {
@@ -32,7 +33,7 @@ namespace NWrath.Logging
             TExtra extra = default(TExtra)
         )
         {
-            logger.Log(new LogRecord(message, timestamp, level, exception, (extra as StringSet) ?? StringSet.FromObject(extra)));
+            logger.Log(new LogRecord(message, timestamp, level, exception, (extra as StringSet) ?? extra.ToStringSet()));
         }
 
         public static void Debug(this ILogger logger, string msg, StringSet extra = null)

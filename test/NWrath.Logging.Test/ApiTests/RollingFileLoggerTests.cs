@@ -134,7 +134,7 @@ namespace NWrath.Logging.Test.ApiTests
             var logs = new List<LogRecord>();
 
             var pipes = new PipeCollection<RollingFileContext>()
-                        .Add(RollingFileLogger.LogWriterPipe)
+                        .Add(new RollingFileWriterPipe())
                         .Add((c, n) =>
                         {
                             n(c);
@@ -220,11 +220,11 @@ namespace NWrath.Logging.Test.ApiTests
 
             var logger = new RollingFileLogger(fileProviderMock.Object)
             {
-                Serializer = new StringLogSerializer().Apply(s =>
+                Serializer = new StringLogSerializerBuilder().Apply(s =>
                 {
                     s.OutputTemplate += "{Ul}";
                     s.Formats["Ul"] = r => "\n" + new string('-', 50);
-                })
+                }).BuildSerializer()
             };
 
             #endregion Arrange
@@ -272,25 +272,21 @@ namespace NWrath.Logging.Test.ApiTests
                 Thread.Sleep(10);
             }
 
-            Directory.CreateDirectory(logsFolder);
-
             var logger = new RollingFileLogger(logsFolder);
 
             logger.Log(log);
 
+            logger.CastTo<IRollingFileLoggerInternal>().Writer.IsEnabled = false;
             logFile = logger.CastTo<IRollingFileLoggerInternal>().Writer.FilePath;
 
+            Directory.GetFiles(logsFolder).Each(f => File.Delete(f));
             Directory.Delete(logsFolder, true);
             Thread.Sleep(10);
 
-            Assert.Catch(() => logger.Log(log));
-            Thread.Sleep(10);
-
-            Directory.CreateDirectory(logsFolder);
-            Thread.Sleep(10);
-            File.Create(logFile).Dispose();
+            logger.CastTo<IRollingFileLoggerInternal>().Writer.IsEnabled = true;
 
             Assert.DoesNotThrow(() => logger.Log(log));
+            logger.Dispose();
         }
     }
 }

@@ -2,6 +2,6 @@
 {
     public static class LoggingWizard
     {
-        public static ILoggingWizardCharms Spell { get; set; } = new LoggingWizardCharms();
+        public static LoggingWizardCharms Spell { get; } = new LoggingWizardCharms();
     }
 }

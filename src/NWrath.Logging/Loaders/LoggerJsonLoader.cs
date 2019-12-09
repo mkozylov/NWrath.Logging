@@ -129,7 +129,7 @@ namespace NWrath.Logging
 
         private object GetInjectorService(JProperty prop)
         {
-            Injector.Required(() => throw new ArgumentNullException(nameof(Injector)));
+            Injector = Injector ?? throw new ArgumentNullException(nameof(Injector));
 
             var val = prop.Value.CastTo<JValue>()
                                      .Value<string>();

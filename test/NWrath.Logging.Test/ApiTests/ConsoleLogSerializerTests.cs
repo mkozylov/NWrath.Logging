@@ -21,7 +21,7 @@ namespace NWrath.Logging.Test.ApiTests
                 Level = LogLevel.Error,
                 Exception = new Exception("Ex")
             };
-            var serializer = new ConsoleLogSerializer();
+            var serializer = ConsoleLogSerializerBuilder.DefaultSerializer;
             var sw = new StringWriter();
             Console.SetOut(sw);
 
@@ -54,19 +54,22 @@ namespace NWrath.Logging.Test.ApiTests
                 Level = LogLevel.Error,
                 Exception = new Exception("Ex")
             };
-            var serializer = new ConsoleLogSerializer();
-            var logger = new ConsoleLogger { Serializer = serializer };
+
+            var serializerBuilder = new ConsoleLogSerializerBuilder();
             var consoleColors = new Dictionary<string, ConsoleColor>();
 
-            foreach (var item in serializer.Formats.ToList())
+            foreach (var item in serializerBuilder.Formats.ToList())
             {
-                serializer.Formats[item.Key] = m =>
+                serializerBuilder.Formats[item.Key] = m =>
                 {
                     consoleColors[item.Key] = Console.ForegroundColor;
 
                     return item.Value(m);
                 };
             }
+
+            var serializer = serializerBuilder.BuildSerializer();
+            var logger = new ConsoleLogger { Serializer = serializer };
 
             #endregion Arrange
 
@@ -84,19 +87,19 @@ namespace NWrath.Logging.Test.ApiTests
             }
 
             Assert.AreEqual(
-                serializer.Colors.Timestamp(msg),
+                serializerBuilder.Colors.Timestamp(msg),
                 consoleColors[nameof(LogRecord.Timestamp)]
                 );
             Assert.AreEqual(
-               serializer.Colors.Message(msg),
+               serializerBuilder.Colors.Message(msg),
                consoleColors[nameof(LogRecord.Message)]
                );
             Assert.AreEqual(
-               serializer.Colors.Level(msg),
+               serializerBuilder.Colors.Level(msg),
                consoleColors[nameof(LogRecord.Level)]
                );
             Assert.AreEqual(
-               serializer.Colors.Exception(msg),
+               serializerBuilder.Colors.Exception(msg),
                consoleColors[nameof(LogRecord.Exception)]
                );
 

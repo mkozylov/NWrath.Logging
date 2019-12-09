@@ -1,4 +1,6 @@
 ﻿using NUnit.Framework;
+using NWrath.Synergy.Formatting;
+using NWrath.Synergy.Formatting.Structs;
 using System.Linq;
 
 namespace NWrath.Logging.Test.ApiTests

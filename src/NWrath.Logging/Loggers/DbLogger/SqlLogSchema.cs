@@ -1,5 +1,6 @@
 ﻿using FastExpressionCompiler;
 using NWrath.Synergy.Common.Extensions;
+using NWrath.Synergy.Common.Extensions.Collections;
 using NWrath.Synergy.Reflection.Extensions;
 using System;
 using System.Collections.Generic;
@@ -153,11 +154,12 @@ namespace NWrath.Logging
                 Expression.Constant("(")
             };
 
-            var serializeMI = typeof(IStringLogSerializer).GetMethod(nameof(IStringLogSerializer.Serialize));
-
             for (int i = 0; i < columns.Count; i++)
             {
                 var col = columns[i];
+                var serializeMI = typeof(SqlLogSerializer<>)
+                                    .MakeGenericType(col.Type)
+                                    .GetMethod(nameof(IStringLogSerializer.Serialize));
 
                 var serializeCall = Expression.Call(
                     Expression.Constant(col.Serializer),
