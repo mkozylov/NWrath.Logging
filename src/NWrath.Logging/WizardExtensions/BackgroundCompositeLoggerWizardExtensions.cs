@@ -30,7 +30,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
            this LoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
-           params BackgroundLogger[] loggers
+           params ILogger[] loggers
            )
         {
             return BackgroundCompositeLogger(
@@ -46,7 +46,7 @@ namespace NWrath.Logging
             this LoggingWizardCharms charms,
             LogLevel minLevel,
             bool leaveOpen,
-            params BackgroundLogger[] loggers
+            params ILogger[] loggers
             )
         {
             return BackgroundCompositeLogger(
@@ -61,7 +61,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
            this LoggingWizardCharms charms,
            LogLevel minLevel,
-           params BackgroundLogger[] loggers
+           params ILogger[] loggers
            )
         {
             return BackgroundCompositeLogger(
@@ -77,7 +77,7 @@ namespace NWrath.Logging
             this LoggingWizardCharms charms,
             LogLevel minLevel,
             bool leaveOpen,
-            params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+            params Func<LoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
             return BackgroundCompositeLogger(
@@ -92,7 +92,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
             this LoggingWizardCharms charms,
             LogLevel minLevel,
-            params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+            params Func<LoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
             return BackgroundCompositeLogger(
@@ -108,7 +108,7 @@ namespace NWrath.Logging
             this LoggingWizardCharms charms,
             ILogRecordVerifier recordVerifier,
             bool leaveOpen,
-            params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+            params Func<LoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
             var loggers = loggerFactories.Select(f => f(charms))
@@ -127,7 +127,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
            this LoggingWizardCharms charms,
            ILogRecordVerifier recordVerifier,
-           params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+           params Func<LoggingWizardCharms, ILogger>[] loggerFactories
            )
         {
             var loggers = loggerFactories.Select(f => f(charms))
@@ -146,7 +146,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
            this LoggingWizardCharms charms,
            bool leaveOpen,
-           params BackgroundLogger[] loggers
+           params ILogger[] loggers
            )
         {
             return BackgroundCompositeLogger(
@@ -160,7 +160,7 @@ namespace NWrath.Logging
         //10
         public static BackgroundLogger BackgroundCompositeLogger(
             this LoggingWizardCharms charms,
-            params BackgroundLogger[] loggers
+            params ILogger[] loggers
             )
         {
             return BackgroundCompositeLogger(
@@ -175,7 +175,7 @@ namespace NWrath.Logging
         public static BackgroundLogger BackgroundCompositeLogger(
             this LoggingWizardCharms charms,
             bool leaveOpen,
-            params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+            params Func<LoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
             return BackgroundCompositeLogger(
@@ -189,7 +189,7 @@ namespace NWrath.Logging
         //12
         public static BackgroundLogger BackgroundCompositeLogger(
             this LoggingWizardCharms charms,
-            params Func<LoggingWizardCharms, BackgroundLogger>[] loggerFactories
+            params Func<LoggingWizardCharms, ILogger>[] loggerFactories
             )
         {
             return BackgroundCompositeLogger(
