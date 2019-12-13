@@ -33,13 +33,13 @@ namespace NWrath.Logging
             }
         }
 
-        public ILogger BaseLogger
+        public virtual ILogger BaseLogger
         {
             get => _baseLogger;
             set => _baseLogger = value ?? throw Errors.NULL_BASE_LOGGER;
         }
 
-        public ILogger EmergencyLogger { get; set; }
+        public virtual ILogger EmergencyLogger { get; set; }
 
         public TimeSpan FlushPeriod { get; private set; }
 

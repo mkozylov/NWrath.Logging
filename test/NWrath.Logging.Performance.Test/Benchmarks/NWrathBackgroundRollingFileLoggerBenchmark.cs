@@ -46,8 +46,6 @@ namespace NWrath.Logging.Performance.Test
             var dir = Path.GetDirectoryName(typeof(FileLoggerBenchmarkBase).Assembly.Location);
 
             _folderPath = Path.Combine(dir, $"Logs_{Guid.NewGuid()}");
-
-            Console.WriteLine(_folderPath);
         }
 
         protected override void TierDown()

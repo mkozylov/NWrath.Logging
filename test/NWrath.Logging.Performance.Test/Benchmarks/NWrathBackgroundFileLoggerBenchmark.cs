@@ -1,4 +1,5 @@
 ﻿using NWrath.Synergy.Common.Extensions;
+using System;
 
 namespace NWrath.Logging.Performance.Test
 {
@@ -17,10 +18,6 @@ namespace NWrath.Logging.Performance.Test
                 tempFile,
                 serializerApply: s => s.OutputTemplate = "{Message}"
             );
-
-            logger.BaseLogger
-                  .CastTo<FileLogger>()
-                  .AutoFlush = false;
 
             _logger = logger;
         }
