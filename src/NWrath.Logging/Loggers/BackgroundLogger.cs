@@ -47,6 +47,8 @@ namespace NWrath.Logging
 
         public Exception LastError { get; private set; }
 
+        public Exception LastEmergencyError { get; private set; }
+
         private ILogger _baseLogger;
         private Task _watchTask;
         private Lazy<BatchBlock<LogRecord>> _queue;
@@ -168,10 +170,17 @@ namespace NWrath.Logging
             {
                 LastError = ex;
 
-                if (EmergencyLogger != null)
+                try
                 {
-                    EmergencyLogger.Log(batch);
-                    EmergencyLogger.Error($"Base logger error", ex);
+                    if (EmergencyLogger != null)
+                    {
+                        EmergencyLogger.Log(batch);
+                        EmergencyLogger.Error($"Base logger error", ex);
+                    }
+                }
+                catch (Exception exc)
+                {
+                    LastEmergencyError = exc;
                 }
             }
         }
