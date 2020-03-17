@@ -13,13 +13,13 @@ namespace NWrath.Logging
     public class SqlLogSerializer<TType>
         : ISqlStringLogSerializer<TType>
     {
-        private static Func<TType, string> _toSqlStringFunc;
+        public static Func<TType, string> SqlStringConverter { get; set; }
 
         private Func<LogRecord, string> _serializeFunc;
 
         static SqlLogSerializer()
         {
-            _toSqlStringFunc = typeof(SqlTypeConverter).GetMethod(
+            SqlStringConverter = typeof(SqlTypeConverter).GetMethod(
                                    nameof(SqlTypeConverter.ToSqlString),
                                    new[] { typeof(TType) }
                                    )
@@ -29,7 +29,7 @@ namespace NWrath.Logging
 
         public SqlLogSerializer(Func<LogRecord, TType> extractValueFunc)
         {
-            _serializeFunc = r => _toSqlStringFunc(extractValueFunc(r));
+            _serializeFunc = r => SqlStringConverter(extractValueFunc(r));
         }
 
         public string Serialize(LogRecord record)

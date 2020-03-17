@@ -143,8 +143,6 @@ namespace NWrath.Logging
 
         private Func<LogRecord, string> CreateInsertLogQueryBuilder()
         {
-            var sqlExtType = typeof(SqlTypeConverter);
-
             var columns = Columns.Where(x => !x.IsInternal)
                                      .ToList();
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace NWrath.Logging
@@ -23,10 +24,18 @@ namespace NWrath.Logging
                 return;
             }
 
+            var verifiedBatch = batch.Where(r => RecordVerifier.Verify(r))
+                                     .ToArray();
+
+            if (verifiedBatch.Length == 0)
+            {
+                return;
+            }
+
             using (var con = schema.CreateConnection())
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = schema.BuildInsertBatchQuery(batch);
+                cmd.CommandText = schema.BuildInsertBatchQuery(verifiedBatch);
 
                 con.Open();
 
